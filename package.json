@@ -1,0 +1,53 @@
+{
+  "name": "analytics",
+  "version": "0.1.0",
+  "description": "Prezly Analytics package based on analytics-next by Segment",
+  "private": true,
+  "scripts": {
+    "bootstrap": "npm ci --legacy-peer-deps",
+    "build": "npm run build -w packages/analytics-nextjs",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint --workspaces -- --fix",
+    "prettier": "prettier --check './packages/**/*.(js|ts|tsx)'",
+    "prettier:fix": "npm run prettier -- --write --no-list-different",
+    "test": "echo \"Tests? maybe next time ;)\" && exit 0",
+    "typecheck": "tsc --noEmit --incremental",
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "release": "npm run release:prepare && npm run release:publish",
+    "release:prepare": "npm run check",
+    "release:publish": "lerna publish --force-publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prezly/analytics.git"
+  },
+  "author": "Prezly Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/prezly/analytics/issues"
+  },
+  "homepage": "https://github.com/prezly/analytics#readme",
+  "workspaces": ["packages/*"],
+  "engines": {
+    "node": ">= 14.x",
+    "npm": ">= 7.x"
+  },
+  "devEngines": {
+    "node": ">= 14.x",
+    "npm": ">= 7.x"
+  },
+  "devDependencies": {
+    "@prezly/eslint-config": "^4.1.0",
+    "@types/react": "^17.0.43",
+    "@types/react-dom": "^17.0.14",
+    "eslint": "^8.8.0",
+    "lerna": "^4.0.0",
+    "prettier": "^2.6.2",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "next": "^12.1.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}
