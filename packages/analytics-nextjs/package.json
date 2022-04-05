@@ -1,0 +1,37 @@
+{
+  "name": "@prezly/analytics-nextjs",
+  "version": "0.1.0",
+  "description": "Prezly Analytics package for Next.js",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc --project .",
+    "lint": "eslint ./src --ext=.ts,.tsx",
+    "test": "echo \"Tests? maybe next time ;)\" && exit 0"
+  },
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prezly/analytics.git"
+  },
+  "author": "Prezly Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/prezly/analytics/issues"
+  },
+  "homepage": "https://github.com/prezly/analytics#readme",
+  "peerDependencies": {
+    "next": "^12.x",
+    "react": "^17.x",
+    "react-dom": "^17.x"
+  },
+  "dependencies": {
+    "@prezly/sdk": "^6.17.0",
+    "js-cookie": "^3.0.1",
+    "react-use": "^17.3.2"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.1",
+    "@types/react": "^17.0.43",
+    "@types/react-dom": "^17.0.14"
+  }
+}
