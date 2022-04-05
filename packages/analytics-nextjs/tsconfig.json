@@ -1,11 +1,12 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "module": "es6",
-    "target": "es6",
+    "module": "commonjs",
+    "target": "es5",
+    "jsx": "react-jsx",
     "noEmit": false,
-    "emitDeclarationOnly": true,
-    "declarationDir": "./build/types",
+    "declarationDir": "./build",
+    "outDir": "./build",
     "rootDir": "./src",
     "typeRoots": ["../../node_modules/@types", "./node_modules/@types", "./src/@types"]
   },
