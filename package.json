@@ -4,7 +4,7 @@
   "description": "Prezly Analytics package based on analytics-next by Segment",
   "private": true,
   "scripts": {
-    "bootstrap": "npm ci --legacy-peer-deps",
+    "bootstrap": "lerna bootstrap",
     "build": "npm run build -w packages/analytics-nextjs",
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint --workspaces -- --fix",
@@ -14,8 +14,10 @@
     "typecheck": "tsc --noEmit --incremental",
     "check": "npm run lint && npm run typecheck && npm run test",
     "release": "npm run release:prepare && npm run release:publish",
-    "release:prepare": "npm run check",
-    "release:publish": "lerna publish --force-publish"
+    "release:preview": "npm run release:prepare && npm run release:publish:preview",
+    "release:prepare": "npm run check && npm run build",
+    "release:publish": "lerna publish",
+    "release:publish:preview": "lerna publish --npm-tag preview --skip-git"
   },
   "repository": {
     "type": "git",
