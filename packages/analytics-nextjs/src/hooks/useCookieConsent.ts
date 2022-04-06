@@ -25,7 +25,7 @@ export function useCookieConsent(): State {
         accept,
         isTrackingAllowed,
         reject,
-        supportsCookie: navigator.cookieEnabled,
+        supportsCookie: typeof navigator !== 'undefined' && navigator.cookieEnabled,
         toggle,
     };
 }
