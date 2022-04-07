@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@prezly/sdk": "^6.17.0",
+    "@segment/analytics-next": "^1.35.0",
     "js-cookie": "^3.0.1",
     "react-use": "^17.3.2"
   },

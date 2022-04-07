@@ -9,8 +9,7 @@ import type { DeferredIdentity } from '../types';
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
 export function useAnalytics() {
-    const { consent, isAnalyticsReady, isEnabled, newsroom, trackingPolicy } =
-        useAnalyticsContext();
+    const { analytics, consent, isEnabled, newsroom, trackingPolicy } = useAnalyticsContext();
     const [deferredIdentity, setDeferredIdentity, removeDeferredIdentity] =
         useLocalStorage<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
     const {
@@ -53,12 +52,12 @@ export function useAnalytics() {
             }
 
             addToQueue(() => {
-                if (window.analytics && window.analytics.identify) {
-                    window.analytics.identify(userId, traits, buildOptions(), callback);
+                if (analytics && analytics.identify) {
+                    analytics.identify(userId, traits, buildOptions(), callback);
                 }
             });
         },
-        [addToQueue, buildOptions, consent, setDeferredIdentity, trackingPolicy],
+        [analytics, addToQueue, buildOptions, consent, setDeferredIdentity, trackingPolicy],
     );
 
     function alias(userId: string, previousId: string) {
@@ -68,8 +67,8 @@ export function useAnalytics() {
         }
 
         addToQueue(() => {
-            if (window.analytics && window.analytics.alias) {
-                window.analytics.alias(userId, previousId, buildOptions());
+            if (analytics && analytics.alias) {
+                analytics.alias(userId, previousId, buildOptions());
             }
         });
     }
@@ -86,8 +85,8 @@ export function useAnalytics() {
         }
 
         addToQueue(() => {
-            if (window.analytics && window.analytics.page) {
-                window.analytics.page(category, name, properties, buildOptions(), callback);
+            if (analytics && analytics.page) {
+                analytics.page(category, name, properties, buildOptions(), callback);
             }
         });
     }
@@ -99,15 +98,15 @@ export function useAnalytics() {
         }
 
         addToQueue(() => {
-            if (window.analytics && window.analytics.track) {
-                window.analytics.track(event, properties, buildOptions(), callback);
+            if (analytics && analytics.track) {
+                analytics.track(event, properties, buildOptions(), callback);
             }
         });
     }
 
-    function user() {
-        if (window.analytics && window.analytics.user) {
-            return window.analytics.user();
+    const user = useCallback(() => {
+        if (analytics && analytics.user) {
+            return analytics.user();
         }
 
         // Return fake user API to keep code working even without analytics.js loaded
@@ -116,16 +115,16 @@ export function useAnalytics() {
                 return null;
             },
         };
-    }
+    }, [analytics]);
 
     useEffect(() => {
         // We are using simple queue to trigger tracking calls
         // that might have been created before analytics.js was loaded.
-        if (isAnalyticsReady && firstInQueue) {
+        if (analytics && firstInQueue) {
             firstInQueue();
             removeFromQueue();
         }
-    }, [firstInQueue, isAnalyticsReady, removeFromQueue]);
+    }, [firstInQueue, analytics, removeFromQueue]);
 
     useEffect(() => {
         if (consent) {
@@ -142,7 +141,7 @@ export function useAnalytics() {
 
             user().id(null); // erase user ID
         }
-    }, [consent, deferredIdentity, identify, removeDeferredIdentity, setDeferredIdentity]);
+    }, [consent, deferredIdentity, identify, user, removeDeferredIdentity, setDeferredIdentity]);
 
     if (!isEnabled) {
         return {
@@ -154,6 +153,7 @@ export function useAnalytics() {
         };
     }
 
+    // TODO: Expose all methods of analytics-next (might not be needed, since we already provide the `analytics` object)
     return {
         alias,
         identify,
