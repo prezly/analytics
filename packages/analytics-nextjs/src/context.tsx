@@ -46,6 +46,7 @@ export function AnalyticsContextProvider({
 }: PropsWithChildren<Props>) {
     const { tracking_policy: trackingPolicy } = newsroom;
     const [consent, setConsent] = useState(getConsentCookie());
+    const isTrackingAllowed = isEnabled && isPrezlyTrackingAllowed(consent, newsroom);
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
     // TODO: Expose Newsroom Segment Write key from API SDK
@@ -71,10 +72,10 @@ export function AnalyticsContextProvider({
             setAnalytics(response);
         }
 
-        if (trackingPolicy !== TrackingPolicy.DISABLED) {
+        if (isTrackingAllowed) {
             loadAnalytics();
         }
-    }, [writeKey, trackingPolicy, plugins]);
+    }, [writeKey, isTrackingAllowed, plugins]);
 
     useEffect(() => {
         if (typeof consent === 'boolean') {
@@ -88,17 +89,17 @@ export function AnalyticsContextProvider({
                 analytics,
                 consent,
                 isEnabled,
-                isTrackingAllowed: isEnabled && isPrezlyTrackingAllowed(consent, newsroom),
+                isTrackingAllowed,
                 newsroom,
                 setConsent,
-                trackingPolicy: newsroom.tracking_policy,
+                trackingPolicy,
             }}
         >
             <Head>
                 <meta name="prezly:newsroom" content={newsroom.uuid} />
                 {story && <meta name="prezly:story" content={story.uuid} />}
-                {newsroom.tracking_policy !== TrackingPolicy.DEFAULT && (
-                    <meta name="prezly:tracking_policy" content={newsroom.tracking_policy} />
+                {trackingPolicy !== TrackingPolicy.DEFAULT && (
+                    <meta name="prezly:tracking_policy" content={trackingPolicy} />
                 )}
             </Head>
             {children}
