@@ -1,6 +1,6 @@
 import { TrackingPolicy } from '@prezly/sdk';
 import { useCallback, useEffect } from 'react';
-import { useLocalStorage, useQueue } from 'react-use';
+import { useLatest, useLocalStorage, useQueue } from 'react-use';
 
 import { useAnalyticsContext } from '../context';
 import { stringify } from '../lib';
@@ -10,6 +10,7 @@ const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
 export function useAnalytics() {
     const { analytics, consent, isEnabled, newsroom, trackingPolicy } = useAnalyticsContext();
+    const analyticsRef = useLatest(analytics);
     const [deferredIdentity, setDeferredIdentity, removeDeferredIdentity] =
         useLocalStorage<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
     const {
@@ -85,8 +86,8 @@ export function useAnalytics() {
         }
 
         addToQueue(() => {
-            if (analytics && analytics.page) {
-                analytics.page(category, name, properties, buildOptions(), callback);
+            if (analyticsRef.current && analyticsRef.current.page) {
+                analyticsRef.current.page(category, name, properties, buildOptions(), callback);
             }
         });
     }
@@ -98,8 +99,8 @@ export function useAnalytics() {
         }
 
         addToQueue(() => {
-            if (analytics && analytics.track) {
-                analytics.track(event, properties, buildOptions(), callback);
+            if (analyticsRef.current && analyticsRef.current.track) {
+                analyticsRef.current.track(event, properties, buildOptions(), callback);
             }
         });
     }
