@@ -23,5 +23,6 @@
     "strict": true,
     "target": "esnext"
   },
+  "include": [".eslintrc.js"],
   "references": [{ "path": "packages/analytics-nextjs" }]
 }
