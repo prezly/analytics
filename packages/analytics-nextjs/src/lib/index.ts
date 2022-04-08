@@ -1,4 +1,5 @@
 export * from './cookieState';
+export * from './getApiUrl';
 export * from './getAssetClickEvent';
 export * from './getRecipientInfo';
 export * from './isPrezlyTrackingAllowed';
