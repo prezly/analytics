@@ -36,26 +36,36 @@ export function Analytics() {
         const medium = utm.get('medium');
 
         if (id && source === 'email' && medium === 'campaign') {
-            getRecipientInfo(id).then((data) => {
-                // re-map current user to the correct identifier
-                if (userRef.current().id() === data.recipient_id) {
-                    aliasRef.current(data.id, id);
-                }
+            getRecipientInfo(id)
+                .then((data) => {
+                    // re-map current user to the correct identifier
+                    if (userRef.current().id() === data.recipient_id) {
+                        aliasRef.current(data.id, id);
+                    }
 
-                identifyRef.current(data.id);
-                trackRef.current(CAMPAIGN.CLICK, { recipient_id: data.recipient_id }, () =>
-                    stripUrlParameters('utm_'),
-                );
-            });
+                    identifyRef.current(data.id);
+                    trackRef.current(CAMPAIGN.CLICK, { recipient_id: data.recipient_id }, () =>
+                        stripUrlParameters('utm_'),
+                    );
+                })
+                .catch((error) => {
+                    // eslint-disable-next-line no-console
+                    console.error(error);
+                });
         } else if (id && isRecipientIdFormat(userId)) {
-            getRecipientInfo(userId).then((data) => {
-                // re-map current user to the correct identifier
-                if (userRef.current().id() === data.recipient_id) {
-                    aliasRef.current(data.id, id);
-                }
+            getRecipientInfo(userId)
+                .then((data) => {
+                    // re-map current user to the correct identifier
+                    if (userRef.current().id() === data.recipient_id) {
+                        aliasRef.current(data.id, id);
+                    }
 
-                identifyRef.current(data.id);
-            });
+                    identifyRef.current(data.id);
+                })
+                .catch((error) => {
+                    // eslint-disable-next-line no-console
+                    console.error(error);
+                });
         }
     });
 
