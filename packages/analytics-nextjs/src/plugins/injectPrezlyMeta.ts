@@ -18,7 +18,7 @@ export function injectPrezlyMetaPlugin(): Plugin {
         // {
         //   prezly: { newsroom: 'xxxx-xxxx-xxxxxxxx', story?: 'xxxx-xxxx-xxxxxxxx' }
         // }
-        ctx.updateEvent('properties.prezly', metasContent);
+        ctx.updateEvent('prezly', metasContent);
 
         return ctx;
     }
