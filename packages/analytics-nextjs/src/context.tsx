@@ -44,17 +44,14 @@ export function AnalyticsContextProvider({
     story,
     plugins,
 }: PropsWithChildren<Props>) {
-    const { tracking_policy: trackingPolicy } = newsroom;
+    const { tracking_policy: trackingPolicy, segment_analytics_id: segmentWriteKey } = newsroom;
     const [consent, setConsent] = useState(getConsentCookie());
     const isTrackingAllowed = isEnabled && isPrezlyTrackingAllowed(consent, newsroom);
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
-    // TODO: Expose Newsroom Segment Write key from API SDK
-    // TODO: Load default Prezly write key
-    const writeKey = 'SEGMENT_WRITE_KEY';
 
     useEffect(() => {
-        async function loadAnalytics() {
+        async function loadAnalytics(writeKey: string) {
             const [response] = await AnalyticsBrowser.load(
                 {
                     writeKey,
@@ -72,10 +69,10 @@ export function AnalyticsContextProvider({
             setAnalytics(response);
         }
 
-        if (isTrackingAllowed) {
-            loadAnalytics();
+        if (isTrackingAllowed && segmentWriteKey) {
+            loadAnalytics(segmentWriteKey);
         }
-    }, [writeKey, isTrackingAllowed, plugins]);
+    }, [segmentWriteKey, isTrackingAllowed, plugins]);
 
     useEffect(() => {
         if (typeof consent === 'boolean') {
