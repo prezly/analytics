@@ -26,6 +26,8 @@ interface Props {
     plugins?: Plugin[];
 }
 
+const DEFAULT_WRITE_KEY = 'CwFkH8UbR05ByZJwLNvGzjwFr4DxGAUh';
+
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
 export function useAnalyticsContext() {
@@ -69,8 +71,8 @@ export function AnalyticsContextProvider({
             setAnalytics(response);
         }
 
-        if (isTrackingAllowed && segmentWriteKey) {
-            loadAnalytics(segmentWriteKey);
+        if (isTrackingAllowed) {
+            loadAnalytics(segmentWriteKey || DEFAULT_WRITE_KEY);
         }
     }, [segmentWriteKey, isTrackingAllowed, plugins]);
 
