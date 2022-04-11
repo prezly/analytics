@@ -1,12 +1,6 @@
 import type { RecipientInfo } from '../types';
 
-function getApiUrl(): string {
-    if (process.env.NODE_ENV !== 'production') {
-        return 'http://analytics.prezly.test';
-    }
-
-    return 'https://analytics.prezly.com';
-}
+import { getApiUrl } from './getApiUrl';
 
 export function isRecipientIdFormat(id?: string | null): id is string {
     if (!id) {

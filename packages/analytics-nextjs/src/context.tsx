@@ -7,7 +7,7 @@ import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
-import { injectPrezlyMetaPlugin } from './plugins';
+import { injectPrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 
 interface Context {
     analytics: Analytics | undefined;
@@ -46,7 +46,11 @@ export function AnalyticsContextProvider({
     story,
     plugins,
 }: PropsWithChildren<Props>) {
-    const { tracking_policy: trackingPolicy, segment_analytics_id: segmentWriteKey } = newsroom;
+    const {
+        tracking_policy: trackingPolicy,
+        segment_analytics_id: segmentWriteKey,
+        uuid,
+    } = newsroom;
     const [consent, setConsent] = useState(getConsentCookie());
     const isTrackingAllowed = isEnabled && isPrezlyTrackingAllowed(consent, newsroom);
 
@@ -57,8 +61,11 @@ export function AnalyticsContextProvider({
             const [response] = await AnalyticsBrowser.load(
                 {
                     writeKey,
-                    // TODO: Add plugin to send data to Prezly Analytics
-                    plugins: [injectPrezlyMetaPlugin(), ...(plugins || [])],
+                    plugins: [
+                        injectPrezlyMetaPlugin(),
+                        sendEventToPrezlyPlugin(uuid),
+                        ...(plugins || []),
+                    ],
                 },
                 {
                     // By default, the analytics.js library plants its cookies on the top-level domain.
@@ -74,7 +81,7 @@ export function AnalyticsContextProvider({
         if (isTrackingAllowed) {
             loadAnalytics(segmentWriteKey || DEFAULT_WRITE_KEY);
         }
-    }, [segmentWriteKey, isTrackingAllowed, plugins]);
+    }, [segmentWriteKey, isTrackingAllowed, uuid, plugins]);
 
     useEffect(() => {
         if (typeof consent === 'boolean') {
