@@ -77,8 +77,9 @@ export function AnalyticsContextProvider({
                     cookie: {
                         domain: document.location.host,
                     },
-                    // If no Segment Write Key is provided, we initialize the library settings manually
+                    // Disable calls to Segment API completely if no Write Key is provided
                     ...(!writeKey && {
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
                         integrations: { 'Segment.io': false },
                     }),
                 },
