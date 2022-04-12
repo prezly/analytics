@@ -26,8 +26,6 @@ interface Props {
     plugins?: Plugin[];
 }
 
-const DEFAULT_WRITE_KEY = 'CwFkH8UbR05ByZJwLNvGzjwFr4DxGAUh';
-
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
 export function useAnalyticsContext() {
@@ -61,6 +59,12 @@ export function AnalyticsContextProvider({
             const [response] = await AnalyticsBrowser.load(
                 {
                     writeKey,
+                    // If no Segment Write Key is provided, we initialize the library settings manually
+                    ...(!writeKey && {
+                        cdnSettings: {
+                            integrations: {},
+                        },
+                    }),
                     plugins: [
                         injectPrezlyMetaPlugin(),
                         sendEventToPrezlyPlugin(uuid),
@@ -73,13 +77,17 @@ export function AnalyticsContextProvider({
                     cookie: {
                         domain: document.location.host,
                     },
+                    // If no Segment Write Key is provided, we initialize the library settings manually
+                    ...(!writeKey && {
+                        integrations: { 'Segment.io': false },
+                    }),
                 },
             );
             setAnalytics(response);
         }
 
         if (isTrackingAllowed) {
-            loadAnalytics(segmentWriteKey || DEFAULT_WRITE_KEY);
+            loadAnalytics(segmentWriteKey || '');
         }
     }, [segmentWriteKey, isTrackingAllowed, uuid, plugins]);
 
