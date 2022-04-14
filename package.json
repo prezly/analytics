@@ -15,7 +15,7 @@
     "check": "npm run lint && npm run typecheck && npm run test",
     "release": "npm run release:prepare && npm run release:publish",
     "release:preview": "npm run release:prepare && npm run release:publish:preview",
-    "release:prepare": "npm run check && npm run build",
+    "release:prepare": "npm run check",
     "release:publish": "lerna publish",
     "release:publish:preview": "lerna publish --npm-tag preview --skip-git"
   },
