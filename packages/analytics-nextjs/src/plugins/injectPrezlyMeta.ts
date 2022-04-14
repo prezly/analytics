@@ -1,19 +1,19 @@
 import type { Context, Plugin } from '@segment/analytics-next';
 
+const META_PREFIX = 'prezly:';
+
 export function injectPrezlyMetaPlugin(): Plugin {
     function apply(ctx: Context) {
-        const metas: HTMLMetaElement[] = Array.prototype.slice
-            .call(document.getElementsByTagName('meta'))
-            .filter((meta) => meta.name.substr(0, 7) === 'prezly:');
-
         // Get "prezly:" meta tags contents, map them by name
-        const metasContent = metas.reduce<Record<string, string>>(
-            (props, meta) => ({
-                ...props,
-                [meta.name.substring(7).replace(/[-:]/g, '_')]: meta.content,
-            }),
-            {},
-        );
+        const metasContent = Array.from(document.getElementsByTagName('meta'))
+            .filter((meta) => meta.name.startsWith(META_PREFIX))
+            .reduce<Record<string, string>>(
+                (props, meta) => ({
+                    ...props,
+                    [meta.name.replace(META_PREFIX, '').replace(/[-:]/g, '_')]: meta.content,
+                }),
+                {},
+            );
 
         // {
         //   prezly: { newsroom: 'xxxx-xxxx-xxxxxxxx', story?: 'xxxx-xxxx-xxxxxxxx' }
