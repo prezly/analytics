@@ -1,5 +1,7 @@
 import type { Context, Plugin } from '@segment/analytics-next';
 
+import { version } from '../version';
+
 const META_PREFIX = 'prezly:';
 
 export function injectPrezlyMetaPlugin(): Plugin {
@@ -26,8 +28,7 @@ export function injectPrezlyMetaPlugin(): Plugin {
     return {
         name: 'Inject Prezly Meta',
         type: 'enrichment',
-        // TODO: Sync with package version
-        version: '0.1.0',
+        version,
 
         isLoaded: () => true,
         load: () => Promise.resolve(),

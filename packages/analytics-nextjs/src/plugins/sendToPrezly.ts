@@ -1,6 +1,7 @@
 import type { Context, Plugin, SegmentEvent } from '@segment/analytics-next';
 
 import { getApiUrl } from '../lib';
+import { version } from '../version';
 
 const ENDPOINTS_BY_TYPE: Record<SegmentEvent['type'], string | null> = {
     alias: '/track/a',
@@ -35,8 +36,7 @@ export function sendEventToPrezlyPlugin(newsroomUuid: string): Plugin {
     return {
         name: 'Send events to Prezly Analytics',
         type: 'after',
-        // TODO: Sync with package version
-        version: '0.1.0',
+        version,
 
         isLoaded: () => true,
         load: () => Promise.resolve(),

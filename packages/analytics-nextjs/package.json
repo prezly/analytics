@@ -5,7 +5,9 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "prebuild": "rimraf build/* *.tsbuildinfo",
+    "clean": "rimraf build/* *.tsbuildinfo",
+    "version": "echo \"export const version = '\"$npm_package_version\"';\" > src/version.ts",
+    "prebuild": "npm run clean && npm run version",
     "build": "tsc --project .",
     "lint": "eslint ./src --ext=.ts,.tsx",
     "test": "echo \"Tests? maybe next time ;)\" && exit 0"
