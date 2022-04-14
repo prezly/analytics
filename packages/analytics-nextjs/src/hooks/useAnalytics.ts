@@ -10,6 +10,8 @@ const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
 export function useAnalytics() {
     const { analytics, consent, isEnabled, newsroom, trackingPolicy } = useAnalyticsContext();
+    // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
+    // which would not be possible when passing the `analytics` object directly
     const analyticsRef = useLatest(analytics);
     const [deferredIdentity, setDeferredIdentity, removeDeferredIdentity] =
         useLocalStorage<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
@@ -53,57 +55,73 @@ export function useAnalytics() {
             }
 
             addToQueue(() => {
-                if (analytics && analytics.identify) {
-                    analytics.identify(userId, traits, buildOptions(), callback);
+                if (analyticsRef.current && analyticsRef.current.identify) {
+                    analyticsRef.current.identify(userId, traits, buildOptions(), callback);
                 }
             });
         },
-        [analytics, addToQueue, buildOptions, consent, setDeferredIdentity, trackingPolicy],
+        // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
+        // Please be cautious about the dependencies for this callback!
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [addToQueue, buildOptions, consent, setDeferredIdentity, trackingPolicy],
     );
 
-    function alias(userId: string, previousId: string) {
-        if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
-            console.log(`analytics.alias(${stringify(userId, previousId)})`);
-        }
-
-        addToQueue(() => {
-            if (analytics && analytics.alias) {
-                analytics.alias(userId, previousId, buildOptions());
+    const alias = useCallback(
+        (userId: string, previousId: string) => {
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.log(`analytics.alias(${stringify(userId, previousId)})`);
             }
-        });
-    }
 
-    function page(
-        category?: string,
-        name?: string,
-        properties: object = {},
-        callback?: () => void,
-    ) {
-        if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
-            console.log(`analytics.page(${stringify(category, name, properties)})`);
-        }
+            addToQueue(() => {
+                if (analyticsRef.current && analyticsRef.current.alias) {
+                    analyticsRef.current.alias(userId, previousId, buildOptions());
+                }
+            });
+        },
+        // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
+        // Please be cautious about the dependencies for this callback!
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [addToQueue, buildOptions],
+    );
 
-        addToQueue(() => {
-            if (analyticsRef.current && analyticsRef.current.page) {
-                analyticsRef.current.page(category, name, properties, buildOptions(), callback);
+    const page = useCallback(
+        (category?: string, name?: string, properties: object = {}, callback?: () => void) => {
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.log(`analytics.page(${stringify(category, name, properties)})`);
             }
-        });
-    }
 
-    function track(event: string, properties: object = {}, callback?: () => void) {
-        if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
-            console.log(`analytics.track(${stringify(event, properties)})`);
-        }
+            addToQueue(() => {
+                if (analyticsRef.current && analyticsRef.current.page) {
+                    analyticsRef.current.page(category, name, properties, buildOptions(), callback);
+                }
+            });
+        },
+        // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
+        // Please be cautious about the dependencies for this callback!
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [addToQueue, buildOptions],
+    );
 
-        addToQueue(() => {
-            if (analyticsRef.current && analyticsRef.current.track) {
-                analyticsRef.current.track(event, properties, buildOptions(), callback);
+    const track = useCallback(
+        (event: string, properties: object = {}, callback?: () => void) => {
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.log(`analytics.track(${stringify(event, properties)})`);
             }
-        });
-    }
+
+            addToQueue(() => {
+                if (analyticsRef.current && analyticsRef.current.track) {
+                    analyticsRef.current.track(event, properties, buildOptions(), callback);
+                }
+            });
+        },
+        // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
+        // Please be cautious about the dependencies for this callback!
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [addToQueue, buildOptions],
+    );
 
     const user = useCallback(() => {
         if (analytics && analytics.user) {
