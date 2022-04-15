@@ -6,7 +6,7 @@
   "types": "build/index.d.ts",
   "scripts": {
     "clean": "rimraf build/* *.tsbuildinfo",
-    "version:output": "echo \"export const version = '\"$npm_package_version\"';\" > src/version.ts",
+    "version:output": "echo \"export const version = '\"$npm_package_version\"';\" > src/version.ts && git add src/version.ts",
     "prebuild": "npm run clean && npm run version:output",
     "version": "npm run build",
     "build": "tsc --project .",
