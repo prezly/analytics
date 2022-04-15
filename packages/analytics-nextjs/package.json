@@ -1,6 +1,6 @@
 {
   "name": "@prezly/analytics-nextjs",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Prezly Analytics package for Next.js",
   "main": "build/index.js",
   "types": "build/index.d.ts",
