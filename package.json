@@ -15,7 +15,7 @@
     "check": "npm run lint && npm run typecheck && npm run test",
     "release": "npm run release:prepare && npm run release:publish",
     "release:preview": "npm run release:prepare && npm run release:publish:preview",
-    "release:prepare": "npm run check && npm run build",
+    "release:prepare": "npm run check",
     "release:publish": "lerna publish",
     "release:publish:preview": "lerna publish --npm-tag preview --skip-git"
   },
@@ -29,9 +29,7 @@
     "url": "https://github.com/prezly/analytics/issues"
   },
   "homepage": "https://github.com/prezly/analytics#readme",
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "engines": {
     "node": ">= 14.x",
     "npm": ">= 7.x"
@@ -51,6 +49,7 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
+    "@prezly/sdk": "^6.21.0",
     "next": "^12.1.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

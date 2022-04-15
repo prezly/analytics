@@ -1,6 +1,5 @@
 export * from './cookieState';
-export * from './createAnalyticsStub';
-export * from './getAnalyticsJsUrl';
+export * from './getApiUrl';
 export * from './getAssetClickEvent';
 export * from './getRecipientInfo';
 export * from './isPrezlyTrackingAllowed';

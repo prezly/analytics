@@ -1,21 +1,17 @@
 import type { Newsroom, Story } from '@prezly/sdk';
 import { TrackingPolicy } from '@prezly/sdk';
+import type { Analytics, Plugin } from '@segment/analytics-next';
+import { AnalyticsBrowser } from '@segment/analytics-next';
 import Head from 'next/head';
-import Script from 'next/script';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import {
-    createAnalyticsStub,
-    getAnalyticsJsUrl,
-    getConsentCookie,
-    isPrezlyTrackingAllowed,
-    setConsentCookie,
-} from './lib';
+import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
+import { injectPrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 
 interface Context {
+    analytics: Analytics | undefined;
     consent: boolean | null;
-    isAnalyticsReady: boolean;
     isEnabled: boolean;
     isTrackingAllowed: boolean | null;
     newsroom: Newsroom;
@@ -27,6 +23,7 @@ interface Props {
     isEnabled?: boolean;
     newsroom: Newsroom;
     story: Story | undefined;
+    plugins?: Plugin[];
 }
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
@@ -45,16 +42,55 @@ export function AnalyticsContextProvider({
     isEnabled = true,
     newsroom,
     story,
+    plugins,
 }: PropsWithChildren<Props>) {
-    const { uuid, tracking_policy: trackingPolicy } = newsroom;
-    const [isAnalyticsReady, setAnalyticsReady] = useState(false);
+    const {
+        tracking_policy: trackingPolicy,
+        segment_analytics_id: segmentWriteKey,
+        uuid,
+    } = newsroom;
     const [consent, setConsent] = useState(getConsentCookie());
+    const isTrackingAllowed = isEnabled && isPrezlyTrackingAllowed(consent, newsroom);
+
+    const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
     useEffect(() => {
-        if (trackingPolicy === TrackingPolicy.DISABLED) {
-            window.analytics = createAnalyticsStub();
+        async function loadAnalytics(writeKey: string) {
+            const [response] = await AnalyticsBrowser.load(
+                {
+                    writeKey,
+                    // If no Segment Write Key is provided, we initialize the library settings manually
+                    ...(!writeKey && {
+                        cdnSettings: {
+                            integrations: {},
+                        },
+                    }),
+                    plugins: [
+                        injectPrezlyMetaPlugin(),
+                        sendEventToPrezlyPlugin(uuid),
+                        ...(plugins || []),
+                    ],
+                },
+                {
+                    // By default, the analytics.js library plants its cookies on the top-level domain.
+                    // We need to completely isolate tracking between any Prezly newsroom hosted on a .prezly.com subdomain.
+                    cookie: {
+                        domain: document.location.host,
+                    },
+                    // Disable calls to Segment API completely if no Write Key is provided
+                    ...(!writeKey && {
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        integrations: { 'Segment.io': false },
+                    }),
+                },
+            );
+            setAnalytics(response);
         }
-    });
+
+        if (isTrackingAllowed) {
+            loadAnalytics(segmentWriteKey || '');
+        }
+    }, [segmentWriteKey, isTrackingAllowed, uuid, plugins]);
 
     useEffect(() => {
         if (typeof consent === 'boolean') {
@@ -65,29 +101,22 @@ export function AnalyticsContextProvider({
     return (
         <AnalyticsContext.Provider
             value={{
+                analytics,
                 consent,
-                isAnalyticsReady,
                 isEnabled,
-                isTrackingAllowed: isEnabled && isPrezlyTrackingAllowed(consent, newsroom),
+                isTrackingAllowed,
                 newsroom,
                 setConsent,
-                trackingPolicy: newsroom.tracking_policy,
+                trackingPolicy,
             }}
         >
             <Head>
                 <meta name="prezly:newsroom" content={newsroom.uuid} />
                 {story && <meta name="prezly:story" content={story.uuid} />}
-                {newsroom.tracking_policy !== TrackingPolicy.DEFAULT && (
-                    <meta name="prezly:tracking_policy" content={newsroom.tracking_policy} />
+                {trackingPolicy !== TrackingPolicy.DEFAULT && (
+                    <meta name="prezly:tracking_policy" content={trackingPolicy} />
                 )}
             </Head>
-            {trackingPolicy !== TrackingPolicy.DISABLED && (
-                <Script
-                    key="prezly-analytics"
-                    onLoad={() => setAnalyticsReady(true)}
-                    src={getAnalyticsJsUrl(uuid)}
-                />
-            )}
             {children}
         </AnalyticsContext.Provider>
     );
