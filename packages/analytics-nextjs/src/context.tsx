@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import type { TrackingPolicy } from './lib';
 import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
-import { injectPrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
+import { sendEventToPrezlyPlugin } from './plugins';
 
 interface Context {
     analytics: Analytics | undefined;
@@ -65,11 +65,7 @@ export function AnalyticsContextProvider({
                             integrations: {},
                         },
                     }),
-                    plugins: [
-                        injectPrezlyMetaPlugin(),
-                        sendEventToPrezlyPlugin(uuid),
-                        ...(plugins || []),
-                    ],
+                    plugins: [sendEventToPrezlyPlugin(uuid), ...(plugins || [])],
                 },
                 {
                     // By default, the analytics.js library plants its cookies on the top-level domain.
