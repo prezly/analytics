@@ -1,11 +1,11 @@
 import type { Newsroom, Story } from '@prezly/sdk';
 import type { Analytics, Plugin } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
-import Head from 'next/head';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie, TrackingPolicy } from './lib';
+import type { TrackingPolicy } from './lib';
+import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
 import { injectPrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 
 interface Context {
@@ -14,6 +14,7 @@ interface Context {
     isEnabled: boolean;
     isTrackingAllowed: boolean | null;
     newsroom: Newsroom;
+    story?: Story;
     setConsent: (consent: boolean) => void;
     trackingPolicy: TrackingPolicy;
 }
@@ -105,17 +106,11 @@ export function AnalyticsContextProvider({
                 isEnabled,
                 isTrackingAllowed,
                 newsroom,
+                story,
                 setConsent,
                 trackingPolicy,
             }}
         >
-            <Head>
-                <meta name="prezly:newsroom" content={newsroom.uuid} />
-                {story && <meta name="prezly:story" content={story.uuid} />}
-                {trackingPolicy !== TrackingPolicy.DEFAULT && (
-                    <meta name="prezly:tracking_policy" content={trackingPolicy} />
-                )}
-            </Head>
             {children}
         </AnalyticsContext.Provider>
     );

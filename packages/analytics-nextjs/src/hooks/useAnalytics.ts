@@ -3,12 +3,16 @@ import { useLatest, useLocalStorage, useQueue } from 'react-use';
 
 import { useAnalyticsContext } from '../context';
 import { stringify, TrackingPolicy } from '../lib';
-import type { DeferredIdentity } from '../types';
+import type { DeferredIdentity, PrezlyMeta } from '../types';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
 export function useAnalytics() {
-    const { analytics, consent, isEnabled, newsroom, trackingPolicy } = useAnalyticsContext();
+    const { analytics, consent, isEnabled, newsroom, story, trackingPolicy } =
+        useAnalyticsContext();
+    const { uuid: newsroomUuid } = newsroom;
+    const { uuid: storyUuid } = story || { uuid: undefined };
+
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
     // which would not be possible when passing the `analytics` object directly
     const analyticsRef = useLatest(analytics);
@@ -37,15 +41,35 @@ export function useAnalytics() {
         };
     }, [consent]);
 
+    const injectPrezlyMeta = useCallback(
+        (traits: object) => {
+            const extendedTraits = <object & PrezlyMeta>traits;
+            extendedTraits.prezly = {
+                newsroom: newsroomUuid,
+                ...(storyUuid && {
+                    story: storyUuid,
+                }),
+                ...(trackingPolicy !== TrackingPolicy.DEFAULT && {
+                    tracking_policy: trackingPolicy,
+                }),
+            };
+
+            return extendedTraits;
+        },
+        [newsroomUuid, storyUuid, trackingPolicy],
+    );
+
     const identify = useCallback(
         (userId: string, traits: object = {}, callback?: () => void) => {
+            const extendedTraits = injectPrezlyMeta(traits);
+
             if (process.env.NODE_ENV !== 'production') {
                 // eslint-disable-next-line no-console
-                console.log(`analytics.identify(${stringify(userId, traits)})`);
+                console.log(`analytics.identify(${stringify(userId, extendedTraits)})`);
             }
 
             if (trackingPolicy === TrackingPolicy.CONSENT_TO_IDENTIFY && !consent) {
-                setDeferredIdentity({ userId, traits });
+                setDeferredIdentity({ userId, traits: extendedTraits });
                 if (callback) {
                     callback();
                 }
@@ -55,14 +79,14 @@ export function useAnalytics() {
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.identify) {
-                    analyticsRef.current.identify(userId, traits, buildOptions(), callback);
+                    analyticsRef.current.identify(userId, extendedTraits, buildOptions(), callback);
                 }
             });
         },
         // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
         // Please be cautious about the dependencies for this callback!
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addToQueue, buildOptions, consent, setDeferredIdentity, trackingPolicy],
+        [addToQueue, buildOptions, consent, setDeferredIdentity, trackingPolicy, injectPrezlyMeta],
     );
 
     const alias = useCallback(
@@ -86,40 +110,50 @@ export function useAnalytics() {
 
     const page = useCallback(
         (category?: string, name?: string, properties: object = {}, callback?: () => void) => {
+            const extendedProperties = injectPrezlyMeta(properties);
+
             if (process.env.NODE_ENV !== 'production') {
                 // eslint-disable-next-line no-console
-                console.log(`analytics.page(${stringify(category, name, properties)})`);
+                console.log(`analytics.page(${stringify(category, name, extendedProperties)})`);
             }
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.page) {
-                    analyticsRef.current.page(category, name, properties, buildOptions(), callback);
+                    analyticsRef.current.page(
+                        category,
+                        name,
+                        extendedProperties,
+                        buildOptions(),
+                        callback,
+                    );
                 }
             });
         },
         // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
         // Please be cautious about the dependencies for this callback!
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addToQueue, buildOptions],
+        [addToQueue, buildOptions, injectPrezlyMeta],
     );
 
     const track = useCallback(
         (event: string, properties: object = {}, callback?: () => void) => {
+            const extendedProperties = injectPrezlyMeta(properties);
+
             if (process.env.NODE_ENV !== 'production') {
                 // eslint-disable-next-line no-console
-                console.log(`analytics.track(${stringify(event, properties)})`);
+                console.log(`analytics.track(${stringify(event, extendedProperties)})`);
             }
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.track) {
-                    analyticsRef.current.track(event, properties, buildOptions(), callback);
+                    analyticsRef.current.track(event, extendedProperties, buildOptions(), callback);
                 }
             });
         },
         // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
         // Please be cautious about the dependencies for this callback!
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addToQueue, buildOptions],
+        [addToQueue, buildOptions, injectPrezlyMeta],
     );
 
     const user = useCallback(() => {
