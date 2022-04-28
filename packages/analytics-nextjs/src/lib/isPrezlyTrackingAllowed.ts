@@ -1,5 +1,6 @@
 import type { Newsroom } from '@prezly/sdk';
-import { TrackingPolicy } from '@prezly/sdk';
+
+import { TrackingPolicy } from '../types';
 
 import { isNavigatorTrackingAllowed } from './isNavigatorTrackingAllowed';
 

@@ -1,5 +1,4 @@
 import type { Newsroom, Story } from '@prezly/sdk';
-import { TrackingPolicy } from '@prezly/sdk';
 import type { Analytics, Plugin } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import Head from 'next/head';
@@ -8,6 +7,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
 import { injectPrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
+import { TrackingPolicy } from './types';
 
 interface Context {
     analytics: Analytics | undefined;
