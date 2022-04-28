@@ -4,9 +4,9 @@ import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import type { TrackingPolicy } from './lib';
 import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
 import { sendEventToPrezlyPlugin } from './plugins';
+import type { TrackingPolicy } from './types';
 
 interface Context {
     analytics: Analytics | undefined;
