@@ -43,9 +43,9 @@ export function useAnalytics() {
     }, [consent]);
 
     const injectPrezlyMeta = useCallback(
-        (traits: object) => {
-            const extendedTraits = <object & PrezlyMeta>traits;
-            extendedTraits.prezly = {
+        (traits: object): object & PrezlyMeta => ({
+            ...traits,
+            prezly: {
                 newsroom: newsroomUuid,
                 ...(storyUuid && {
                     story: storyUuid,
@@ -53,10 +53,8 @@ export function useAnalytics() {
                 ...(trackingPolicy !== TrackingPolicy.DEFAULT && {
                     tracking_policy: trackingPolicy,
                 }),
-            };
-
-            return extendedTraits;
-        },
+            },
+        }),
         [newsroomUuid, storyUuid, trackingPolicy],
     );
 
