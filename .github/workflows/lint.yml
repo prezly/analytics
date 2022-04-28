@@ -1,4 +1,4 @@
-name: Prettier
+name: Lint
 
 on: [push]
 
@@ -30,5 +30,9 @@ jobs:
     - run: npm ci
 
     - run: npm run prettier
+      env:
+        CI: true
+    
+    - run: npm run lint
       env:
         CI: true
