@@ -4,6 +4,16 @@ import { version } from '../version';
 
 const META_PREFIX = 'prezly:';
 
+/**
+ * This plugin is inteded to be used on vanilla JS applications.
+ * It depends on presence of specific <meta> tags with `prezly:` name prefix in the <head> of the document.
+ * Example in JSX:
+ *  <meta name="prezly:newsroom" content={newsroom.uuid} />
+    {story && <meta name="prezly:story" content={story.uuid} />}
+    {trackingPolicy !== TrackingPolicy.DEFAULT && (
+        <meta name="prezly:tracking_policy" content={trackingPolicy} />
+    )}
+ */
 export function injectPrezlyMetaPlugin(): Plugin {
     function apply(ctx: Context) {
         // Get "prezly:" meta tags contents, map them by name

@@ -1,13 +1,12 @@
 import type { Newsroom, Story } from '@prezly/sdk';
 import type { Analytics, Plugin } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
-import Head from 'next/head';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
-import { injectPrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
-import { TrackingPolicy } from './types';
+import { sendEventToPrezlyPlugin } from './plugins';
+import type { TrackingPolicy } from './types';
 
 interface Context {
     analytics: Analytics | undefined;
@@ -15,6 +14,7 @@ interface Context {
     isEnabled: boolean;
     isTrackingAllowed: boolean | null;
     newsroom: Newsroom;
+    story?: Story;
     setConsent: (consent: boolean) => void;
     trackingPolicy: TrackingPolicy;
 }
@@ -65,11 +65,7 @@ export function AnalyticsContextProvider({
                             integrations: {},
                         },
                     }),
-                    plugins: [
-                        injectPrezlyMetaPlugin(),
-                        sendEventToPrezlyPlugin(uuid),
-                        ...(plugins || []),
-                    ],
+                    plugins: [sendEventToPrezlyPlugin(uuid), ...(plugins || [])],
                 },
                 {
                     // By default, the analytics.js library plants its cookies on the top-level domain.
@@ -106,17 +102,11 @@ export function AnalyticsContextProvider({
                 isEnabled,
                 isTrackingAllowed,
                 newsroom,
+                story,
                 setConsent,
                 trackingPolicy,
             }}
         >
-            <Head>
-                <meta name="prezly:newsroom" content={newsroom.uuid} />
-                {story && <meta name="prezly:story" content={story.uuid} />}
-                {trackingPolicy !== TrackingPolicy.DEFAULT && (
-                    <meta name="prezly:tracking_policy" content={trackingPolicy} />
-                )}
-            </Head>
             {children}
         </AnalyticsContext.Provider>
     );

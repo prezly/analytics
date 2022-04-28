@@ -15,3 +15,11 @@ export enum TrackingPolicy {
     DISABLED = 'disabled',
     CONSENT_TO_IDENTIFY = 'consent-to-identify',
 }
+
+export interface PrezlyMeta {
+    prezly: {
+        newsroom: string;
+        story?: string;
+        tracking_policy?: TrackingPolicy;
+    };
+}
