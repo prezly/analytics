@@ -5,8 +5,9 @@ import Head from 'next/head';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie, TrackingPolicy } from './lib';
+import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
 import { injectPrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
+import { TrackingPolicy } from './types';
 
 interface Context {
     analytics: Analytics | undefined;

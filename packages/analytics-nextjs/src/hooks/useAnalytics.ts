@@ -2,8 +2,8 @@ import { useCallback, useEffect } from 'react';
 import { useLatest, useLocalStorage, useQueue } from 'react-use';
 
 import { useAnalyticsContext } from '../context';
-import { stringify, TrackingPolicy } from '../lib';
-import type { DeferredIdentity } from '../types';
+import { stringify } from '../lib';
+import { type DeferredIdentity, TrackingPolicy } from '../types';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
