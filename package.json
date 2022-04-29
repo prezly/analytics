@@ -6,6 +6,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "npm run build -w packages/analytics-nextjs",
+    "watch": "concurrently --kill-others --names 'analytics-nextjs' 'npm run watch -w packages/analytics-nextjs'",
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint --workspaces -- --fix",
     "prettier": "prettier --check './packages/**/*.(js|ts|tsx)'",
@@ -45,6 +46,7 @@
     "@prezly/sdk": "^6.21.0",
     "@types/react": "^17.0.43",
     "@types/react-dom": "^17.0.14",
+    "concurrently": "^7.1.0",
     "eslint": "^8.8.0",
     "lerna": "^4.0.0",
     "prettier": "^2.6.2",

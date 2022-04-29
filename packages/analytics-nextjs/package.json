@@ -10,6 +10,7 @@
     "prebuild": "npm run clean && npm run version:output",
     "version": "npm run build",
     "build": "tsc --project .",
+    "watch": "tsc --watch --preserveWatchOutput --project .",
     "lint": "eslint ./src --ext=.ts,.tsx",
     "test": "echo \"Tests? maybe next time ;)\" && exit 0"
   },
