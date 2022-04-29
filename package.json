@@ -29,7 +29,9 @@
     "url": "https://github.com/prezly/analytics/issues"
   },
   "homepage": "https://github.com/prezly/analytics#readme",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "engines": {
     "node": ">= 14.x",
     "npm": ">= 7.x"
