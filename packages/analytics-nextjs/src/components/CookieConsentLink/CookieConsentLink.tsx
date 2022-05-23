@@ -19,7 +19,7 @@ export function CookieConsentLink({
 
     return (
         <button type="button" className={className} onClick={toggle}>
-            {isUserConsentGiven ? startUsingCookiesLabel : stopUsingCookiesLabel}
+            {isUserConsentGiven ? stopUsingCookiesLabel : startUsingCookiesLabel}
         </button>
     );
 }
