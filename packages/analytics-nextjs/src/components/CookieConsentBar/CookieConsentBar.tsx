@@ -1,3 +1,4 @@
+import { useAnalyticsContext } from '../../context';
 import { useCookieConsent } from '../../hooks';
 
 interface InjectedCookieConsentProps {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function CookieConsentBar({ children }: Props) {
+    const { isEnabled } = useAnalyticsContext();
     const {
         accept: onAccept,
         isUserConsentGiven,
@@ -17,7 +19,7 @@ export function CookieConsentBar({ children }: Props) {
         supportsCookie,
     } = useCookieConsent();
 
-    if (!supportsCookie || isUserConsentGiven !== null) {
+    if (!isEnabled || !supportsCookie || isUserConsentGiven !== null) {
         return null;
     }
 

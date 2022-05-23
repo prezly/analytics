@@ -55,7 +55,7 @@ export function AnalyticsContextProvider({
         uuid,
     } = newsroom;
     const [consent, setConsent] = useState(getConsentCookie());
-    const isUserConsentGiven = isEnabled && getUserTrackingConsent(consent, newsroom);
+    const isUserConsentGiven = getUserTrackingConsent(consent, newsroom);
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
