@@ -83,10 +83,10 @@ export function AnalyticsContextProvider({
             setAnalytics(response);
         }
 
-        if (isTrackingAllowed) {
+        if (isEnabled) {
             loadAnalytics(segmentWriteKey || '');
         }
-    }, [segmentWriteKey, isTrackingAllowed, uuid, plugins]);
+    }, [segmentWriteKey, isEnabled, uuid, plugins]);
 
     useEffect(() => {
         if (typeof consent === 'boolean') {
