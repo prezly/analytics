@@ -12,12 +12,12 @@ interface Props {
 export function CookieConsentBar({ children }: Props) {
     const {
         accept: onAccept,
-        isTrackingAllowed,
+        isUserConsentGiven,
         reject: onReject,
         supportsCookie,
     } = useCookieConsent();
 
-    if (!supportsCookie || isTrackingAllowed !== null) {
+    if (!supportsCookie || isUserConsentGiven !== null) {
         return null;
     }
 

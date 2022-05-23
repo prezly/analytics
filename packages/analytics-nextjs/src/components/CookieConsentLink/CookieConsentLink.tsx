@@ -11,7 +11,7 @@ export function CookieConsentLink({
     startUsingCookiesLabel = 'Start using cookies',
     stopUsingCookiesLabel = 'Stop using cookies',
 }: Props) {
-    const { isTrackingAllowed, supportsCookie, toggle } = useCookieConsent();
+    const { isUserConsentGiven, supportsCookie, toggle } = useCookieConsent();
 
     if (!supportsCookie) {
         return null;
@@ -19,7 +19,7 @@ export function CookieConsentLink({
 
     return (
         <button type="button" className={className} onClick={toggle}>
-            {isTrackingAllowed ? startUsingCookiesLabel : stopUsingCookiesLabel}
+            {isUserConsentGiven ? startUsingCookiesLabel : stopUsingCookiesLabel}
         </button>
     );
 }
