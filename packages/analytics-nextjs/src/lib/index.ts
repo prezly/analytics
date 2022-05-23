@@ -2,6 +2,6 @@ export * from './cookieState';
 export * from './getApiUrl';
 export * from './getAssetClickEvent';
 export * from './getRecipientInfo';
-export * from './isPrezlyTrackingAllowed';
+export * from './getUserTrackingConsent';
 export * from './stringify';
 export * from './urlParameters';

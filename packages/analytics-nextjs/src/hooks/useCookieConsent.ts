@@ -2,14 +2,19 @@ import { useAnalyticsContext } from '../context';
 
 interface State {
     accept: () => void;
-    isTrackingAllowed: boolean | null;
+    /**
+     * - TRUE  - user clicked "Allow"
+     * - FALSE - user clicked "Disallow" or browser "Do Not Track" is enabled
+     * - NULL  - user didn't click anything yet
+     */
+    isUserConsentGiven: boolean | null;
     reject: () => void;
     supportsCookie: boolean;
     toggle: () => void;
 }
 
 export function useCookieConsent(): State {
-    const { consent, isTrackingAllowed, setConsent } = useAnalyticsContext();
+    const { consent, isUserConsentGiven, setConsent } = useAnalyticsContext();
 
     function accept() {
         return setConsent(true);
@@ -23,7 +28,7 @@ export function useCookieConsent(): State {
 
     return {
         accept,
-        isTrackingAllowed,
+        isUserConsentGiven,
         reject,
         supportsCookie: typeof navigator !== 'undefined' && navigator.cookieEnabled,
         toggle,

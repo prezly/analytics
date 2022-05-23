@@ -4,7 +4,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { getConsentCookie, isPrezlyTrackingAllowed, setConsentCookie } from './lib';
+import { getConsentCookie, getUserTrackingConsent, setConsentCookie } from './lib';
 import { sendEventToPrezlyPlugin } from './plugins';
 import type { TrackingPolicy } from './types';
 
@@ -12,7 +12,12 @@ interface Context {
     analytics: Analytics | undefined;
     consent: boolean | null;
     isEnabled: boolean;
-    isTrackingAllowed: boolean | null;
+    /**
+     * - TRUE  - user clicked "Allow"
+     * - FALSE - user clicked "Disallow" or browser "Do Not Track" is enabled
+     * - NULL  - user didn't click anything yet
+     */
+    isUserConsentGiven: boolean | null;
     newsroom: Newsroom;
     story?: Story;
     setConsent: (consent: boolean) => void;
@@ -50,7 +55,7 @@ export function AnalyticsContextProvider({
         uuid,
     } = newsroom;
     const [consent, setConsent] = useState(getConsentCookie());
-    const isTrackingAllowed = isEnabled && isPrezlyTrackingAllowed(consent, newsroom);
+    const isUserConsentGiven = getUserTrackingConsent(consent, newsroom);
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
@@ -83,10 +88,10 @@ export function AnalyticsContextProvider({
             setAnalytics(response);
         }
 
-        if (isTrackingAllowed) {
+        if (isEnabled) {
             loadAnalytics(segmentWriteKey || '');
         }
-    }, [segmentWriteKey, isTrackingAllowed, uuid, plugins]);
+    }, [segmentWriteKey, isEnabled, uuid, plugins]);
 
     useEffect(() => {
         if (typeof consent === 'boolean') {
@@ -100,7 +105,7 @@ export function AnalyticsContextProvider({
                 analytics,
                 consent,
                 isEnabled,
-                isTrackingAllowed,
+                isUserConsentGiven,
                 newsroom,
                 story,
                 setConsent,

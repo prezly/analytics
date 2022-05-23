@@ -1,3 +1,4 @@
+import { useAnalyticsContext } from '../../context';
 import { useCookieConsent } from '../../hooks';
 
 interface Props {
@@ -11,15 +12,16 @@ export function CookieConsentLink({
     startUsingCookiesLabel = 'Start using cookies',
     stopUsingCookiesLabel = 'Stop using cookies',
 }: Props) {
-    const { isTrackingAllowed, supportsCookie, toggle } = useCookieConsent();
+    const { isEnabled } = useAnalyticsContext();
+    const { isUserConsentGiven, supportsCookie, toggle } = useCookieConsent();
 
-    if (!supportsCookie) {
+    if (!isEnabled || !supportsCookie) {
         return null;
     }
 
     return (
         <button type="button" className={className} onClick={toggle}>
-            {isTrackingAllowed ? startUsingCookiesLabel : stopUsingCookiesLabel}
+            {isUserConsentGiven ? stopUsingCookiesLabel : startUsingCookiesLabel}
         </button>
     );
 }

@@ -9,7 +9,7 @@ import { isNavigatorTrackingAllowed } from './isNavigatorTrackingAllowed';
  * - FALSE - user clicked "Disallow" or browser "Do Not Track" is enabled
  * - NULL  - user didn't click anything yet
  */
-export function isPrezlyTrackingAllowed(
+export function getUserTrackingConsent(
     consent: boolean | null,
     newsroom: Newsroom,
 ): boolean | null {
@@ -17,9 +17,8 @@ export function isPrezlyTrackingAllowed(
         return false;
     }
 
-    const isTrackingAllowed = consent;
-    if (isTrackingAllowed !== null) {
-        return isTrackingAllowed;
+    if (consent !== null) {
+        return consent;
     }
 
     if (isNavigatorTrackingAllowed() === false) {
