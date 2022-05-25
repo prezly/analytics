@@ -1,3 +1,4 @@
+import type { Options } from '@segment/analytics-next';
 import { useCallback, useEffect } from 'react';
 import { useLatest, useLocalStorage, useQueue } from 'react-use';
 
@@ -27,19 +28,23 @@ export function useAnalytics() {
     } = useQueue<Function>([]);
 
     const buildOptions = useCallback(() => {
-        const context: any = {
-            library: {
-                name: '@prezly/analytics-next',
-                version,
+        const options: Options = {
+            context: {
+                library: {
+                    name: '@prezly/analytics-next',
+                    version,
+                },
             },
+            // TODO: Legacy implementation also sends `sentAt` field in the root of the event, which is the same as `timestamp`. Need to check if any server logic depends on that.
+            timestamp: new Date(),
         };
 
         // Only inject user information when consent is given
         if (consent) {
-            context.userAgent = navigator.userAgent;
+            options.context!.userAgent = navigator.userAgent;
         }
 
-        return { context };
+        return options;
     }, [consent]);
 
     // The prezly traits should be placed in the root of the event when sent to the API.
