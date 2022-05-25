@@ -19,7 +19,7 @@ describe('getApiUrl', () => {
     });
 
     it('returns production URL when in production', () => {
-        // @ts-expect-error
+        // @ts-ignore
         process.env.NODE_ENV = 'production';
 
         expect(getApiUrl()).toBe('https://analytics.prezly.com');
