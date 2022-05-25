@@ -5,6 +5,7 @@ import { useAnalyticsContext } from '../context';
 import { stringify } from '../lib';
 import type { DeferredIdentity, PrezlyMeta } from '../types';
 import { TrackingPolicy } from '../types';
+import { version } from '../version';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
@@ -26,20 +27,19 @@ export function useAnalytics() {
     } = useQueue<Function>([]);
 
     const buildOptions = useCallback(() => {
-        if (consent) {
-            // No extra options
-            return {};
-        }
-
-        /**
-         * Mask IP address
-         * @see https://segment.com/docs/sources/website/analytics.js/#anonymizing-ip
-         */
-        return {
-            context: {
-                ip: '0.0.0.0',
+        const context: any = {
+            library: {
+                name: '@prezly/analytics-next',
+                version,
             },
         };
+
+        // Only inject user information when consent is given
+        if (consent) {
+            context.userAgent = navigator.userAgent;
+        }
+
+        return { context };
     }, [consent]);
 
     // The prezly traits should be placed in the root of the event when sent to the API.
