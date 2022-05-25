@@ -12,7 +12,7 @@
     "build": "tsc --project .",
     "watch": "tsc --watch --preserveWatchOutput --project .",
     "lint": "eslint ./src --ext=.ts,.tsx",
-    "test": "echo \"Tests? maybe next time ;)\" && exit 0"
+    "test": "jest"
   },
   "keywords": [],
   "repository": {
