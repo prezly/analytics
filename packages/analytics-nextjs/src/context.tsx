@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { getConsentCookie, getUserTrackingConsent, setConsentCookie } from './lib';
 import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
-import type { TrackingPolicy } from './types';
+import { TrackingPolicy } from './types';
 
 interface Context {
     analytics: Analytics | undefined;
@@ -92,10 +92,10 @@ export function AnalyticsContextProvider({
             setAnalytics(response);
         }
 
-        if (isEnabled) {
+        if (isEnabled && trackingPolicy !== TrackingPolicy.DISABLED) {
             loadAnalytics(segmentWriteKey || '');
         }
-    }, [segmentWriteKey, isEnabled, uuid, plugins]);
+    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins]);
 
     useEffect(() => {
         if (typeof consent === 'boolean') {

@@ -215,7 +215,7 @@ export function useAnalytics() {
         }
     }, [consent, deferredIdentity, identify, user, removeDeferredIdentity, setDeferredIdentity]);
 
-    if (!isEnabled) {
+    if (!isEnabled || trackingPolicy === TrackingPolicy.DISABLED) {
         return {
             alias: () => {},
             identify: () => {},
