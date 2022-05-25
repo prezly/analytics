@@ -42,6 +42,8 @@ export function useAnalytics() {
         };
     }, [consent]);
 
+    // The prezly traits should be placed in the root of the event when sent to the API.
+    // This is handled by the `normalizePrezlyMeta` plugin.
     const injectPrezlyMeta = useCallback(
         (traits: object): object & PrezlyMeta => ({
             ...traits,
