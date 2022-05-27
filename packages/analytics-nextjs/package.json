@@ -31,9 +31,9 @@
     "react-dom": "^17.x"
   },
   "dependencies": {
+    "@react-hookz/web": "^14.2.2",
     "@segment/analytics-next": "^1.35.0",
-    "js-cookie": "^3.0.1",
-    "react-use": "^17.3.2"
+    "js-cookie": "^3.0.1"
   },
   "devDependencies": {
     "@prezly/sdk": "^6.21.0",
