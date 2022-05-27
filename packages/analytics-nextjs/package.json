@@ -1,6 +1,6 @@
 {
   "name": "@prezly/analytics-nextjs",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Prezly Analytics package for Next.js",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -36,11 +36,11 @@
     "react-use": "^17.3.2"
   },
   "devDependencies": {
+    "@prezly/sdk": "^6.21.0",
     "@types/js-cookie": "^3.0.1",
     "@types/node": "^17.0.29",
     "@types/react": "^17.0.43",
-    "@types/react-dom": "^17.0.14",
-    "@prezly/sdk": "^6.21.0"
+    "@types/react-dom": "^17.0.14"
   },
   "publishConfig": {
     "access": "public"
