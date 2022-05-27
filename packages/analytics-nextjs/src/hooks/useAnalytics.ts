@@ -1,10 +1,12 @@
+import type { Options } from '@segment/analytics-next';
 import { useCallback, useEffect } from 'react';
 import { useLatest, useLocalStorage, useQueue } from 'react-use';
 
 import { useAnalyticsContext } from '../context';
-import { stringify } from '../lib';
-import type { DeferredIdentity, PrezlyMeta } from '../types';
+import { getUrlParameters, stringify } from '../lib';
+import type { DeferredIdentity, PrezlyEventOptions, PrezlyMeta } from '../types';
 import { TrackingPolicy } from '../types';
+import { version } from '../version';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
@@ -26,22 +28,41 @@ export function useAnalytics() {
     } = useQueue<Function>([]);
 
     const buildOptions = useCallback(() => {
+        const utm = getUrlParameters('utm_');
+        const id = utm.get('id');
+        const source = utm.get('source');
+        const medium = utm.get('medium');
+
+        const options: PrezlyEventOptions = {
+            context: {
+                library: {
+                    name: '@prezly/analytics-next',
+                    version,
+                },
+                ...(medium === 'campaign' &&
+                    source &&
+                    id && {
+                        campaign: {
+                            id,
+                            source,
+                            medium,
+                        },
+                    }),
+            },
+            // TODO: Legacy implementation also sends `sentAt` field in the root of the event, which is the same as `timestamp`. Need to check if any server logic depends on that.
+            timestamp: new Date(),
+        };
+
+        // Only inject user information when consent is given
         if (consent) {
-            // No extra options
-            return {};
+            options.context!.userAgent = navigator.userAgent;
         }
 
-        /**
-         * Mask IP address
-         * @see https://segment.com/docs/sources/website/analytics.js/#anonymizing-ip
-         */
-        return {
-            context: {
-                ip: '0.0.0.0',
-            },
-        };
+        return options as Options;
     }, [consent]);
 
+    // The prezly traits should be placed in the root of the event when sent to the API.
+    // This is handled by the `normalizePrezlyMeta` plugin.
     const injectPrezlyMeta = useCallback(
         (traits: object): object & PrezlyMeta => ({
             ...traits,
@@ -194,7 +215,7 @@ export function useAnalytics() {
         }
     }, [consent, deferredIdentity, identify, user, removeDeferredIdentity, setDeferredIdentity]);
 
-    if (!isEnabled) {
+    if (!isEnabled || trackingPolicy === TrackingPolicy.DISABLED) {
         return {
             alias: () => {},
             identify: () => {},
