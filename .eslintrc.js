@@ -5,4 +5,5 @@ module.exports = {
         project: ['./tsconfig.json', './packages/*/tsconfig.json'],
     },
     rules: {},
+    ignorePatterns: ['**/*.test.*'],
 };
