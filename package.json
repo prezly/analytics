@@ -51,6 +51,8 @@
     "eslint": "^8.8.0",
     "jest": "^28.1.0",
     "jest-environment-jsdom": "^28.1.0",
+    "jest-fetch-mock": "^3.0.3",
+    "jest-location-mock": "^1.0.9",
     "lerna": "^4.0.0",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",

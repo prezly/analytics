@@ -2,8 +2,8 @@ import Cookie from 'js-cookie';
 
 import { getCookieConsentDomain } from './getCookieConsentDomain';
 
-const COOKIE_NAME = 'consent';
-const COOKIE_EXPIRATION = 365; // in days
+export const COOKIE_NAME = 'consent';
+export const COOKIE_EXPIRATION = 365; // in days
 
 export function getConsentCookie(): boolean | null {
     const value = Cookie.get(COOKIE_NAME);

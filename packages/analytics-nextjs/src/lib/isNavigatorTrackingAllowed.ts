@@ -3,6 +3,7 @@
  * - FALSE if tracking is disallowed
  * - NULL for "default" or "no preference"
  *
+ * TODO: This property is marked as deprecated. Probably worth removing the `doNotTrack` check altogether
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Navigator/doNotTrack
  */
 export function isNavigatorTrackingAllowed(): boolean | null {
@@ -17,7 +18,7 @@ export function isNavigatorTrackingAllowed(): boolean | null {
 
     const doNotTrack =
         // @ts-expect-error
-        window.doNotTrack || window.navigator.doNotTrack || window.navigator.msDoNotTrack;
+        window.navigator.doNotTrack || window.doNotTrack || window.navigator.msDoNotTrack;
 
     if (doNotTrack === '1') {
         // do not track = enabled --> tracking is not allowed
