@@ -1,7 +1,7 @@
+import { usePrevious, useSyncedRef } from '@react-hookz/web';
 import { useRouter } from 'next/router';
 import Script from 'next/script';
 import { useEffect } from 'react';
-import { useEffectOnce, useLatest, usePrevious } from 'react-use';
 
 import { CAMPAIGN } from '../events';
 import { useAnalytics } from '../hooks';
@@ -15,10 +15,10 @@ import {
 
 export function Analytics() {
     const { alias, identify, newsroom, page, track, user } = useAnalytics();
-    const aliasRef = useLatest(alias);
-    const identifyRef = useLatest(identify);
-    const trackRef = useLatest(track);
-    const userRef = useLatest(user);
+    const aliasRef = useSyncedRef(alias);
+    const identifyRef = useSyncedRef(identify);
+    const trackRef = useSyncedRef(track);
+    const userRef = useSyncedRef(user);
     const { asPath: currentPath } = useRouter();
     const previousPath = usePrevious(currentPath);
 
@@ -28,7 +28,7 @@ export function Analytics() {
         }
     }, [currentPath, page, previousPath]);
 
-    useEffectOnce(() => {
+    useEffect(() => {
         const userId = userRef.current().id();
         const utm = getUrlParameters('utm_');
         const id = utm.get('id');
@@ -67,9 +67,12 @@ export function Analytics() {
                     console.error(error);
                 });
         }
-    });
+        // NOTE: ESLint doesn't recognize the return of `useLatest` as mutable ref.
+        // Be cautious to not add any other dependencies here.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    useEffectOnce(() => {
+    useEffect(() => {
         const asset = getUrlParameters('asset_');
         const id = asset.get('id');
         const type = asset.get('type');
@@ -94,7 +97,10 @@ export function Analytics() {
                 }
             }, delay);
         }
-    });
+        // NOTE: ESLint doesn't recognize the return of `useLatest` as mutable ref.
+        // Be cautious to not add any other dependencies here.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (newsroom?.ga_tracking_id) {
         return (
