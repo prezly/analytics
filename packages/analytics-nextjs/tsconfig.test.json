@@ -1,4 +1,10 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "importsNotUsedAsValues": "remove",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strict": false
+  },
   "exclude": ["node_modules"]
 }
