@@ -30,6 +30,7 @@ describe('getRecipientInfo', () => {
     it('should return recipient info', async () => {
         const MOCKED_RESPONSE: RecipientInfo = { campaign_id: 123, id: 'abc', recipient_id: 'def' };
 
+        // We don't need to mock all properties of the `fetch` response for this test
         // @ts-expect-error
         fetchMock.mockResolvedValueOnce({
             ok: true,
@@ -41,6 +42,7 @@ describe('getRecipientInfo', () => {
     });
 
     it('should throw an error when request fails', async () => {
+        // We don't need to mock all properties of the `fetch` response for this test
         // @ts-expect-error
         fetchMock.mockResolvedValueOnce({
             ok: false,

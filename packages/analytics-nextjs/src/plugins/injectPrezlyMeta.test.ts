@@ -47,6 +47,7 @@ it('works correctly with no meta tags present', async () => {
     await analytics.track('Test Event');
 
     expect(trackSpy).toHaveBeenCalled();
+    // `prezly` property on the event root is custom and is not present in the default event type
     // @ts-expect-error
     expect(eventCtx.event.prezly).toEqual({});
 });
@@ -85,6 +86,7 @@ it('works correctly with prezly: meta tags present', async () => {
     await analytics.track('Test Event');
 
     expect(trackSpy).toHaveBeenCalled();
+    // `prezly` property on the event root is custom and is not present in the default event type
     // @ts-expect-error
     expect(eventCtx.event.prezly).toEqual({ newsroom: 'abcd', story: 'asdf' });
 });

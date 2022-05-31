@@ -50,6 +50,7 @@ it('should not alter the event when prezly meta is not present', async () => {
     await analytics.track('Test Event');
 
     expect(trackSpy).toHaveBeenCalled();
+    // `prezly` property on the event root is custom and is not present in the default event type
     // @ts-expect-error
     expect(eventCtx.event.prezly).toBe(undefined);
 
@@ -57,6 +58,7 @@ it('should not alter the event when prezly meta is not present', async () => {
     await analytics.identify('Test ID');
 
     expect(identifySpy).toHaveBeenCalled();
+    // `prezly` property on the event root is custom and is not present in the default event type
     // @ts-expect-error
     expect(eventCtx.event.prezly).toBe(undefined);
 });
@@ -88,6 +90,7 @@ it('should move the `prezly` property from traits to event root', async () => {
     expect(trackSpy).toHaveBeenCalled();
 
     expect(eventCtx.event.properties!.prezly).toBe(undefined);
+    // `prezly` property on the event root is custom and is not present in the default event type
     // @ts-expect-error
     expect(eventCtx.event.prezly).toEqual({ newsroom: 'abcd' });
 
@@ -97,6 +100,7 @@ it('should move the `prezly` property from traits to event root', async () => {
     expect(identifySpy).toHaveBeenCalled();
 
     expect(eventCtx.event.traits!.prezly).toBe(undefined);
+    // `prezly` property on the event root is custom and is not present in the default event type
     // @ts-expect-error
     expect(eventCtx.event.prezly).toEqual({ newsroom: 'abcd' });
 });

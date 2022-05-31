@@ -6,7 +6,6 @@ import * as getCookieConsentDomainModule from './getCookieConsentDomain';
 describe('getConsentCookie', () => {
     it('returns `null` when Cookie is not set', () => {
         const cookieSpy = jest.spyOn(Cookie, 'get');
-        // @ts-ignore
         cookieSpy.mockReturnValueOnce(undefined);
 
         expect(getConsentCookie()).toBe(null);
@@ -14,11 +13,13 @@ describe('getConsentCookie', () => {
 
     it('returns the parsed Cookie value when it is set', () => {
         const cookieSpy = jest.spyOn(Cookie, 'get');
+        // `js-cookie` has strange overloads in its types, so jest is a bit confused on what implementation is requested
         // @ts-expect-error
         cookieSpy.mockReturnValueOnce(JSON.stringify(true));
 
         expect(getConsentCookie()).toBe(true);
 
+        // `js-cookie` has strange overloads in its types, so jest is a bit confused on what implementation is requested
         // @ts-expect-error
         cookieSpy.mockReturnValueOnce(JSON.stringify(false));
 
@@ -27,7 +28,6 @@ describe('getConsentCookie', () => {
 
     it('returns `null` when failed to parse Cookie', () => {
         const cookieSpy = jest.spyOn(Cookie, 'get');
-        // @ts-ignore
         cookieSpy.mockReturnValueOnce({ test: 'test' });
 
         expect(getConsentCookie()).toBe(null);
