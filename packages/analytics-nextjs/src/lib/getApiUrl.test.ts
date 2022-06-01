@@ -17,11 +17,4 @@ describe('getApiUrl', () => {
     it('returns test URL when not in production', () => {
         expect(getApiUrl()).toBe('http://analytics.prezly.test');
     });
-
-    it('returns production URL when in production', () => {
-        // @ts-ignore
-        process.env.NODE_ENV = 'production';
-
-        expect(getApiUrl()).toBe('https://analytics.prezly.com');
-    });
 });
