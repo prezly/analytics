@@ -24,11 +24,4 @@ describe('getApiUrl', () => {
 
         expect(getApiUrl()).toBe('https://analytics.prezly.com');
     });
-
-    it('returns production URL when overriden via .env', () => {
-        // @ts-ignore
-        process.env.NEXT_PUBLIC_PREZLY_ANALYTICS_FORCE_PROD_API = 'true';
-
-        expect(getApiUrl()).toBe('https://analytics.prezly.com');
-    });
 });
