@@ -4,7 +4,7 @@ This is a monorepo for analytics packages used by Prezly products, based on [ana
 
 See individual package READMEs for more information:
 
-- [@prezly/analytics-nextjs](./tree/main/packages/analytics-nextjs#readme)
+- [@prezly/analytics-nextjs](./packages/analytics-nextjs#readme)
 
 ----
 
