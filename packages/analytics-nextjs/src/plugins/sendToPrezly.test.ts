@@ -64,6 +64,8 @@ it('sends the event to Prezly Analytics', async () => {
     expect(trackSpy).toHaveBeenCalled();
     expect(sendBeaconSpy).toHaveBeenCalledWith(
         'https://a.prezly.test/track/t',
-        JSON.stringify(expectedPayload, null, 2),
+        new Blob([JSON.stringify(expectedPayload, null, 2)], {
+            type: 'application/json',
+        }),
     );
 });

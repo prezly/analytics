@@ -23,15 +23,11 @@ export function sendEventToPrezlyPlugin(newsroomUuid: string): Plugin {
                 writeKey: newsroomUuid,
             };
 
-            // TODO: We encounter a CORS error when trying to send json to analytics.prezly.com
-            // As a workaround, plain text is used until this is figured out.
-            // const blob = new Blob([JSON.stringify(payload, null, 2)], {
-            //     type: 'application/json',
-            // });
+            const blob = new Blob([JSON.stringify(payload, null, 2)], {
+                type: 'application/json',
+            });
 
-            // navigator.sendBeacon(`${getApiUrl()}${endpoint}`, blob);
-
-            navigator.sendBeacon(`${getApiUrl()}${endpoint}`, JSON.stringify(payload, null, 2));
+            navigator.sendBeacon(`${getApiUrl()}${endpoint}`, blob);
         }
 
         return ctx;
