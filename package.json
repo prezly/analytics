@@ -48,8 +48,8 @@
     "@testing-library/react": "^12.1.5",
     "@testing-library/react-hooks": "^8.0.0",
     "@types/jest": "^27.5.1",
-    "@types/react": "^17.0.43",
-    "@types/react-dom": "^17.0.14",
+    "@types/react": "17.0.43",
+    "@types/react-dom": "17.0.14",
     "concurrently": "^7.1.0",
     "eslint": "^8.8.0",
     "jest": "^28.1.0",
@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "next": "^12.1.4",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
   }
 }
