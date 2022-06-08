@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@prezly/eslint-config": "4.2.0",
-    "@prezly/sdk": "6.21.0",
+    "@prezly/sdk": "6.25.0",
     "@testing-library/jest-dom": "5.16.4",
     "@testing-library/react": "12.1.5",
     "@testing-library/react-hooks": "8.0.0",
