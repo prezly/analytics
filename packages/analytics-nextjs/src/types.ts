@@ -1,3 +1,4 @@
+import type { Newsroom, Story } from '@prezly/sdk';
 import type { Options } from '@segment/analytics-next';
 
 export interface DeferredIdentity {
@@ -17,6 +18,13 @@ export enum TrackingPolicy {
     DISABLED = 'disabled',
     CONSENT_TO_IDENTIFY = 'consent-to-identify',
 }
+
+export type PickedNewsroomProperties = Pick<
+    Newsroom,
+    'uuid' | 'tracking_policy' | 'segment_analytics_id' | 'ga_tracking_id'
+>;
+
+export type PickedStoryProperties = Pick<Story, 'uuid'>;
 
 export interface PrezlyMeta {
     prezly: {

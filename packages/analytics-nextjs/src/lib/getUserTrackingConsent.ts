@@ -1,6 +1,4 @@
-import type { Newsroom } from '@prezly/sdk';
-
-import { TrackingPolicy } from '../types';
+import { type PickedNewsroomProperties, TrackingPolicy } from '../types';
 
 import { isNavigatorTrackingAllowed } from './isNavigatorTrackingAllowed';
 
@@ -11,7 +9,7 @@ import { isNavigatorTrackingAllowed } from './isNavigatorTrackingAllowed';
  */
 export function getUserTrackingConsent(
     consent: boolean | null,
-    newsroom: Newsroom,
+    newsroom: PickedNewsroomProperties,
 ): boolean | null {
     if (newsroom.tracking_policy === TrackingPolicy.DISABLED) {
         return false;

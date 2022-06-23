@@ -1,5 +1,3 @@
-import type { Newsroom } from '@prezly/sdk';
-
 import { TrackingPolicy } from '../types';
 import { DEFAULT_NEWSROOM } from '../__mocks__/newsroom';
 
@@ -16,7 +14,7 @@ it('should return `false` when Newsroom tracking is disabled', () => {
         getUserTrackingConsent(null, {
             ...DEFAULT_NEWSROOM,
             tracking_policy: TrackingPolicy.DISABLED,
-        } as Newsroom),
+        }),
     ).toBe(false);
 });
 

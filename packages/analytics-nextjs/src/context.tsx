@@ -1,4 +1,3 @@
-import type { Newsroom, Story } from '@prezly/sdk';
 import type { Analytics, Plugin } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { PropsWithChildren } from 'react';
@@ -6,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { getConsentCookie, getUserTrackingConsent, setConsentCookie } from './lib';
 import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
-import { TrackingPolicy } from './types';
+import { type PickedNewsroomProperties, type PickedStoryProperties, TrackingPolicy } from './types';
 
 interface Context {
     analytics: Analytics | undefined;
@@ -18,16 +17,16 @@ interface Context {
      * - NULL  - user didn't click anything yet
      */
     isUserConsentGiven: boolean | null;
-    newsroom: Newsroom;
-    story?: Story;
+    newsroom: PickedNewsroomProperties;
+    story?: PickedStoryProperties;
     setConsent: (consent: boolean) => void;
     trackingPolicy: TrackingPolicy;
 }
 
 interface Props {
     isEnabled?: boolean;
-    newsroom: Newsroom;
-    story: Story | undefined;
+    newsroom: PickedNewsroomProperties;
+    story: PickedStoryProperties | undefined;
     plugins?: Plugin[];
 }
 
