@@ -9,9 +9,9 @@ import { isNavigatorTrackingAllowed } from './isNavigatorTrackingAllowed';
  */
 export function getUserTrackingConsent(
     consent: boolean | null,
-    newsroom: PickedNewsroomProperties,
+    newsroom?: PickedNewsroomProperties,
 ): boolean | null {
-    if (newsroom.tracking_policy === TrackingPolicy.DISABLED) {
+    if (newsroom?.tracking_policy === TrackingPolicy.DISABLED) {
         return false;
     }
 

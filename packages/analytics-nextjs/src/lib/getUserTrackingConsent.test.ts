@@ -18,6 +18,10 @@ it('should return `false` when Newsroom tracking is disabled', () => {
     ).toBe(false);
 });
 
+it('should return a value when Newsroom is not provided', () => {
+    expect(getUserTrackingConsent(null)).toBe(null);
+});
+
 it("should return the consent value when it's not null", () => {
     expect(getUserTrackingConsent(true, DEFAULT_NEWSROOM)).toBe(true);
 
