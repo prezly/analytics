@@ -15,7 +15,7 @@ const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 export function useAnalytics() {
     const { analytics, consent, isEnabled, newsroom, story, trackingPolicy } =
         useAnalyticsContext();
-    const { uuid: newsroomUuid } = newsroom;
+    const { uuid: newsroomUuid } = newsroom || { uuid: undefined };
     const { uuid: storyUuid } = story || { uuid: undefined };
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
@@ -66,18 +66,24 @@ export function useAnalytics() {
     // The prezly traits should be placed in the root of the event when sent to the API.
     // This is handled by the `normalizePrezlyMeta` plugin.
     const injectPrezlyMeta = useCallback(
-        (traits: object): object & PrezlyMeta => ({
-            ...traits,
-            prezly: {
-                newsroom: newsroomUuid,
-                ...(storyUuid && {
-                    story: storyUuid,
-                }),
-                ...(trackingPolicy !== TrackingPolicy.DEFAULT && {
-                    tracking_policy: trackingPolicy,
-                }),
-            },
-        }),
+        (traits: object): object | (object & PrezlyMeta) => {
+            if (!newsroomUuid) {
+                return traits;
+            }
+
+            return {
+                ...traits,
+                prezly: {
+                    newsroom: newsroomUuid,
+                    ...(storyUuid && {
+                        story: storyUuid,
+                    }),
+                    ...(trackingPolicy !== TrackingPolicy.DEFAULT && {
+                        tracking_policy: trackingPolicy,
+                    }),
+                },
+            };
+        },
         [newsroomUuid, storyUuid, trackingPolicy],
     );
 
