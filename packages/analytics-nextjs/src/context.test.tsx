@@ -22,7 +22,7 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(true);
         const analyticsSpy = jest.spyOn(AnalyticsBrowser, 'load');
 
-        render(<AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM} story={undefined} />);
+        render(<AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM} />);
 
         expect(getConsentCookieMock).toHaveBeenCalledTimes(1);
         await waitFor(() => expect(analyticsSpy).toHaveBeenCalledTimes(1));
@@ -32,16 +32,30 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { getByText } = render(
-            <AnalyticsContextProvider
-                newsroom={DEFAULT_NEWSROOM}
-                story={undefined}
-                isEnabled={false}
-            >
+            <AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM} isEnabled={false}>
                 <TestingComponent />
             </AnalyticsContextProvider>,
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('disabled');
+    });
+
+    it('Works without Newsroom provided and shows a warning without segment write key', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+        const consoleSpy = jest.spyOn(console, 'warn');
+
+        const { getByText } = render(
+            <AnalyticsContextProvider>
+                <TestingComponent />
+            </AnalyticsContextProvider>,
+        );
+
+        expect(getByText(/analytics/i)).toHaveTextContent('enabled');
+        await waitFor(() =>
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Warning: You have not provided neither `newsroom`, nor `segmentWriteKey`. The library will not send any events.',
+            ),
+        );
     });
 });
 
@@ -65,7 +79,7 @@ describe('useAnalyticsContext', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { getByText } = render(
-            <AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM} story={undefined}>
+            <AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM}>
                 <TestingComponent />
             </AnalyticsContextProvider>,
         );

@@ -17,7 +17,7 @@ interface Context {
      * - NULL  - user didn't click anything yet
      */
     isUserConsentGiven: boolean | null;
-    newsroom: PickedNewsroomProperties;
+    newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
     setConsent: (consent: boolean) => void;
     trackingPolicy: TrackingPolicy;
@@ -25,9 +25,10 @@ interface Context {
 
 interface Props {
     isEnabled?: boolean;
-    newsroom: PickedNewsroomProperties;
-    story: PickedStoryProperties | undefined;
+    newsroom?: PickedNewsroomProperties;
+    story?: PickedStoryProperties;
     plugins?: Plugin[];
+    segmentWriteKey?: string;
 }
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
@@ -47,12 +48,17 @@ export function AnalyticsContextProvider({
     newsroom,
     story,
     plugins,
+    segmentWriteKey: customSegmentWriteKey,
 }: PropsWithChildren<Props>) {
     const {
         tracking_policy: trackingPolicy,
         segment_analytics_id: segmentWriteKey,
         uuid,
-    } = newsroom;
+    } = newsroom || {
+        tracking_policy: TrackingPolicy.DEFAULT,
+        segment_analytics_id: customSegmentWriteKey,
+    };
+
     const [consent, setConsent] = useState(getConsentCookie());
     const isUserConsentGiven = getUserTrackingConsent(consent, newsroom);
 
@@ -70,8 +76,9 @@ export function AnalyticsContextProvider({
                         },
                     }),
                     plugins: [
-                        sendEventToPrezlyPlugin(uuid),
-                        normalizePrezlyMetaPlugin(),
+                        ...(uuid
+                            ? [sendEventToPrezlyPlugin(uuid), normalizePrezlyMetaPlugin()]
+                            : []),
                         ...(plugins || []),
                     ],
                 },
@@ -92,6 +99,12 @@ export function AnalyticsContextProvider({
         }
 
         if (isEnabled && trackingPolicy !== TrackingPolicy.DISABLED) {
+            if (!segmentWriteKey && !uuid) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                    'Warning: You have not provided neither `newsroom`, nor `segmentWriteKey`. The library will not send any events.',
+                );
+            }
             loadAnalytics(segmentWriteKey || '');
         }
     }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins]);

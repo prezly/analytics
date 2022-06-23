@@ -133,6 +133,12 @@ export function Link({ href, children }: PropsWithChildren<Props>) {
 
 You can find more examples of tracking calls in the [Prezly Bea Theme] repo.
 
+### Using Segment tracking without Prezly Tracking
+
+If you want to use a single solution to also track pages unrelated to Prezly, you can omit `newsroom` and `story` props on pages that don't need it. 
+Instead, you would pass `segmentWriteKey` prop to `AnalyticsContextProvider`. This will disable sending events to PrezlyAnalytics and will only send events to Segment.
+Note that you need to pass either `segmentWriteKey` or `newsroom` to make the tracking library work.
+
 # What's next
 
 You can learn more on how this library can be used by checking the code of [Prezly Bea Theme].
