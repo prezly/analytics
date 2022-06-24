@@ -194,6 +194,9 @@ export function useAnalytics() {
             id() {
                 return null;
             },
+            anonymousId() {
+                return null;
+            },
         };
     }, [analytics]);
 
