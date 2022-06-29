@@ -57,6 +57,29 @@ describe('AnalyticsContextProvider', () => {
             ),
         );
     });
+
+    it('Logs an error to console and fails gracefully when analytics fail to load', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+        const consoleSpy = jest.spyOn(console, 'error');
+        const analyticsSpy = jest.spyOn(AnalyticsBrowser, 'load');
+
+        const error = new Error('Test Error');
+
+        analyticsSpy.mockImplementationOnce(() => {
+            throw error;
+        });
+
+        const { getByText } = render(
+            <AnalyticsContextProvider>
+                <TestingComponent />
+            </AnalyticsContextProvider>,
+        );
+
+        expect(getByText(/analytics/i)).toHaveTextContent('enabled');
+        await waitFor(() =>
+            expect(consoleSpy).toHaveBeenCalledWith('Error while loading Analytics', error),
+        );
+    });
 });
 
 describe('useAnalyticsContext', () => {

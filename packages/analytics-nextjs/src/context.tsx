@@ -66,36 +66,42 @@ export function AnalyticsContextProvider({
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
-            const [response] = await AnalyticsBrowser.load(
-                {
-                    writeKey,
-                    // If no Segment Write Key is provided, we initialize the library settings manually
-                    ...(!writeKey && {
-                        cdnSettings: {
-                            integrations: {},
-                        },
-                    }),
-                    plugins: [
-                        ...(uuid
-                            ? [sendEventToPrezlyPlugin(uuid), normalizePrezlyMetaPlugin()]
-                            : []),
-                        ...(plugins || []),
-                    ],
-                },
-                {
-                    // By default, the analytics.js library plants its cookies on the top-level domain.
-                    // We need to completely isolate tracking between any Prezly newsroom hosted on a .prezly.com subdomain.
-                    cookie: {
-                        domain: document.location.host,
+            try {
+                const [response] = await AnalyticsBrowser.load(
+                    {
+                        writeKey,
+                        // If no Segment Write Key is provided, we initialize the library settings manually
+                        ...(!writeKey && {
+                            cdnSettings: {
+                                integrations: {},
+                            },
+                        }),
+                        plugins: [
+                            ...(uuid
+                                ? [sendEventToPrezlyPlugin(uuid), normalizePrezlyMetaPlugin()]
+                                : []),
+                            ...(plugins || []),
+                        ],
                     },
-                    // Disable calls to Segment API completely if no Write Key is provided
-                    ...(!writeKey && {
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                        integrations: { 'Segment.io': false },
-                    }),
-                },
-            );
-            setAnalytics(response);
+                    {
+                        // By default, the analytics.js library plants its cookies on the top-level domain.
+                        // We need to completely isolate tracking between any Prezly newsroom hosted on a .prezly.com subdomain.
+                        cookie: {
+                            domain: document.location.host,
+                        },
+                        // Disable calls to Segment API completely if no Write Key is provided
+                        ...(!writeKey && {
+                            // eslint-disable-next-line @typescript-eslint/naming-convention
+                            integrations: { 'Segment.io': false },
+                        }),
+                    },
+                );
+
+                setAnalytics(response);
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('Error while loading Analytics', error);
+            }
         }
 
         if (isEnabled && trackingPolicy !== TrackingPolicy.DISABLED) {
