@@ -10,6 +10,12 @@
     "rootDir": "./src",
     "typeRoots": ["../../node_modules/@types", "./node_modules/@types", "./src/@types"]
   },
-  "exclude": ["node_modules", "**/*.test.*", "__mocks__"],
-  "include": ["./src", "jest.config.js"]
+  "exclude": [
+    "node_modules",
+    "**/*.test.*",
+    "src/__mocks__",
+    "src/plugins/testSpy.ts",
+    "src/plugins/injectPrezlyMeta.ts"
+  ],
+  "include": ["./src"]
 }
