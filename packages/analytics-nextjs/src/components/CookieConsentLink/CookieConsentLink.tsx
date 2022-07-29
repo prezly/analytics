@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { useAnalyticsContext } from '../../context';
 import { useCookieConsent } from '../../hooks';
 
@@ -13,9 +15,12 @@ export function CookieConsentLink({
     stopUsingCookiesLabel = 'Stop using cookies',
 }: Props) {
     const { isEnabled } = useAnalyticsContext();
+    const [mounted, setMounted] = useState(false);
     const { isUserConsentGiven, supportsCookie, toggle } = useCookieConsent();
 
-    if (!isEnabled || !supportsCookie) {
+    useEffect(() => setMounted(true), []);
+
+    if (!mounted || !isEnabled || !supportsCookie) {
         return null;
     }
 

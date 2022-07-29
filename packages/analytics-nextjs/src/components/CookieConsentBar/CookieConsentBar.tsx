@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { useAnalyticsContext } from '../../context';
 import { useCookieConsent } from '../../hooks';
 
@@ -11,6 +13,8 @@ interface Props {
 }
 
 export function CookieConsentBar({ children }: Props) {
+    const [mounted, setMounted] = useState(false);
+
     const { isEnabled } = useAnalyticsContext();
     const {
         accept: onAccept,
@@ -19,7 +23,9 @@ export function CookieConsentBar({ children }: Props) {
         supportsCookie,
     } = useCookieConsent();
 
-    if (!isEnabled || !supportsCookie || isUserConsentGiven !== null) {
+    useEffect(() => setMounted(true), []);
+
+    if (!mounted || !isEnabled || !supportsCookie || isUserConsentGiven !== null) {
         return null;
     }
 
