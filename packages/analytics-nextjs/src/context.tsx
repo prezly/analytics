@@ -55,7 +55,7 @@ function PlausibleWrapperMaybe({ newsroom, children }: PropsWithChildren<Pick<Pr
 
     return (
         <PlausibleProvider
-            domain={`${newsroom.uuid}.prezly.com`}
+            domain={newsroom.plausible_site_id}
             scriptProps={{
                 src: 'https://atlas.prezly.com/js/script.js',
                 // This is a documented parameter, but it's not reflected in the types

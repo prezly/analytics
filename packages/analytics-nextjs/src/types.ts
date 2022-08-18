@@ -21,7 +21,12 @@ export enum TrackingPolicy {
 
 export type PickedNewsroomProperties = Pick<
     Newsroom,
-    'uuid' | 'tracking_policy' | 'segment_analytics_id' | 'ga_tracking_id' | 'is_plausible_enabled'
+    | 'uuid'
+    | 'tracking_policy'
+    | 'segment_analytics_id'
+    | 'ga_tracking_id'
+    | 'is_plausible_enabled'
+    | 'plausible_site_id'
 >;
 
 export type PickedStoryProperties = Pick<Story, 'uuid'>;
