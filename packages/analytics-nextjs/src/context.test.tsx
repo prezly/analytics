@@ -1,3 +1,4 @@
+import { prettyDOM } from '@testing-library/dom';
 import React from 'react';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import { render, waitFor } from '@testing-library/react';
@@ -39,6 +40,32 @@ describe('AnalyticsContextProvider', () => {
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('disabled');
+    });
+
+    it('Loads Plausible integration when newsroom has it enabled', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { getByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
+                isEnabled={false}
+            />,
+        );
+
+        await waitFor(() => expect(getByTestId('plausible-debug-enabled')).toBeInTheDocument());
+    });
+
+    it('Does not load Plausible integration when it is disabled', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { getByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: false }}
+                isEnabled={false}
+            />,
+        );
+
+        await waitFor(() => expect(getByTestId('plausible-debug-disabled')).toBeInTheDocument());
     });
 
     it('Works without Newsroom provided and shows a warning without segment write key', async () => {

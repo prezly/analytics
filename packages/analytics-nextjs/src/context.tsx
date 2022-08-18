@@ -45,7 +45,12 @@ export function useAnalyticsContext() {
 
 function PlausibleWrapperMaybe({ newsroom, children }: PropsWithChildren<Pick<Props, 'newsroom'>>) {
     if (!newsroom || !newsroom.is_plausible_enabled) {
-        return <>{children}</>;
+        return (
+            <>
+                {process.env.NODE_ENV === 'test' && <div data-testid="plausible-debug-disabled" />}
+                {children}
+            </>
+        );
     }
 
     return (
@@ -60,6 +65,11 @@ function PlausibleWrapperMaybe({ newsroom, children }: PropsWithChildren<Pick<Pr
                 'data-api': 'https://atlas.prezly.com/api/event',
             }}
         >
+            {/* 
+                This is the only way I found to test if the PlausibleProvider is rendered. 
+                It doesn't render any markup by itself, and the `usePlausible` hook looks the same whether provider is present or not 
+            */}
+            {process.env.NODE_ENV === 'test' && <div data-testid="plausible-debug-enabled" />}
             {children}
         </PlausibleProvider>
     );
