@@ -13,6 +13,7 @@ This library is an easy plug-and-play solution to enable Prezly Analytics on you
 - 💌 Automatic Prezly Campaign recipient detection and Campaign click tracking
 - 🔒 GDPR-compliant tracking
 - 🍪 Ready-made components to handle Cookie Consent
+- 🧪 Experimental: [Plausible] integration
 - 🚀 Coming soon: 1st party domain tracking support
 
 # Adding the library to your Next.js application
@@ -149,3 +150,4 @@ Please refer to [analytics-next] and [Segment docs](https://segment.com/docs/con
 [Next.js]: https://nextjs.org
 [Prezly Bea Theme]: https://github.com/prezly/theme-nextjs-bea
 [Prezly Content React Renderer]: https://www.npmjs.com/package/@prezly/content-renderer-react-js
+[Plausible]: https://plausible.io
