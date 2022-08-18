@@ -1,3 +1,4 @@
+import React from 'react';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
