@@ -1,5 +1,6 @@
 import type { Analytics, Plugin } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
+import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
@@ -40,6 +41,28 @@ export function useAnalyticsContext() {
     }
 
     return analyticsContext;
+}
+
+function PlausibleWrapperMaybe({ newsroom, children }: PropsWithChildren<Pick<Props, 'newsroom'>>) {
+    if (!newsroom || !newsroom.is_plausible_enabled) {
+        return <>{children}</>;
+    }
+
+    return (
+        <PlausibleProvider
+            domain={`${newsroom.uuid}.prezly.com`}
+            scriptProps={{
+                src: 'https://atlas.prezly.com/js/script.js',
+                // This is a documented parameter, but it's not reflected in the types
+                // See https://github.com/4lejandrito/next-plausible/blob/master/test/page/pages/scriptProps.js
+                // @ts-expect-error
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                'data-api': 'https://atlas.prezly.com/api/event',
+            }}
+        >
+            {children}
+        </PlausibleProvider>
+    );
 }
 
 export function AnalyticsContextProvider({
@@ -134,7 +157,7 @@ export function AnalyticsContextProvider({
                 trackingPolicy,
             }}
         >
-            {children}
+            <PlausibleWrapperMaybe newsroom={newsroom}>{children}</PlausibleWrapperMaybe>
         </AnalyticsContext.Provider>
     );
 }
