@@ -45,11 +45,12 @@ export function useAnalyticsContext() {
 }
 
 function PlausibleWrapperMaybe({
+    isEnabled,
     newsroom,
     plausibleDomain,
     children,
-}: PropsWithChildren<Pick<Props, 'newsroom' | 'plausibleDomain'>>) {
-    if (!newsroom || !newsroom.is_plausible_enabled) {
+}: PropsWithChildren<Pick<Props, 'isEnabled' | 'newsroom' | 'plausibleDomain'>>) {
+    if (!isEnabled || !newsroom || !newsroom.is_plausible_enabled) {
         return (
             <>
                 {process.env.NODE_ENV === 'test' && <div data-testid="plausible-debug-disabled" />}
@@ -173,7 +174,11 @@ export function AnalyticsContextProvider({
                 trackingPolicy,
             }}
         >
-            <PlausibleWrapperMaybe newsroom={newsroom} plausibleDomain={plausibleDomain}>
+            <PlausibleWrapperMaybe
+                isEnabled={isEnabled}
+                newsroom={newsroom}
+                plausibleDomain={plausibleDomain}
+            >
                 {children}
             </PlausibleWrapperMaybe>
         </AnalyticsContext.Provider>

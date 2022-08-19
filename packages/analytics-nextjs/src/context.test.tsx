@@ -48,7 +48,6 @@ describe('AnalyticsContextProvider', () => {
         const { getByTestId } = render(
             <AnalyticsContextProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
-                isEnabled={false}
             />,
         );
 
@@ -61,7 +60,6 @@ describe('AnalyticsContextProvider', () => {
         const { getByTestId } = render(
             <AnalyticsContextProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
-                isEnabled={false}
                 plausibleDomain="newsroom.prezly.test"
             />,
         );
@@ -75,6 +73,18 @@ describe('AnalyticsContextProvider', () => {
         const { getByTestId } = render(
             <AnalyticsContextProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: false }}
+            />,
+        );
+
+        await waitFor(() => expect(getByTestId('plausible-debug-disabled')).toBeInTheDocument());
+    });
+
+    it('Does not load Plausible integration when Analytics are disabled entirely', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { getByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
                 isEnabled={false}
             />,
         );
