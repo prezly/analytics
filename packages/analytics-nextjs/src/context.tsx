@@ -30,6 +30,7 @@ interface Props {
     story?: PickedStoryProperties;
     plugins?: Plugin[];
     segmentWriteKey?: string;
+    plausibleDomain?: string;
 }
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
@@ -43,7 +44,11 @@ export function useAnalyticsContext() {
     return analyticsContext;
 }
 
-function PlausibleWrapperMaybe({ newsroom, children }: PropsWithChildren<Pick<Props, 'newsroom'>>) {
+function PlausibleWrapperMaybe({
+    newsroom,
+    plausibleDomain,
+    children,
+}: PropsWithChildren<Pick<Props, 'newsroom' | 'plausibleDomain'>>) {
     if (!newsroom || !newsroom.is_plausible_enabled) {
         return (
             <>
@@ -55,7 +60,7 @@ function PlausibleWrapperMaybe({ newsroom, children }: PropsWithChildren<Pick<Pr
 
     return (
         <PlausibleProvider
-            domain={newsroom.plausible_site_id}
+            domain={plausibleDomain ?? newsroom.plausible_site_id}
             scriptProps={{
                 src: 'https://atlas.prezly.com/js/script.js',
                 // This is a documented parameter, but it's not reflected in the types
@@ -82,6 +87,7 @@ export function AnalyticsContextProvider({
     story,
     plugins,
     segmentWriteKey: customSegmentWriteKey,
+    plausibleDomain,
 }: PropsWithChildren<Props>) {
     const {
         tracking_policy: trackingPolicy,
@@ -167,7 +173,9 @@ export function AnalyticsContextProvider({
                 trackingPolicy,
             }}
         >
-            <PlausibleWrapperMaybe newsroom={newsroom}>{children}</PlausibleWrapperMaybe>
+            <PlausibleWrapperMaybe newsroom={newsroom} plausibleDomain={plausibleDomain}>
+                {children}
+            </PlausibleWrapperMaybe>
         </AnalyticsContext.Provider>
     );
 }

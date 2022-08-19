@@ -55,6 +55,20 @@ describe('AnalyticsContextProvider', () => {
         await waitFor(() => expect(getByTestId('plausible-debug-enabled')).toBeInTheDocument());
     });
 
+    it('Loads Plausible integration with custom domain', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { getByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
+                isEnabled={false}
+                plausibleDomain="newsroom.prezly.test"
+            />,
+        );
+
+        await waitFor(() => expect(getByTestId('plausible-debug-enabled')).toBeInTheDocument());
+    });
+
     it('Does not load Plausible integration when it is disabled', async () => {
         getConsentCookieMock.mockReturnValue(true);
 
