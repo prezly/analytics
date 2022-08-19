@@ -71,19 +71,21 @@ describe('AnalyticsContextProvider', () => {
     it('Does not load Plausible integration when it is disabled', async () => {
         getConsentCookieMock.mockReturnValue(true);
 
-        const { getByTestId } = render(
+        const { queryByTestId } = render(
             <AnalyticsContextProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: false }}
             />,
         );
 
-        await waitFor(() => expect(getByTestId('plausible-debug-disabled')).toBeInTheDocument());
+        await waitFor(() =>
+            expect(queryByTestId('plausible-debug-enabled')).not.toBeInTheDocument(),
+        );
     });
 
     it('Does not load Plausible integration when newsroom tracking policy is set to "disabled"', async () => {
         getConsentCookieMock.mockReturnValue(true);
 
-        const { getByTestId } = render(
+        const { queryByTestId } = render(
             <AnalyticsContextProvider
                 newsroom={{
                     ...DEFAULT_NEWSROOM,
@@ -93,20 +95,24 @@ describe('AnalyticsContextProvider', () => {
             />,
         );
 
-        await waitFor(() => expect(getByTestId('plausible-debug-disabled')).toBeInTheDocument());
+        await waitFor(() =>
+            expect(queryByTestId('plausible-debug-enabled')).not.toBeInTheDocument(),
+        );
     });
 
     it('Does not load Plausible integration when Analytics are disabled entirely', async () => {
         getConsentCookieMock.mockReturnValue(true);
 
-        const { getByTestId } = render(
+        const { queryByTestId } = render(
             <AnalyticsContextProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
                 isEnabled={false}
             />,
         );
 
-        await waitFor(() => expect(getByTestId('plausible-debug-disabled')).toBeInTheDocument());
+        await waitFor(() =>
+            expect(queryByTestId('plausible-debug-enabled')).not.toBeInTheDocument(),
+        );
     });
 
     it('Works without Newsroom provided and shows a warning without segment write key', async () => {

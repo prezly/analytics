@@ -56,12 +56,7 @@ function PlausibleWrapperMaybe({
         !newsroom.is_plausible_enabled ||
         newsroom.tracking_policy === TrackingPolicy.DISABLED
     ) {
-        return (
-            <>
-                {process.env.NODE_ENV === 'test' && <div data-testid="plausible-debug-disabled" />}
-                {children}
-            </>
-        );
+        return <>{children}</>;
     }
 
     return (
