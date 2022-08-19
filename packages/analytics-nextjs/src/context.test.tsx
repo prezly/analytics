@@ -1,3 +1,5 @@
+import { prettyDOM } from '@testing-library/dom';
+import React from 'react';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -6,6 +8,7 @@ import { DEFAULT_NEWSROOM } from './__mocks__/newsroom';
 
 import { AnalyticsContextProvider, useAnalyticsContext } from './context';
 import { getConsentCookie } from './lib';
+import { TrackingPolicy } from '@prezly/sdk';
 
 jest.mock('./lib');
 
@@ -38,6 +41,78 @@ describe('AnalyticsContextProvider', () => {
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('disabled');
+    });
+
+    it('Loads Plausible integration when newsroom has it enabled', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { getByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
+            />,
+        );
+
+        await waitFor(() => expect(getByTestId('plausible-debug-enabled')).toBeInTheDocument());
+    });
+
+    it('Loads Plausible integration with custom domain', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { getByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
+                plausibleDomain="newsroom.prezly.test"
+            />,
+        );
+
+        await waitFor(() => expect(getByTestId('plausible-debug-enabled')).toBeInTheDocument());
+    });
+
+    it('Does not load Plausible integration when it is disabled', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { queryByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: false }}
+            />,
+        );
+
+        await waitFor(() =>
+            expect(queryByTestId('plausible-debug-enabled')).not.toBeInTheDocument(),
+        );
+    });
+
+    it('Does not load Plausible integration when newsroom tracking policy is set to "disabled"', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { queryByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{
+                    ...DEFAULT_NEWSROOM,
+                    tracking_policy: TrackingPolicy.DISABLED,
+                    is_plausible_enabled: true,
+                }}
+            />,
+        );
+
+        await waitFor(() =>
+            expect(queryByTestId('plausible-debug-enabled')).not.toBeInTheDocument(),
+        );
+    });
+
+    it('Does not load Plausible integration when Analytics are disabled entirely', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { queryByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
+                isEnabled={false}
+            />,
+        );
+
+        await waitFor(() =>
+            expect(queryByTestId('plausible-debug-enabled')).not.toBeInTheDocument(),
+        );
     });
 
     it('Works without Newsroom provided and shows a warning without segment write key', async () => {

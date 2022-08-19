@@ -1,5 +1,5 @@
 import type { Newsroom } from '@prezly/sdk';
-import { EmailBrandingMode, TextDirection, TrackingPolicy } from '@prezly/sdk';
+import { EmailBrandingMode, NewsroomStatus, TextDirection, TrackingPolicy } from '@prezly/sdk';
 
 /**
  * Pulled from The Good News Room
@@ -19,10 +19,11 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     is_offline: false,
     is_multilingual: true,
     is_indexable: true,
+    is_plausible_enabled: false,
+    plausible_site_id: '',
     url: 'https://the-good-news-room.prezly.com/',
     links: {
         media_gallery_api: 'https://api.prezly.com/v1/rooms/12698/media',
-        room_contacts_api: 'https://api.prezly.com/v1/rooms/12698/contacts',
         analytics_and_visibility_settings:
             'https://rock.prezly.com/pressroom/the-good-news-room/ga',
         categories_management:
@@ -134,4 +135,5 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     segment_analytics_id: '',
     is_subscription_form_enabled: true,
     is_white_labeled: false,
+    status: NewsroomStatus.ACTIVE,
 };

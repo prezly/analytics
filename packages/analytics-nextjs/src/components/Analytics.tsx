@@ -67,10 +67,7 @@ export function Analytics() {
                     console.error(error);
                 });
         }
-        // NOTE: ESLint doesn't recognize the return of `useLatest` as mutable ref.
-        // Be cautious to not add any other dependencies here.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [aliasRef, identifyRef, trackRef, userRef]);
 
     useEffect(() => {
         const asset = getUrlParameters('asset_');
@@ -97,10 +94,7 @@ export function Analytics() {
                 }
             }, delay);
         }
-        // NOTE: ESLint doesn't recognize the return of `useLatest` as mutable ref.
-        // Be cautious to not add any other dependencies here.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [trackRef]);
 
     if (newsroom?.ga_tracking_id) {
         return (
