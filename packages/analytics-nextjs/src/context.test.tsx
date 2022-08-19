@@ -8,6 +8,7 @@ import { DEFAULT_NEWSROOM } from './__mocks__/newsroom';
 
 import { AnalyticsContextProvider, useAnalyticsContext } from './context';
 import { getConsentCookie } from './lib';
+import { TrackingPolicy } from '@prezly/sdk';
 
 jest.mock('./lib');
 
@@ -73,6 +74,22 @@ describe('AnalyticsContextProvider', () => {
         const { getByTestId } = render(
             <AnalyticsContextProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: false }}
+            />,
+        );
+
+        await waitFor(() => expect(getByTestId('plausible-debug-disabled')).toBeInTheDocument());
+    });
+
+    it('Does not load Plausible integration when newsroom tracking policy is set to "disabled"', async () => {
+        getConsentCookieMock.mockReturnValue(true);
+
+        const { getByTestId } = render(
+            <AnalyticsContextProvider
+                newsroom={{
+                    ...DEFAULT_NEWSROOM,
+                    tracking_policy: TrackingPolicy.DISABLED,
+                    is_plausible_enabled: true,
+                }}
             />,
         );
 

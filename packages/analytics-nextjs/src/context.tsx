@@ -50,7 +50,12 @@ function PlausibleWrapperMaybe({
     plausibleDomain,
     children,
 }: PropsWithChildren<Pick<Props, 'isEnabled' | 'newsroom' | 'plausibleDomain'>>) {
-    if (!isEnabled || !newsroom || !newsroom.is_plausible_enabled) {
+    if (
+        !isEnabled ||
+        !newsroom ||
+        !newsroom.is_plausible_enabled ||
+        newsroom.tracking_policy === TrackingPolicy.DISABLED
+    ) {
         return (
             <>
                 {process.env.NODE_ENV === 'test' && <div data-testid="plausible-debug-disabled" />}
