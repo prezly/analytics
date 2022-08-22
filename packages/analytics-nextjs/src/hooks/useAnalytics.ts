@@ -1,5 +1,6 @@
 import { useLocalStorageValue, useSyncedRef } from '@react-hookz/web';
 import type { Options } from '@segment/analytics-next';
+import { usePlausible } from 'next-plausible';
 import { useCallback, useEffect } from 'react';
 
 import { useAnalyticsContext } from '../context';
@@ -15,12 +16,19 @@ const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 export function useAnalytics() {
     const { analytics, consent, isEnabled, newsroom, story, trackingPolicy } =
         useAnalyticsContext();
-    const { uuid: newsroomUuid } = newsroom || { uuid: undefined };
+    const plausible = usePlausible();
+
+    const { uuid: newsroomUuid, is_plausible_enabled: isPlausibleEnabled } = newsroom || {
+        uuid: undefined,
+        is_plausible_enabled: false,
+    };
     const { uuid: storyUuid } = story || { uuid: undefined };
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
     // which would not be possible when passing the `analytics` object directly
     const analyticsRef = useSyncedRef(analytics);
+    const plausibleRef = useSyncedRef(plausible);
+
     const [deferredIdentity, setDeferredIdentity, removeDeferredIdentity] =
         useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
     const {
@@ -176,12 +184,15 @@ export function useAnalytics() {
                 if (analyticsRef.current && analyticsRef.current.track) {
                     analyticsRef.current.track(event, extendedProperties, buildOptions(), callback);
                 }
+                if (isPlausibleEnabled) {
+                    plausibleRef.current(event, { props: extendedProperties });
+                }
             });
         },
         // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
         // Please be cautious about the dependencies for this callback!
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addToQueue, buildOptions, injectPrezlyMeta],
+        [addToQueue, buildOptions, injectPrezlyMeta, isPlausibleEnabled],
     );
 
     const user = useCallback(() => {
