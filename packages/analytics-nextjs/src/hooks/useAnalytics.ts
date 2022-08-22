@@ -119,10 +119,15 @@ export function useAnalytics() {
                 }
             });
         },
-        // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
-        // Please be cautious about the dependencies for this callback!
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addToQueue, buildOptions, consent, setDeferredIdentity, trackingPolicy, injectPrezlyMeta],
+        [
+            addToQueue,
+            analyticsRef,
+            buildOptions,
+            consent,
+            setDeferredIdentity,
+            trackingPolicy,
+            injectPrezlyMeta,
+        ],
     );
 
     const alias = useCallback(
@@ -138,10 +143,7 @@ export function useAnalytics() {
                 }
             });
         },
-        // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
-        // Please be cautious about the dependencies for this callback!
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addToQueue, buildOptions],
+        [addToQueue, analyticsRef, buildOptions],
     );
 
     const page = useCallback(
@@ -165,10 +167,7 @@ export function useAnalytics() {
                 }
             });
         },
-        // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
-        // Please be cautious about the dependencies for this callback!
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addToQueue, buildOptions, injectPrezlyMeta],
+        [addToQueue, analyticsRef, buildOptions, injectPrezlyMeta],
     );
 
     const track = useCallback(
@@ -189,10 +188,14 @@ export function useAnalytics() {
                 }
             });
         },
-        // The `react-hooks` plugin doesn't recognize the ref returned from `useLatest` hook as a Ref.
-        // Please be cautious about the dependencies for this callback!
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addToQueue, buildOptions, injectPrezlyMeta, isPlausibleEnabled],
+        [
+            addToQueue,
+            analyticsRef,
+            buildOptions,
+            injectPrezlyMeta,
+            isPlausibleEnabled,
+            plausibleRef,
+        ],
     );
 
     const user = useCallback(() => {
@@ -247,7 +250,6 @@ export function useAnalytics() {
         };
     }
 
-    // TODO: Expose all methods of analytics-next (might not be needed, since we already provide the `analytics` object)
     return {
         alias,
         identify,
