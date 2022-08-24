@@ -1,8 +1,7 @@
 /**
- * This code is based on https://github.com/jonstuebe/use-queue with async parts removed
  * TODO: Replace this with `@react-hookz/web` implementation, when it's shipped
  */
-import { useCallback, useReducer } from 'react';
+import { useCallback, useState } from 'react';
 
 export interface QueueMethods<T> {
     add: (item: T) => void;
@@ -12,45 +11,15 @@ export interface QueueMethods<T> {
     size: number;
 }
 
-export type ReducerStateType<T> = {
-    queue: T[];
-};
-
-export type ReducerActionType<T> = {
-    type: 'ADD' | 'REMOVE';
-    payload?: T;
-};
-
-function reducer<T>(state: T[], action: ReducerActionType<T>) {
-    switch (action.type) {
-        case 'ADD': {
-            if (!action.payload) {
-                return state;
-            }
-
-            return [...state, action.payload];
-        }
-        case 'REMOVE':
-            return state.slice(1);
-        default:
-            return state;
-    }
-}
-
 export function useQueue<T = any>(initialState: T[] = []): QueueMethods<T> {
-    const [queue, dispatch] = useReducer(reducer, initialState);
+    const [queue, setQueue] = useState(initialState);
 
-    const add = useCallback((payload: T) => {
-        dispatch({
-            type: 'ADD',
-            payload,
-        });
+    const add = useCallback((value: T) => {
+        setQueue((q) => [...q, value]);
     }, []);
 
     const remove = useCallback(() => {
-        dispatch({
-            type: 'REMOVE',
-        });
+        setQueue((q) => q.slice(1));
     }, []);
 
     return {
