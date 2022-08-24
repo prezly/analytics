@@ -228,7 +228,7 @@ export function useAnalytics() {
             }
         } else {
             const id = user().id();
-            if (id) {
+            if (id && deferredIdentity?.userId !== id) {
                 setDeferredIdentity({ userId: id });
             }
 
