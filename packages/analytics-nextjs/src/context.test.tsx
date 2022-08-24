@@ -15,9 +15,14 @@ jest.mock('./lib');
 const getConsentCookieMock = getConsentCookie as jest.MockedFunction<typeof getConsentCookie>;
 
 function TestingComponent() {
-    const { isEnabled } = useAnalyticsContext();
+    const { isEnabled, consent } = useAnalyticsContext();
 
-    return <div>Analytics {isEnabled ? 'enabled' : 'disabled'}</div>;
+    return (
+        <div>
+            <p>Analytics {isEnabled ? 'enabled' : 'disabled'}</p>
+            <p>Consent is: {`${consent}`}</p>
+        </div>
+    );
 }
 
 describe('AnalyticsContextProvider', () => {
@@ -41,6 +46,19 @@ describe('AnalyticsContextProvider', () => {
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('disabled');
+    });
+
+    it('bypasses consent checks when `ignorConsent` is set to `true`', async () => {
+        getConsentCookieMock.mockReturnValue(false);
+
+        const { getByText } = render(
+            <AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM} ignoreConsent>
+                <TestingComponent />
+            </AnalyticsContextProvider>,
+        );
+
+        expect(getByText(/analytics/i)).toHaveTextContent('enabled');
+        expect(getByText(/consent/i)).toHaveTextContent('true');
     });
 
     it('Loads Plausible integration when newsroom has it enabled', async () => {
