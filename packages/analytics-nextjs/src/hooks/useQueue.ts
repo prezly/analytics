@@ -26,10 +26,10 @@ export function useQueue<T = any>(initialState: T[] = []): QueueMethods<T> {
         add,
         remove,
         get first() {
-            return queue[0] as T;
+            return queue[0];
         },
         get last() {
-            return queue[queue.length - 1] as T;
+            return queue[queue.length - 1];
         },
         get size() {
             return queue.length;
