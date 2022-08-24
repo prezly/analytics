@@ -32,9 +32,9 @@ interface Props {
     segmentWriteKey?: string;
     plausibleDomain?: string;
     /**
-     * Skips user consent checks. Use only if you're really brave.
+     * Skips user consent checks. Use cautiously.
      */
-    cowboyMode?: boolean;
+    ignoreConsent?: boolean;
 }
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
@@ -93,7 +93,7 @@ export function AnalyticsContextProvider({
     plugins,
     segmentWriteKey: customSegmentWriteKey,
     plausibleDomain,
-    cowboyMode,
+    ignoreConsent,
 }: PropsWithChildren<Props>) {
     const {
         tracking_policy: trackingPolicy,
@@ -104,7 +104,7 @@ export function AnalyticsContextProvider({
         segment_analytics_id: customSegmentWriteKey,
     };
 
-    const [consent, setConsent] = useState(cowboyMode ? true : getConsentCookie());
+    const [consent, setConsent] = useState(ignoreConsent ? true : getConsentCookie());
     const isUserConsentGiven = getUserTrackingConsent(consent, newsroom);
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
@@ -161,10 +161,10 @@ export function AnalyticsContextProvider({
     }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins]);
 
     useEffect(() => {
-        if (!cowboyMode && typeof consent === 'boolean') {
+        if (!ignoreConsent && typeof consent === 'boolean') {
             setConsentCookie(consent);
         }
-    }, [consent, cowboyMode]);
+    }, [consent, ignoreConsent]);
 
     return (
         <AnalyticsContext.Provider
