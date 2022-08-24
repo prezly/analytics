@@ -31,11 +31,7 @@ export function useAnalytics() {
 
     const [deferredIdentity, setDeferredIdentity, removeDeferredIdentity] =
         useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
-    const {
-        add: addToQueue,
-        remove: removeFromQueue,
-        first: firstInQueue,
-    } = useQueue<Function>([]);
+    const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
 
     const buildOptions = useCallback(() => {
         const utm = getUrlParameters('utm_');
