@@ -29,3 +29,7 @@ export const STORY_IMAGE = {
 export const STORY_LINK = {
     CLICK: 'Story Link Click',
 };
+
+export const STORY_BOOKMARK = {
+    CLICK: 'Story Bookmark Click',
+};

@@ -10,7 +10,6 @@ This library is an easy plug-and-play solution to enable Prezly Analytics on you
 
 - 🔁 Seamless integration with Segment Analytics
 - 🤖 Automatically handles Segment and Google Analytics integrations on your Prezly Newsroom
-- 💌 Automatic Prezly Campaign recipient detection and Campaign click tracking
 - 🔒 GDPR-compliant tracking
 - 🍪 Ready-made components to handle Cookie Consent
 - 🧪 Experimental: [Plausible] integration
@@ -71,9 +70,9 @@ You can also disable Analytics for some places of your app by setting `isEnabled
 
 This component exposes the `AnalyticsContext` which can be consumed with `useAnalytics` hook exported from the library. Note that it doesn't do any tracking calls on its own, only providing the methods to do so. See later sections for more details.
 
-### Enabling automatic page tracking and campaign recipient detection
+### Enabling automatic page tracking
 
-With only context provider, you won't get any automatic tracking calls. To enable the base tracking for page visits and Prezly Campaign recipient detection, you should place `<Analytics />` component anywhere in your component tree that is below the `AnalyticsContextProvider`. The best place to do it is in a custom `Layout` component.
+With only context provider, you won't get any automatic tracking calls. To enable the base tracking for page visits and campaign asset clicks, you should place `<Analytics />` component anywhere in your component tree that is below the `AnalyticsContextProvider`. The best place to do it is in a custom `Layout` component.
 
 ```tsx
 import { Analytics } from '@prezly/analytics-nextjs';
