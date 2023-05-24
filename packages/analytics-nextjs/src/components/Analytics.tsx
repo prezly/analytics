@@ -28,6 +28,9 @@ export function Analytics() {
         }
     }, [currentPath, page, previousPath]);
 
+    /**
+     * @deprecated Improved campaign click tracking supersedes this functionality. To be removed in v2.0
+     */
     useEffect(() => {
         const userId = userRef.current().id();
         const utm = getUrlParameters('utm_');
@@ -77,6 +80,7 @@ export function Analytics() {
 
         if (id && type) {
             trackRef.current(getAssetClickEvent(type), { id, type }, () =>
+                // TODO: To be removed in v2.0
                 stripUrlParameters('asset_'),
             );
 
