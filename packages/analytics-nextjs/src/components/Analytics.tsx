@@ -70,9 +70,10 @@ export function Analytics() {
     }, [aliasRef, identifyRef, trackRef, userRef]);
 
     useEffect(() => {
-        const asset = getUrlParameters('asset_');
-        const id = asset.get('id');
-        const type = asset.get('type');
+        const hashParameters = window.location.hash.replace('#', '').split('-');
+
+        const id = hashParameters.pop();
+        const type = hashParameters.join('-');
 
         if (id && type) {
             trackRef.current(getAssetClickEvent(type), { id, type }, () =>
