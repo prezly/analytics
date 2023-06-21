@@ -161,7 +161,8 @@ export function AnalyticsContextProvider({
             }
             loadAnalytics(segmentWriteKey || '');
         }
-    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins, cookie]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins, JSON.stringify(cookie)]);
 
     useEffect(() => {
         if (!ignoreConsent && typeof consent === 'boolean') {
