@@ -96,7 +96,7 @@ export function AnalyticsContextProvider({
     plugins,
     segmentWriteKey: customSegmentWriteKey,
     plausibleDomain,
-    user = {},
+    user,
     ignoreConsent,
 }: PropsWithChildren<Props>) {
     const {
@@ -165,17 +165,7 @@ export function AnalyticsContextProvider({
             loadAnalytics(segmentWriteKey || '');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        segmentWriteKey,
-        isEnabled,
-        trackingPolicy,
-        uuid,
-        plugins,
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        JSON.stringify(cookie),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        JSON.stringify(user),
-    ]);
+    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins, JSON.stringify(cookie), user]);
 
     useEffect(() => {
         if (!ignoreConsent && typeof consent === 'boolean') {
