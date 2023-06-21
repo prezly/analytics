@@ -1,4 +1,4 @@
-import type { Analytics, CookieOptions, Plugin } from '@segment/analytics-next';
+import type { Analytics, CookieOptions, Plugin, UserOptions } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
@@ -32,6 +32,7 @@ interface Props {
     plugins?: Plugin[];
     segmentWriteKey?: string;
     plausibleDomain?: string;
+    user?: UserOptions;
     /**
      * Skips user consent checks. Use cautiously.
      */
@@ -95,6 +96,7 @@ export function AnalyticsContextProvider({
     plugins,
     segmentWriteKey: customSegmentWriteKey,
     plausibleDomain,
+    user,
     ignoreConsent,
 }: PropsWithChildren<Props>) {
     const {
@@ -137,6 +139,7 @@ export function AnalyticsContextProvider({
                             domain: document.location.host,
                             ...cookie,
                         },
+                        user,
                         // Disable calls to Segment API completely if no Write Key is provided
                         ...(!writeKey && {
                             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -162,7 +165,7 @@ export function AnalyticsContextProvider({
             loadAnalytics(segmentWriteKey || '');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins, JSON.stringify(cookie)]);
+    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins, JSON.stringify(cookie), user]);
 
     useEffect(() => {
         if (!ignoreConsent && typeof consent === 'boolean') {
