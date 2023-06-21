@@ -1,4 +1,4 @@
-import type { Analytics, Plugin } from '@segment/analytics-next';
+import type { Analytics, CookieOptions, Plugin } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
@@ -25,6 +25,7 @@ interface Context {
 }
 
 interface Props {
+    cookie?: CookieOptions;
     isEnabled?: boolean;
     newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
@@ -87,6 +88,7 @@ function PlausibleWrapperMaybe({
 
 export function AnalyticsContextProvider({
     children,
+    cookie = {},
     isEnabled = true,
     newsroom,
     story,
@@ -133,6 +135,7 @@ export function AnalyticsContextProvider({
                         // We need to completely isolate tracking between any Prezly newsroom hosted on a .prezly.com subdomain.
                         cookie: {
                             domain: document.location.host,
+                            ...cookie,
                         },
                         // Disable calls to Segment API completely if no Write Key is provided
                         ...(!writeKey && {
@@ -158,7 +161,8 @@ export function AnalyticsContextProvider({
             }
             loadAnalytics(segmentWriteKey || '');
         }
-    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins, JSON.stringify(cookie)]);
 
     useEffect(() => {
         if (!ignoreConsent && typeof consent === 'boolean') {
