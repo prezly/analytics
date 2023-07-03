@@ -179,16 +179,17 @@ export function AnalyticsContextProvider({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
-        segmentWriteKey,
+        cdnUrl,
         isEnabled,
-        trackingPolicy,
-        uuid,
-        plugins,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(cookie),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(integrations),
+        plugins,
+        segmentWriteKey,
+        trackingPolicy,
         user,
+        uuid,
     ]);
 
     useEffect(() => {
