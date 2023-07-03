@@ -156,7 +156,7 @@ export function AnalyticsContextProvider({
                         // Disable calls to Segment API completely if no Write Key is provided
                         ...(!writeKey && {
                             // eslint-disable-next-line @typescript-eslint/naming-convention
-                            integrations: { 'Segment.io': false },
+                            integrations: { ...integrations, 'Segment.io': false },
                         }),
                     },
                 );
