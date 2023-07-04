@@ -1,4 +1,10 @@
-import type { Analytics, CookieOptions, Plugin, UserOptions } from '@segment/analytics-next';
+import type {
+    Analytics,
+    CookieOptions,
+    Integrations,
+    Plugin,
+    UserOptions,
+} from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
@@ -25,7 +31,9 @@ interface Context {
 }
 
 interface Props {
+    cdnUrl?: string;
     cookie?: CookieOptions;
+    integrations?: Integrations;
     isEnabled?: boolean;
     newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
@@ -88,8 +96,10 @@ function PlausibleWrapperMaybe({
 }
 
 export function AnalyticsContextProvider({
+    cdnUrl,
     children,
     cookie = {},
+    integrations,
     isEnabled = true,
     newsroom,
     story,
@@ -119,6 +129,8 @@ export function AnalyticsContextProvider({
                 const [response] = await AnalyticsBrowser.load(
                     {
                         writeKey,
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        cdnURL: cdnUrl,
                         // If no Segment Write Key is provided, we initialize the library settings manually
                         ...(!writeKey && {
                             cdnSettings: {
@@ -139,6 +151,7 @@ export function AnalyticsContextProvider({
                             domain: document.location.host,
                             ...cookie,
                         },
+                        integrations,
                         user,
                         // Disable calls to Segment API completely if no Write Key is provided
                         ...(!writeKey && {
@@ -165,7 +178,19 @@ export function AnalyticsContextProvider({
             loadAnalytics(segmentWriteKey || '');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [segmentWriteKey, isEnabled, trackingPolicy, uuid, plugins, JSON.stringify(cookie), user]);
+    }, [
+        cdnUrl,
+        isEnabled,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        JSON.stringify(cookie),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        JSON.stringify(integrations),
+        plugins,
+        segmentWriteKey,
+        trackingPolicy,
+        user,
+        uuid,
+    ]);
 
     useEffect(() => {
         if (!ignoreConsent && typeof consent === 'boolean') {
