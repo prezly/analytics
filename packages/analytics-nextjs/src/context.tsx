@@ -35,6 +35,10 @@ interface Props {
     cookie?: CookieOptions;
     integrations?: Integrations;
     isEnabled?: boolean;
+    /**
+     * Enables Plausible tracking for newsrooms that have regular tracking disabled.
+     */
+    isPlausibleEnabled?: boolean;
     newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
     plugins?: Plugin[];
@@ -101,6 +105,7 @@ export function AnalyticsContextProvider({
     cookie = {},
     integrations,
     isEnabled = true,
+    isPlausibleEnabled,
     newsroom,
     story,
     plugins,
@@ -212,7 +217,7 @@ export function AnalyticsContextProvider({
             }}
         >
             <PlausibleWrapperMaybe
-                isEnabled={isEnabled}
+                isEnabled={isEnabled || isPlausibleEnabled}
                 newsroom={newsroom}
                 plausibleDomain={plausibleDomain}
             >
