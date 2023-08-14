@@ -85,7 +85,6 @@ function PlausibleWrapperMaybe({
     return (
         <PlausibleProvider
             domain={plausibleDomain ?? newsroom.plausible_site_id}
-            manualPageviews
             scriptProps={{
                 src: 'https://atlas.prezly.com/js/script.js',
                 // This is a documented parameter, but it's not reflected in the types
@@ -94,7 +93,6 @@ function PlausibleWrapperMaybe({
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 'data-api': 'https://atlas.prezly.com/api/event',
             }}
-            trackLocalhost
         >
             {/* 
                 This is the only way I found to test if the PlausibleProvider is rendered. 
