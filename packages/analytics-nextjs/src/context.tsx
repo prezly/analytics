@@ -94,6 +94,7 @@ function PlausibleWrapperMaybe({
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 'data-api': 'https://atlas.prezly.com/api/event',
             }}
+            trackLocalhost
         >
             {/* 
                 This is the only way I found to test if the PlausibleProvider is rendered. 
