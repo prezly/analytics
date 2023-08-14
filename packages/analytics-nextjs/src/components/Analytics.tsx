@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Script from 'next/script';
 import { useEffect } from 'react';
 
+import { useAnalyticsContext } from '../context';
 import { CAMPAIGN } from '../events';
 import { useAnalytics } from '../hooks';
 import {
@@ -15,6 +16,7 @@ import {
 
 export function Analytics() {
     const { alias, identify, newsroom, page, track, user } = useAnalytics();
+    const { onPageView } = useAnalyticsContext();
     const aliasRef = useSyncedRef(alias);
     const identifyRef = useSyncedRef(identify);
     const trackRef = useSyncedRef(track);
@@ -24,9 +26,10 @@ export function Analytics() {
 
     useEffect(() => {
         if (currentPath !== previousPath) {
-            page();
+            const data = onPageView?.() || {};
+            page(undefined, undefined, data);
         }
-    }, [currentPath, page, previousPath]);
+    }, [currentPath, onPageView, page, previousPath]);
 
     /**
      * @deprecated Improved campaign click tracking supersedes this functionality. To be removed in v2.0
