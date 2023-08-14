@@ -25,8 +25,9 @@ interface Context {
      */
     isUserConsentGiven: boolean | null;
     newsroom?: PickedNewsroomProperties;
-    story?: PickedStoryProperties;
+    onPageView?: () => Record<string, any>;
     setConsent: (consent: boolean) => void;
+    story?: PickedStoryProperties;
     trackingPolicy: TrackingPolicy;
 }
 
@@ -40,6 +41,10 @@ interface Props {
      */
     isPlausibleEnabled?: boolean;
     newsroom?: PickedNewsroomProperties;
+    /**
+     * Allow passing along extra properties to page tracking calls.
+     */
+    onPageView?: () => Record<string, any>;
     story?: PickedStoryProperties;
     plugins?: Plugin[];
     segmentWriteKey?: string;
@@ -80,6 +85,7 @@ function PlausibleWrapperMaybe({
     return (
         <PlausibleProvider
             domain={plausibleDomain ?? newsroom.plausible_site_id}
+            manualPageviews
             scriptProps={{
                 src: 'https://atlas.prezly.com/js/script.js',
                 // This is a documented parameter, but it's not reflected in the types
@@ -103,16 +109,17 @@ export function AnalyticsContextProvider({
     cdnUrl,
     children,
     cookie = {},
+    ignoreConsent,
     integrations,
     isEnabled = true,
     isPlausibleEnabled,
     newsroom,
-    story,
+    onPageView,
+    plausibleDomain,
     plugins,
     segmentWriteKey: customSegmentWriteKey,
-    plausibleDomain,
+    story,
     user,
-    ignoreConsent,
 }: PropsWithChildren<Props>) {
     const {
         tracking_policy: trackingPolicy,
@@ -211,6 +218,7 @@ export function AnalyticsContextProvider({
                 isEnabled,
                 isUserConsentGiven,
                 newsroom,
+                onPageView,
                 story,
                 setConsent,
                 trackingPolicy,
