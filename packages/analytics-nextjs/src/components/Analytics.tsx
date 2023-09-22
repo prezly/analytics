@@ -1,3 +1,5 @@
+'use client';
+
 import { usePrevious, useSyncedRef } from '@react-hookz/web';
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
