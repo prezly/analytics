@@ -1,5 +1,5 @@
 import { usePrevious, useSyncedRef } from '@react-hookz/web';
-import { useRouter } from 'next/router';
+import { usePathname } from 'next/navigation';
 import Script from 'next/script';
 import { useEffect } from 'react';
 
@@ -21,11 +21,11 @@ export function Analytics() {
     const identifyRef = useSyncedRef(identify);
     const trackRef = useSyncedRef(track);
     const userRef = useSyncedRef(user);
-    const { asPath: currentPath } = useRouter();
+    const currentPath = usePathname();
     const previousPath = usePrevious(currentPath);
 
     useEffect(() => {
-        if (currentPath !== previousPath) {
+        if (currentPath && currentPath !== previousPath) {
             const data = onPageView?.() || {};
             page(undefined, undefined, data);
         }
