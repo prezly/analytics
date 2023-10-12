@@ -33,40 +33,43 @@ export function useAnalytics() {
         useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
     const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
 
-    const buildOptions = useCallback(() => {
-        const utm = getUrlParameters('utm_');
-        const id = utm.get('id');
-        const source = utm.get('source');
-        const medium = utm.get('medium');
+    const buildOptions = useCallback(
+        (context: object) => {
+            const utm = getUrlParameters('utm_');
+            const id = utm.get('id');
+            const source = utm.get('source');
+            const medium = utm.get('medium');
 
-        const options: PrezlyEventOptions = {
-            context: {
-                library: {
-                    name: '@prezly/analytics-next',
-                    version,
+            const options: PrezlyEventOptions = {
+                context: {
+                    ...context,
+                    library: {
+                        name: '@prezly/analytics-next',
+                        version,
+                    },
+                    ...(medium === 'campaign' &&
+                        source &&
+                        id && {
+                            campaign: {
+                                id,
+                                source,
+                                medium,
+                            },
+                        }),
                 },
-                ip: null, // will be populated by Segment
-                ...(medium === 'campaign' &&
-                    source &&
-                    id && {
-                        campaign: {
-                            id,
-                            source,
-                            medium,
-                        },
-                    }),
-            },
-            // TODO: Legacy implementation also sends `sentAt` field in the root of the event, which is the same as `timestamp`. Need to check if any server logic depends on that.
-            timestamp: new Date(),
-        };
+                // TODO: Legacy implementation also sends `sentAt` field in the root of the event, which is the same as `timestamp`. Need to check if any server logic depends on that.
+                timestamp: new Date(),
+            };
 
-        // Only inject user information when consent is given
-        if (consent) {
-            options.context.userAgent = navigator.userAgent;
-        }
+            // Only inject user information when consent is given
+            if (consent) {
+                options.context.userAgent = navigator.userAgent;
+            }
 
-        return options as Options;
-    }, [consent]);
+            return options as Options;
+        },
+        [consent],
+    );
 
     // The prezly traits should be placed in the root of the event when sent to the API.
     // This is handled by the `normalizePrezlyMeta` plugin.
@@ -112,7 +115,7 @@ export function useAnalytics() {
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.identify) {
-                    analyticsRef.current.identify(userId, extendedTraits, buildOptions(), callback);
+                    analyticsRef.current.identify(userId, extendedTraits, buildOptions, callback);
                 }
             });
         },
@@ -136,7 +139,7 @@ export function useAnalytics() {
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.alias) {
-                    analyticsRef.current.alias(userId, previousId, buildOptions());
+                    analyticsRef.current.alias(userId, previousId, buildOptions);
                 }
             });
         },
@@ -158,7 +161,7 @@ export function useAnalytics() {
                         category,
                         name,
                         extendedProperties,
-                        buildOptions(),
+                        buildOptions,
                         callback,
                     );
                 }
@@ -178,7 +181,7 @@ export function useAnalytics() {
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.track) {
-                    analyticsRef.current.track(event, extendedProperties, buildOptions(), callback);
+                    analyticsRef.current.track(event, extendedProperties, buildOptions, callback);
                 }
                 if (isPlausibleEnabled) {
                     plausibleRef.current(event, { props: extendedProperties });
