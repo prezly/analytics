@@ -1,11 +1,13 @@
 import { useLocalStorageValue, useSyncedRef } from '@react-hookz/web';
+import type { Options } from '@segment/analytics-next';
 import { usePlausible } from 'next-plausible';
 import { useCallback, useEffect } from 'react';
 
 import { useAnalyticsContext } from '../context';
-import { stringify } from '../lib';
-import type { DeferredIdentity, PrezlyMeta } from '../types';
+import { getUrlParameters, stringify } from '../lib';
+import type { DeferredIdentity, PrezlyEventOptions, PrezlyMeta } from '../types';
 import { TrackingPolicy } from '../types';
+import { version } from '../version';
 
 import { useQueue } from './useQueue';
 
@@ -30,6 +32,41 @@ export function useAnalytics() {
     const [deferredIdentity, setDeferredIdentity, removeDeferredIdentity] =
         useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
     const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
+
+    const buildOptions = useCallback(() => {
+        const utm = getUrlParameters('utm_');
+        const id = utm.get('id');
+        const source = utm.get('source');
+        const medium = utm.get('medium');
+
+        const options: PrezlyEventOptions = {
+            context: {
+                library: {
+                    name: '@prezly/analytics-next',
+                    version,
+                },
+                ip: undefined, // will be populated by Segment
+                ...(medium === 'campaign' &&
+                    source &&
+                    id && {
+                        campaign: {
+                            id,
+                            source,
+                            medium,
+                        },
+                    }),
+            },
+            // TODO: Legacy implementation also sends `sentAt` field in the root of the event, which is the same as `timestamp`. Need to check if any server logic depends on that.
+            timestamp: new Date(),
+        };
+
+        // Only inject user information when consent is given
+        if (consent) {
+            options.context.userAgent = navigator.userAgent;
+        }
+
+        return options as Options;
+    }, [consent]);
 
     // The prezly traits should be placed in the root of the event when sent to the API.
     // This is handled by the `normalizePrezlyMeta` plugin.
@@ -75,11 +112,19 @@ export function useAnalytics() {
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.identify) {
-                    analyticsRef.current.identify(userId, extendedTraits, {}, callback);
+                    analyticsRef.current.identify(userId, extendedTraits, buildOptions(), callback);
                 }
             });
         },
-        [addToQueue, analyticsRef, consent, setDeferredIdentity, trackingPolicy, injectPrezlyMeta],
+        [
+            addToQueue,
+            analyticsRef,
+            buildOptions,
+            consent,
+            setDeferredIdentity,
+            trackingPolicy,
+            injectPrezlyMeta,
+        ],
     );
 
     const alias = useCallback(
@@ -91,11 +136,11 @@ export function useAnalytics() {
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.alias) {
-                    analyticsRef.current.alias(userId, previousId);
+                    analyticsRef.current.alias(userId, previousId, buildOptions());
                 }
             });
         },
-        [addToQueue, analyticsRef],
+        [addToQueue, analyticsRef, buildOptions],
     );
 
     const page = useCallback(
@@ -109,11 +154,17 @@ export function useAnalytics() {
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.page) {
-                    analyticsRef.current.page(category, name, extendedProperties, {}, callback);
+                    analyticsRef.current.page(
+                        category,
+                        name,
+                        extendedProperties,
+                        buildOptions(),
+                        callback,
+                    );
                 }
             });
         },
-        [addToQueue, analyticsRef, injectPrezlyMeta],
+        [addToQueue, analyticsRef, buildOptions, injectPrezlyMeta],
     );
 
     const track = useCallback(
@@ -127,14 +178,21 @@ export function useAnalytics() {
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.track) {
-                    analyticsRef.current.track(event, extendedProperties, {}, callback);
+                    analyticsRef.current.track(event, extendedProperties, buildOptions(), callback);
                 }
                 if (isPlausibleEnabled) {
                     plausibleRef.current(event, { props: extendedProperties });
                 }
             });
         },
-        [addToQueue, analyticsRef, injectPrezlyMeta, isPlausibleEnabled, plausibleRef],
+        [
+            addToQueue,
+            analyticsRef,
+            buildOptions,
+            injectPrezlyMeta,
+            isPlausibleEnabled,
+            plausibleRef,
+        ],
     );
 
     const user = useCallback(() => {
