@@ -61,7 +61,7 @@ export function useAnalytics() {
 
         // Only inject user information when consent is given
         if (consent) {
-            options.context!.userAgent = navigator.userAgent;
+            options.context.userAgent = navigator.userAgent;
         }
 
         return options as Options;

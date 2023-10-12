@@ -1,13 +1,8 @@
 'use client';
 
-import type {
-    Analytics,
-    CookieOptions,
-    Integrations,
-    Plugin,
-    UserOptions,
-} from '@segment/analytics-next';
+import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
+import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
