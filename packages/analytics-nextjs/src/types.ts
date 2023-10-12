@@ -1,5 +1,4 @@
 import type { Newsroom, Story } from '@prezly/sdk';
-import type { Options } from '@segment/analytics-next';
 
 export interface DeferredIdentity {
     userId: string;
@@ -36,19 +35,5 @@ export interface PrezlyMeta {
         newsroom: string;
         story?: string;
         tracking_policy?: TrackingPolicy;
-    };
-}
-
-export interface PrezlyEventOptions extends Omit<Options, 'context'> {
-    context: Omit<Exclude<Options['context'], undefined>, 'campaign'> & {
-        campaign?: {
-            // This property doesn't exist on the analytics-next type, but is used by Prezly analytics
-            id: string;
-            name?: string;
-            term?: string;
-            source: string;
-            medium: string;
-            content?: string;
-        };
     };
 }
