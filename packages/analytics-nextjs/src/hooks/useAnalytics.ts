@@ -45,7 +45,7 @@ export function useAnalytics() {
                     name: '@prezly/analytics-next',
                     version,
                 },
-                ip: undefined, // will be populated by Segment
+                ip: '', // will be populated by Segment
                 ...(medium === 'campaign' &&
                     source &&
                     id && {
