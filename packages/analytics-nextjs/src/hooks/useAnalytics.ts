@@ -20,7 +20,7 @@ export function useAnalytics() {
         uuid: undefined,
         is_plausible_enabled: false,
     };
-    const { uuid: storyUuid } = story || { uuid: undefined };
+    const storyUuid = story?.uuid;
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
     // which would not be possible when passing the `analytics` object directly
