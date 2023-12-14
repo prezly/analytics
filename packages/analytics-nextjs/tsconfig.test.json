@@ -4,7 +4,8 @@
     "importsNotUsedAsValues": "remove",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "strict": false
+    "strict": false,
+    "verbatimModuleSyntax": false
   },
   "exclude": ["node_modules"],
   "include": ["./src", "jest.config.js"]
