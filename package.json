@@ -4,7 +4,6 @@
   "description": "Prezly Analytics package based on analytics-next by Segment",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna bootstrap",
     "build": "npm run build -w packages/analytics-nextjs",
     "watch": "concurrently --kill-others --names 'analytics-nextjs' 'npm run watch -w packages/analytics-nextjs'",
     "lint": "npm run lint --workspaces",
@@ -18,7 +17,7 @@
     "release:preview": "npm run release:prepare && npm run release:publish:preview",
     "release:prepare": "npm run check",
     "release:publish": "lerna publish",
-    "release:publish:preview": "lerna publish --npm-tag preview --skip-git"
+    "release:publish:preview": "lerna publish --distTag preview --push=false --gitTagVersion=false"
   },
   "repository": {
     "type": "git",
@@ -30,17 +29,7 @@
     "url": "https://github.com/prezly/analytics/issues"
   },
   "homepage": "https://github.com/prezly/analytics#readme",
-  "workspaces": [
-    "packages/*"
-  ],
-  "engines": {
-    "node": ">= 14.x",
-    "npm": ">= 7.x"
-  },
-  "devEngines": {
-    "node": ">= 14.x",
-    "npm": ">= 7.x"
-  },
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@prezly/eslint-config": "^5.3.2",
     "@prezly/sdk": "7.12.2",
@@ -57,7 +46,7 @@
     "jest-environment-jsdom": "28.1.3",
     "jest-fetch-mock": "3.0.3",
     "jest-location-mock": "1.0.10",
-    "lerna": "5.6.2",
+    "lerna": "7.4.2",
     "prettier": "3.1.1",
     "rimraf": "3.0.2",
     "ts-jest": "28.0.8",
