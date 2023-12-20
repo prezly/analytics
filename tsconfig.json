@@ -6,7 +6,7 @@
     "downlevelIteration": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    "importsNotUsedAsValues": "error",
+    "verbatimModuleSyntax": true,
     "jsx": "preserve",
     "forceConsistentCasingInFileNames": true,
     "lib": ["dom", "es2019"],
