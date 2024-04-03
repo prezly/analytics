@@ -83,7 +83,7 @@ function PlausibleWrapperMaybe({
         <PlausibleProvider
             domain={plausibleDomain ?? newsroom.plausible_site_id}
             scriptProps={{
-                src: 'https://atlas.prezly.com/js/script.js',
+                src: 'https://atlas.prezly.com/js/script.outbound-links.js',
                 // This is a documented parameter, but it's not reflected in the types
                 // See https://github.com/4lejandrito/next-plausible/blob/master/test/page/pages/scriptProps.js
                 // @ts-expect-error
