@@ -6,23 +6,12 @@ import Script from 'next/script';
 import { useEffect } from 'react';
 
 import { useAnalyticsContext } from '../context';
-import { CAMPAIGN } from '../events';
 import { useAnalytics } from '../hooks';
-import {
-    getAssetClickEvent,
-    getRecipientInfo,
-    getUrlParameters,
-    isRecipientIdFormat,
-    stripUrlParameters,
-} from '../lib';
 
 export function Analytics() {
-    const { alias, identify, newsroom, page, track, user } = useAnalytics();
+    const { newsroom, page, track } = useAnalytics();
     const { onPageView } = useAnalyticsContext();
-    const aliasRef = useSyncedRef(alias);
-    const identifyRef = useSyncedRef(identify);
     const trackRef = useSyncedRef(track);
-    const userRef = useSyncedRef(user);
     const currentPath = usePathname();
     const previousPath = usePrevious(currentPath);
 
@@ -33,50 +22,6 @@ export function Analytics() {
         }
     }, [currentPath, onPageView, page, previousPath]);
 
-    /**
-     * @deprecated Improved campaign click tracking supersedes this functionality. To be removed in v2.0
-     */
-    useEffect(() => {
-        const userId = userRef.current().id();
-        const utm = getUrlParameters('utm_');
-        const id = utm.get('id');
-        const source = utm.get('source');
-        const medium = utm.get('medium');
-
-        if (id && source === 'email' && medium === 'campaign') {
-            getRecipientInfo(id)
-                .then((data) => {
-                    // re-map current user to the correct identifier
-                    if (userRef.current().id() === data.recipient_id) {
-                        aliasRef.current(data.id, id);
-                    }
-
-                    identifyRef.current(data.id);
-                    trackRef.current(CAMPAIGN.CLICK, { recipient_id: data.recipient_id }, () =>
-                        stripUrlParameters('utm_'),
-                    );
-                })
-                .catch((error) => {
-                    // eslint-disable-next-line no-console
-                    console.error(error);
-                });
-        } else if (id && isRecipientIdFormat(userId)) {
-            getRecipientInfo(userId)
-                .then((data) => {
-                    // re-map current user to the correct identifier
-                    if (userRef.current().id() === data.recipient_id) {
-                        aliasRef.current(data.id, id);
-                    }
-
-                    identifyRef.current(data.id);
-                })
-                .catch((error) => {
-                    // eslint-disable-next-line no-console
-                    console.error(error);
-                });
-        }
-    }, [aliasRef, identifyRef, trackRef, userRef]);
-
     useEffect(() => {
         const hashParameters = window.location.hash.replace('#', '').split('-');
 
@@ -84,11 +29,6 @@ export function Analytics() {
         const type = hashParameters.join('-');
 
         if (id && type) {
-            trackRef.current(getAssetClickEvent(type), { id, type }, () =>
-                // TODO: To be removed in v2.0
-                stripUrlParameters('asset_'),
-            );
-
             // Auto-click assest passed in query parameters (used by campaign links)
             // Pulled from https://github.com/prezly/prezly/blob/9ac32bc15760636ed47eea6fe637d245fa752d32/apps/press/resources/javascripts/prezly.js#L425-L458
             const delay = type === 'image' || type === 'gallery-image' ? 500 : 0;
