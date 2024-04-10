@@ -12,7 +12,7 @@ import { useQueue } from './useQueue';
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
 export function useAnalytics() {
-    const { analytics, consent, isEnabled, newsroom, story, trackingPolicy } =
+    const { analytics, consent, gallery, isEnabled, newsroom, story, trackingPolicy } =
         useAnalyticsContext();
     const plausible = usePlausible();
 
@@ -21,6 +21,7 @@ export function useAnalytics() {
         is_plausible_enabled: false,
     };
     const storyUuid = story?.uuid;
+    const galleryUuid = gallery?.uuid;
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
     // which would not be possible when passing the `analytics` object directly
@@ -46,13 +47,16 @@ export function useAnalytics() {
                     ...(storyUuid && {
                         story: storyUuid,
                     }),
+                    ...(galleryUuid && {
+                        gallery: galleryUuid,
+                    }),
                     ...(trackingPolicy !== TrackingPolicy.DEFAULT && {
                         tracking_policy: trackingPolicy,
                     }),
                 },
             };
         },
-        [newsroomUuid, storyUuid, trackingPolicy],
+        [galleryUuid, newsroomUuid, storyUuid, trackingPolicy],
     );
 
     const identify = useCallback(
