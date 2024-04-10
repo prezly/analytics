@@ -6,6 +6,7 @@ import Script from 'next/script';
 import { useEffect } from 'react';
 
 import { useAnalyticsContext } from '../context';
+import { ACTIONS } from '../events';
 import { useAnalytics } from '../hooks';
 
 export function Analytics() {
@@ -21,6 +22,27 @@ export function Analytics() {
             page(undefined, undefined, data);
         }
     }, [currentPath, onPageView, page, previousPath]);
+
+    useEffect(() => {
+        function handleClick(event: MouseEvent) {
+            if (event.target instanceof HTMLElement) {
+                const nearestAnchor = event.target.closest('a');
+
+                if (nearestAnchor) {
+                    const url = new URL(nearestAnchor.href);
+                    const isExternalDomain = url.hostname !== window.location.hostname;
+
+                    if (isExternalDomain) {
+                        track(ACTIONS.OUTBOUND_LINK_CLICK, { href: nearestAnchor.href });
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('click', handleClick);
+
+        return () => document.removeEventListener('click', handleClick);
+    }, [track]);
 
     useEffect(() => {
         const hashParameters = window.location.hash.replace('#', '').split('-');
