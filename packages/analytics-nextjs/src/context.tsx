@@ -9,11 +9,17 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { getConsentCookie, getUserTrackingConsent, setConsentCookie } from './lib';
 import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
-import { type PickedNewsroomProperties, type PickedStoryProperties, TrackingPolicy } from './types';
+import { TrackingPolicy } from './types';
+import type {
+    PickedGalleryProperties,
+    PickedNewsroomProperties,
+    PickedStoryProperties,
+} from './types';
 
 interface Context {
     analytics: Analytics | undefined;
     consent: boolean | null;
+    gallery?: PickedGalleryProperties;
     isEnabled: boolean;
     /**
      * - TRUE  - user clicked "Allow"
@@ -30,6 +36,7 @@ interface Context {
 interface Props {
     cdnUrl?: string;
     cookie?: CookieOptions;
+    gallery?: PickedGalleryProperties;
     integrations?: Integrations;
     isEnabled?: boolean;
     /**
@@ -100,6 +107,7 @@ export function AnalyticsContextProvider({
     cdnUrl,
     children,
     cookie = {},
+    gallery,
     ignoreConsent,
     integrations,
     isEnabled = true,
@@ -205,6 +213,7 @@ export function AnalyticsContextProvider({
             value={{
                 analytics,
                 consent,
+                gallery,
                 isEnabled,
                 isUserConsentGiven,
                 newsroom,
