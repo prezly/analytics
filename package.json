@@ -52,7 +52,7 @@
     "prettier": "3.2.5",
     "rimraf": "3.0.2",
     "ts-jest": "28.0.8",
-    "typescript": "5.3.3"
+    "typescript": "5.4.4"
   },
   "dependencies": {
     "next": "^14.0.4",
