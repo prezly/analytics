@@ -22,7 +22,6 @@ interface Context {
      */
     isUserConsentGiven: boolean | null;
     newsroom?: PickedNewsroomProperties;
-    onPageView?: () => Record<string, any>;
     setConsent: (consent: boolean) => void;
     story?: PickedStoryProperties;
     trackingPolicy: TrackingPolicy;
@@ -38,10 +37,6 @@ interface Props {
      */
     isPlausibleEnabled?: boolean;
     newsroom?: PickedNewsroomProperties;
-    /**
-     * Allow passing along extra properties to page tracking calls.
-     */
-    onPageView?: () => Record<string, any>;
     story?: PickedStoryProperties;
     plugins?: Plugin[];
     segmentWriteKey?: string;
@@ -110,7 +105,6 @@ export function AnalyticsContextProvider({
     isEnabled = true,
     isPlausibleEnabled,
     newsroom,
-    onPageView,
     plausibleDomain,
     plugins,
     segmentWriteKey: customSegmentWriteKey,
@@ -214,7 +208,6 @@ export function AnalyticsContextProvider({
                 isEnabled,
                 isUserConsentGiven,
                 newsroom,
-                onPageView,
                 story,
                 setConsent,
                 trackingPolicy,
