@@ -1,27 +1,15 @@
 'use client';
 
-import { usePrevious, useSyncedRef } from '@react-hookz/web';
-import { usePathname } from 'next/navigation';
+import { useSyncedRef } from '@react-hookz/web';
 import Script from 'next/script';
 import { useEffect } from 'react';
 
-import { useAnalyticsContext } from '../context';
 import { ACTIONS } from '../events';
 import { useAnalytics } from '../hooks';
 
 export function Analytics() {
-    const { newsroom, page, track } = useAnalytics();
-    const { onPageView } = useAnalyticsContext();
+    const { newsroom, track } = useAnalytics();
     const trackRef = useSyncedRef(track);
-    const currentPath = usePathname();
-    const previousPath = usePrevious(currentPath);
-
-    useEffect(() => {
-        if (currentPath && currentPath !== previousPath) {
-            const data = onPageView?.() || {};
-            page(undefined, undefined, data);
-        }
-    }, [currentPath, onPageView, page, previousPath]);
 
     useEffect(() => {
         function handleClick(event: MouseEvent) {
