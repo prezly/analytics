@@ -7,6 +7,8 @@ import { useEffect } from 'react';
 import { ACTIONS } from '../events';
 import { useAnalytics } from '../hooks';
 
+import { UPLOADCARE_CDN_HOSTNAME } from './const';
+
 export function Analytics() {
     const { newsroom, track } = useAnalytics();
     const trackRef = useSyncedRef(track);
@@ -19,8 +21,9 @@ export function Analytics() {
                 if (nearestAnchor) {
                     const url = new URL(nearestAnchor.href);
                     const isExternalDomain = url.hostname !== window.location.hostname;
+                    const isUploadcareCdn = url.hostname === UPLOADCARE_CDN_HOSTNAME;
 
-                    if (isExternalDomain) {
+                    if (isExternalDomain && !isUploadcareCdn) {
                         track(ACTIONS.OUTBOUND_LINK_CLICK, { href: nearestAnchor.href });
                     }
                 }
