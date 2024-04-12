@@ -6,12 +6,16 @@ import { useEffect } from 'react';
 
 import { ACTIONS } from '../events';
 import { useAnalytics } from '../hooks';
+import { getRecipientInfo, getUrlParameters, isRecipientIdFormat } from '../lib';
 
 import { UPLOADCARE_CDN_HOSTNAME } from './const';
 
 export function Analytics() {
-    const { newsroom, track } = useAnalytics();
+    const { alias, identify, newsroom, track, user } = useAnalytics();
+    const aliasRef = useSyncedRef(alias);
+    const identifyRef = useSyncedRef(identify);
     const trackRef = useSyncedRef(track);
+    const userRef = useSyncedRef(user);
 
     useEffect(() => {
         function handleClick(event: MouseEvent) {
@@ -34,6 +38,28 @@ export function Analytics() {
 
         return () => document.removeEventListener('click', handleClick);
     }, [track]);
+
+    useEffect(() => {
+        const userId = userRef.current().id();
+        const utm = getUrlParameters('utm_');
+        const id = utm.get('id');
+
+        if (id && isRecipientIdFormat(userId)) {
+            getRecipientInfo(userId)
+                .then((data) => {
+                    // re-map current user to the correct identifier
+                    if (userRef.current().id() === data.recipient_id) {
+                        aliasRef.current(data.id, id);
+                    }
+
+                    identifyRef.current(data.id);
+                })
+                .catch((error) => {
+                    // eslint-disable-next-line no-console
+                    console.error(error);
+                });
+        }
+    }, [aliasRef, identifyRef, userRef]);
 
     useEffect(() => {
         const hashParameters = window.location.hash.replace('#', '').split('-');
