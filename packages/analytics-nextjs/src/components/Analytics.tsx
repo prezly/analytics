@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 
 import { ACTIONS } from '../events';
 import { useAnalytics } from '../hooks';
-import { getRecipientInfo, getUrlParameters, isRecipientIdFormat } from '../lib';
+import { getRecipientInfo, getUrlParameters } from '../lib';
 
 import { UPLOADCARE_CDN_HOSTNAME } from './const';
 
@@ -40,18 +40,12 @@ export function Analytics() {
     }, [track]);
 
     useEffect(() => {
-        const userId = userRef.current().id();
         const utm = getUrlParameters('utm_');
-        const id = utm.get('id');
+        const recipientId = utm.get('id');
 
-        if (id && isRecipientIdFormat(userId)) {
-            getRecipientInfo(userId)
+        if (recipientId) {
+            getRecipientInfo(recipientId)
                 .then((data) => {
-                    // re-map current user to the correct identifier
-                    if (userRef.current().id() === data.recipient_id) {
-                        aliasRef.current(data.id, id);
-                    }
-
                     identifyRef.current(data.id);
                 })
                 .catch((error) => {

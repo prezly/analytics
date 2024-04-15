@@ -1,26 +1,9 @@
 import fetchMock from 'jest-fetch-mock';
 
 import type { RecipientInfo } from '../types';
-import { getRecipientInfo, isRecipientIdFormat } from './getRecipientInfo';
+import { getRecipientInfo } from './getRecipientInfo';
 
 fetchMock.enableMocks();
-
-describe('isRecipientIdFormat', () => {
-    it('should return `false` when argument is falsy', () => {
-        expect(isRecipientIdFormat()).toBe(false);
-        expect(isRecipientIdFormat('')).toBe(false);
-        expect(isRecipientIdFormat(null)).toBe(false);
-    });
-
-    it("should return `false` when argument doesn't have the correct format", () => {
-        expect(isRecipientIdFormat('random_invalid_id')).toBe(false);
-    });
-
-    it('should return `true` when argument has the correct format', () => {
-        expect(isRecipientIdFormat('campaign_abcd_efgh.contact_zxcv_asdf')).toBe(true);
-        expect(isRecipientIdFormat('prezly_123.campaign_123_456.contact_123_456')).toBe(true);
-    });
-});
 
 describe('getRecipientInfo', () => {
     beforeEach(() => {
