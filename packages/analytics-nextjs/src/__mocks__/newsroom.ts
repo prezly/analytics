@@ -1,5 +1,4 @@
-import type { Newsroom } from '@prezly/sdk';
-import { EmailBrandingMode, NewsroomStatus, TextDirection, TrackingPolicy } from '@prezly/sdk';
+import { Culture, Newsroom } from '@prezly/sdk';
 
 /**
  * Pulled from The Good News Room
@@ -59,7 +58,7 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             locale: 'en',
             name: 'English (Global)',
             native_name: 'English (Global)',
-            direction: TextDirection.LTR,
+            direction: Culture.TextDirection.LTR,
             language_code: 'en',
         },
         {
@@ -67,7 +66,7 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             locale: 'es_ES',
             name: 'Spanish (Spain)',
             native_name: 'Español (España)',
-            direction: TextDirection.LTR,
+            direction: Culture.TextDirection.LTR,
             language_code: 'es',
         },
         {
@@ -75,7 +74,7 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             locale: 'fr',
             name: 'French (Global)',
             native_name: 'Français (Mondial)',
-            direction: TextDirection.LTR,
+            direction: Culture.TextDirection.LTR,
             language_code: 'fr',
         },
         {
@@ -83,12 +82,14 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             locale: 'nl_BE',
             name: 'Dutch (Belgium)',
             native_name: 'Nederlands (België)',
-            direction: TextDirection.LTR,
+            direction: Culture.TextDirection.LTR,
             language_code: 'nl',
         },
     ],
     campaigns_number: 0,
+    pitches_number: 0,
     stories_number: 26,
+    coverage_number: 0,
     public_galleries_number: 3,
     square_logo: {
         version: 2,
@@ -110,6 +111,8 @@ export const DEFAULT_NEWSROOM: Newsroom = {
         original_height: 332,
         effects: [],
     },
+    email_logo: null,
+    email_logo_alignment: null,
     icon: {
         version: 2,
         uuid: '848ea31f-c575-4b8b-a369-1bf8b0f3a1c7',
@@ -120,24 +123,30 @@ export const DEFAULT_NEWSROOM: Newsroom = {
         original_height: 326,
         effects: [],
     },
-    email_branding_mode: EmailBrandingMode.CUSTOM,
+    email_branding_mode: Newsroom.EmailBrandingMode.CUSTOM,
     email_branding: {
         background_color: '#fafafa',
         title_color: '#5748ff',
         text_color: '#1427d9',
         link_color: '#8b83ed',
+        header_background_color: '#fafafa',
+        header_link_color: '#8b83ed',
     },
     is_privacy_portal_enabled: true,
     custom_privacy_policy_link: null,
     custom_data_request_link: null,
-    tracking_policy: TrackingPolicy.DEFAULT,
-    cookiepro: {
+    tracking_policy: Newsroom.TrackingPolicy.DEFAULT,
+    onetrust_cookie_consent: {
         is_enabled: false,
-        category: null,
+        category: '',
+        script: '',
     },
     ga_tracking_id: null,
     segment_analytics_id: '',
     is_subscription_form_enabled: true,
     is_white_labeled: false,
-    status: NewsroomStatus.ACTIVE,
+    status: Newsroom.Status.ACTIVE,
+    google_analytics_id: null,
+    auto_create_contacts_from_subscribers: false,
+    google_search_console_key: null,
 };
