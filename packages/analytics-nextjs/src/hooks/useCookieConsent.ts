@@ -1,20 +1,21 @@
 import { useAnalyticsContext } from '../context';
 
 interface State {
-    accept: () => void;
+    // API
+    accept(): void;
+    reject(): void;
+    toggle(): void;
     /**
-     * - TRUE  - user clicked "Allow"
-     * - FALSE - user clicked "Disallow" or browser "Do Not Track" is enabled
-     * - NULL  - user didn't click anything yet
+     * - TRUE  - tracking allowed (i.e. user clicked "Allow")
+     * - FALSE - tracking disallowed (i.e. user clicked "Disallow" or browser "Do Not Track" mode is ON)
+     * - NULL  - unknown (i.e. user didn't click anything yet, and no browser preference set)
      */
-    isUserConsentGiven: boolean | null;
-    reject: () => void;
-    supportsCookie: boolean;
-    toggle: () => void;
+    isTrackingCookieAllowed: boolean | null;
+    isNavigatorSupportsCookies: boolean;
 }
 
 export function useCookieConsent(): State {
-    const { consent, isUserConsentGiven, setConsent } = useAnalyticsContext();
+    const { consent, isTrackingCookieAllowed, setConsent } = useAnalyticsContext();
 
     function accept() {
         return setConsent(true);
@@ -27,10 +28,12 @@ export function useCookieConsent(): State {
     }
 
     return {
+        // flags
+        isTrackingCookieAllowed,
+        isNavigatorSupportsCookies: typeof navigator !== 'undefined' && navigator.cookieEnabled,
+        // API
         accept,
-        isUserConsentGiven,
         reject,
-        supportsCookie: typeof navigator !== 'undefined' && navigator.cookieEnabled,
         toggle,
     };
 }

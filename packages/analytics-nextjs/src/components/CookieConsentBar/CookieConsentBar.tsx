@@ -20,14 +20,14 @@ export function CookieConsentBar({ children }: Props) {
     const { isEnabled } = useAnalyticsContext();
     const {
         accept: onAccept,
-        isUserConsentGiven,
         reject: onReject,
-        supportsCookie,
+        isTrackingCookieAllowed,
+        isNavigatorSupportsCookies,
     } = useCookieConsent();
 
     useEffect(() => setMounted(true), []);
 
-    if (!mounted || !isEnabled || !supportsCookie || isUserConsentGiven !== null) {
+    if (!mounted || !isEnabled || !isNavigatorSupportsCookies || isTrackingCookieAllowed !== null) {
         return null;
     }
 

@@ -7,7 +7,7 @@ import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { getConsentCookie, getUserTrackingConsent, setConsentCookie } from './lib';
+import { getConsentCookie, isTrackingCookieAllowed, setConsentCookie } from './lib';
 import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
@@ -22,11 +22,11 @@ interface Context {
     gallery?: PickedGalleryProperties;
     isEnabled: boolean;
     /**
-     * - TRUE  - user clicked "Allow"
-     * - FALSE - user clicked "Disallow" or browser "Do Not Track" is enabled
-     * - NULL  - user didn't click anything yet
+     * - TRUE  - tracking allowed (i.e. user clicked "Allow")
+     * - FALSE - tracking disallowed (i.e. user clicked "Disallow" or browser "Do Not Track" mode is ON)
+     * - NULL  - unknown (i.e. user didn't click anything yet, and no browser preference set)
      */
-    isUserConsentGiven: boolean | null;
+    isTrackingCookieAllowed: boolean | null;
     newsroom?: PickedNewsroomProperties;
     setConsent: (consent: boolean) => void;
     story?: PickedStoryProperties;
@@ -126,8 +126,6 @@ export function AnalyticsContextProvider({
     } = newsroom || {};
 
     const [consent, setConsent] = useState(ignoreConsent ? true : getConsentCookie());
-    const isUserConsentGiven = getUserTrackingConsent(consent, newsroom);
-
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
     useEffect(() => {
@@ -212,7 +210,7 @@ export function AnalyticsContextProvider({
                 consent,
                 gallery,
                 isEnabled,
-                isUserConsentGiven,
+                isTrackingCookieAllowed: isTrackingCookieAllowed(consent, newsroom),
                 newsroom,
                 story,
                 setConsent,
