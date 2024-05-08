@@ -79,7 +79,7 @@ export function Analytics() {
         }
     }, [trackRef]);
 
-    if (newsroom?.ga_tracking_id && newsroom?.ga_tracking_id.startsWith('GTM-')) {
+    if (newsroom?.google_analytics_id && newsroom?.google_analytics_id.startsWith('GTM-')) {
         return (
             <>
                 <Script
@@ -90,14 +90,14 @@ export function Analytics() {
                             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
                             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                            })(window,document,'script','dataLayer','${newsroom.ga_tracking_id}');
+                            })(window,document,'script','dataLayer','${newsroom.google_analytics_id}');
                         `,
                     }}
                 />
                 <noscript>
                     {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
                     <iframe
-                        src={`https://www.googletagmanager.com/ns.html?id=${newsroom.ga_tracking_id}`}
+                        src={`https://www.googletagmanager.com/ns.html?id=${newsroom.google_analytics_id}`}
                         height="0"
                         width="0"
                         style={{ display: 'none', visibility: 'hidden' }}
@@ -107,11 +107,11 @@ export function Analytics() {
         );
     }
 
-    if (newsroom?.ga_tracking_id) {
+    if (newsroom?.google_analytics_id) {
         return (
             <>
                 <Script
-                    src={`https://www.googletagmanager.com/gtag/js?id=${newsroom.ga_tracking_id}`}
+                    src={`https://www.googletagmanager.com/gtag/js?id=${newsroom.google_analytics_id}`}
                 />
                 <Script
                     id="google-tag-manager-bootstrap"
@@ -120,7 +120,7 @@ export function Analytics() {
                         window.dataLayer = window.dataLayer || [];
                         function gtag(){dataLayer.push(arguments);}
                         gtag('js', new Date());
-                        gtag('config', '${newsroom.ga_tracking_id}');
+                        gtag('config', '${newsroom.google_analytics_id}');
                         `,
                     }}
                 />

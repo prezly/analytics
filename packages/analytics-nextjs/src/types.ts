@@ -23,7 +23,7 @@ export type PickedNewsroomProperties = Pick<
     | 'uuid'
     | 'tracking_policy'
     | 'segment_analytics_id'
-    | 'ga_tracking_id'
+    | 'google_analytics_id'
     | 'is_plausible_enabled'
     | 'plausible_site_id'
 >;
