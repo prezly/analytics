@@ -68,11 +68,10 @@ export function Analytics() {
             // Pulled from https://github.com/prezly/prezly/blob/9ac32bc15760636ed47eea6fe637d245fa752d32/apps/press/resources/javascripts/prezly.js#L425-L458
             const delay = type === 'image' || type === 'gallery-image' ? 500 : 0;
             window.setTimeout(() => {
-                let targetEl = document.getElementById(`${type}-${id}`);
-                if (!targetEl) {
+                const targetEl =
+                    document.getElementById(`${type}-${id}`) ||
                     // Fallback to data-attributes marked element
-                    targetEl = document.querySelector(`[data-type='${type}'][data-id='${id}']`);
-                }
+                    document.querySelector(`[data-type='${type}'][data-id='${id}']`);
 
                 if (targetEl) {
                     targetEl.click();
