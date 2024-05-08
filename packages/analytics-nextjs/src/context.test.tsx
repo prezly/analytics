@@ -8,7 +8,7 @@ import { DEFAULT_NEWSROOM } from './__mocks__/newsroom';
 
 import { AnalyticsContextProvider, useAnalyticsContext } from './context';
 import { getConsentCookie } from './lib';
-import { TrackingPolicy } from '@prezly/sdk';
+import { Newsroom } from '@prezly/sdk';
 
 jest.mock('./lib');
 
@@ -107,7 +107,7 @@ describe('AnalyticsContextProvider', () => {
             <AnalyticsContextProvider
                 newsroom={{
                     ...DEFAULT_NEWSROOM,
-                    tracking_policy: TrackingPolicy.DISABLED,
+                    tracking_policy: Newsroom.TrackingPolicy.DISABLED,
                     is_plausible_enabled: true,
                 }}
             />,

@@ -66,7 +66,7 @@ export function useAnalyticsContext() {
     return analyticsContext;
 }
 
-function PlausibleWrapperMaybe({
+function PlausibleProviderMaybe({
     isEnabled,
     newsroom,
     plausibleDomain,
@@ -120,13 +120,10 @@ export function AnalyticsContextProvider({
     user,
 }: PropsWithChildren<Props>) {
     const {
-        tracking_policy: trackingPolicy,
-        segment_analytics_id: segmentWriteKey,
+        tracking_policy: trackingPolicy = TrackingPolicy.DEFAULT,
+        segment_analytics_id: segmentWriteKey = customSegmentWriteKey,
         uuid,
-    } = newsroom || {
-        tracking_policy: TrackingPolicy.DEFAULT,
-        segment_analytics_id: customSegmentWriteKey,
-    };
+    } = newsroom || {};
 
     const [consent, setConsent] = useState(ignoreConsent ? true : getConsentCookie());
     const isUserConsentGiven = getUserTrackingConsent(consent, newsroom);
@@ -222,13 +219,13 @@ export function AnalyticsContextProvider({
                 trackingPolicy,
             }}
         >
-            <PlausibleWrapperMaybe
+            <PlausibleProviderMaybe
                 isEnabled={isEnabled || isPlausibleEnabled}
                 newsroom={newsroom}
                 plausibleDomain={plausibleDomain}
             >
                 {children}
-            </PlausibleWrapperMaybe>
+            </PlausibleProviderMaybe>
         </AnalyticsContext.Provider>
     );
 }
