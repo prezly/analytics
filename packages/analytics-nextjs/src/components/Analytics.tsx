@@ -80,14 +80,38 @@ export function Analytics() {
         }
     }, [trackRef]);
 
-    if (newsroom?.google_analytics_id) {
-        return newsroom.google_analytics_id.startsWith('GTM-') ? (
-            <GoogleTagManager analyticsId={newsroom.google_analytics_id as `GTM-${string}`} />
-        ) : (
-            <GoogleAnalytics analyticsId={newsroom.google_analytics_id} />
+    return (
+        <>
+            <OnetrustCookieIntegration
+                enabled={newsroom?.onetrust_cookie_consent?.is_enabled ?? false}
+                category={newsroom?.onetrust_cookie_consent?.category ?? ''}
+                script={newsroom?.onetrust_cookie_consent?.script ?? ''}
+            />
+            <GoogleAnalyticsIntegration analyticsId={newsroom?.google_analytics_id ?? null} />
+        </>
+    );
+}
+
+function OnetrustCookieIntegration(props: { enabled: boolean; category: string; script: string }) {
+    if (props.enabled && props.script) {
+        return (
+            <Script
+                id="onetrust-cookie-consent-integration"
+                dangerouslySetInnerHTML={{ __html: props.script }}
+            />
         );
     }
 
+    return null;
+}
+
+function GoogleAnalyticsIntegration(props: { analyticsId: string | null }) {
+    if (props.analyticsId?.startsWith('GTM-')) {
+        return <GoogleTagManager analyticsId={props.analyticsId as `GTM-${string}`} />;
+    }
+    if (props.analyticsId) {
+        return <GoogleAnalytics analyticsId={props.analyticsId} />;
+    }
     return null;
 }
 

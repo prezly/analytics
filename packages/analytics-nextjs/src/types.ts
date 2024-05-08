@@ -26,6 +26,7 @@ export type PickedNewsroomProperties = Pick<
     | 'google_analytics_id'
     | 'is_plausible_enabled'
     | 'plausible_site_id'
+    | 'onetrust_cookie_consent'
 >;
 
 export type PickedStoryProperties = Pick<Story, 'uuid'>;
