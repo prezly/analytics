@@ -11,6 +11,15 @@ import { useQueue } from './useQueue';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
+const NULL_USER = {
+    id() {
+        return null;
+    },
+    anonymousId() {
+        return null;
+    },
+};
+
 export function useAnalytics() {
     const { analytics, consent, gallery, isEnabled, newsroom, story, trackingPolicy } =
         useAnalyticsContext();
@@ -147,14 +156,7 @@ export function useAnalytics() {
         }
 
         // Return fake user API to keep code working even without analytics.js loaded
-        return {
-            id() {
-                return null;
-            },
-            anonymousId() {
-                return null;
-            },
-        };
+        return NULL_USER;
     }, [analytics]);
 
     useEffect(() => {
