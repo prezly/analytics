@@ -17,7 +17,7 @@ interface Props {
 export function CookieConsentBar({ children }: Props) {
     const [mounted, setMounted] = useState(false);
 
-    const { isEnabled } = useAnalyticsContext();
+    const { isEnabled, newsroom } = useAnalyticsContext();
     const {
         accept: onAccept,
         reject: onReject,
@@ -27,7 +27,13 @@ export function CookieConsentBar({ children }: Props) {
 
     useEffect(() => setMounted(true), []);
 
-    if (!mounted || !isEnabled || !isNavigatorSupportsCookies || isTrackingCookieAllowed !== null) {
+    if (
+        !mounted ||
+        !isEnabled ||
+        !isNavigatorSupportsCookies ||
+        isTrackingCookieAllowed !== null ||
+        newsroom?.onetrust_cookie_consent.is_enabled
+    ) {
         return null;
     }
 
