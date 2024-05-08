@@ -28,7 +28,7 @@ interface Context {
      */
     isTrackingCookieAllowed: boolean | null;
     newsroom?: PickedNewsroomProperties;
-    setConsent: (consent: boolean) => void;
+    setConsent(consent: boolean): void;
     story?: PickedStoryProperties;
     trackingPolicy: TrackingPolicy;
 }

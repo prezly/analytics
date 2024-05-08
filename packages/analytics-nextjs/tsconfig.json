@@ -17,5 +17,8 @@
     "src/plugins/testSpy.ts",
     "src/plugins/injectPrezlyMeta.ts"
   ],
-  "include": ["./src"]
+  "include": [
+    "./src/globals.d.ts",
+    "./src"
+  ]
 }

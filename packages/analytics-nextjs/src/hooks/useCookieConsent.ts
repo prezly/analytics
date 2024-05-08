@@ -15,16 +15,28 @@ interface State {
 }
 
 export function useCookieConsent(): State {
-    const { consent, isTrackingCookieAllowed, setConsent } = useAnalyticsContext();
+    const { consent, isTrackingCookieAllowed, setConsent, newsroom } = useAnalyticsContext();
 
     function accept() {
-        return setConsent(true);
+        if (newsroom?.onetrust_cookie_consent.is_enabled) {
+            window.OneTrust?.ToggleInfoDisplay();
+            return;
+        }
+        setConsent(true);
     }
     function reject() {
-        return setConsent(false);
+        if (newsroom?.onetrust_cookie_consent.is_enabled) {
+            window.OneTrust?.ToggleInfoDisplay();
+            return;
+        }
+        setConsent(false);
     }
     function toggle() {
-        return setConsent(!consent);
+        if (newsroom?.onetrust_cookie_consent.is_enabled) {
+            window.OneTrust?.ToggleInfoDisplay();
+            return;
+        }
+        setConsent(!consent);
     }
 
     return {
