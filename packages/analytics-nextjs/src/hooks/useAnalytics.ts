@@ -2,7 +2,7 @@ import { useLocalStorageValue, useSyncedRef } from '@react-hookz/web';
 import { usePlausible } from 'next-plausible';
 import { useCallback, useEffect } from 'react';
 
-import { useAnalyticsContext } from '../context';
+import { useAnalyticsContext } from '../AnalyticsProvider';
 import { stringify } from '../lib';
 import type { DeferredIdentity, PrezlyMeta } from '../types';
 import { TrackingPolicy } from '../types';

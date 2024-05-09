@@ -6,7 +6,7 @@ import '@testing-library/jest-dom';
 
 import { DEFAULT_NEWSROOM } from './__mocks__/newsroom';
 
-import { AnalyticsContextProvider, useAnalyticsContext } from './context';
+import { AnalyticsProvider, useAnalyticsContext } from './AnalyticsProvider';
 import { getConsentCookie } from './lib';
 import { Newsroom } from '@prezly/sdk';
 
@@ -25,12 +25,12 @@ function TestingComponent() {
     );
 }
 
-describe('AnalyticsContextProvider', () => {
+describe('AnalyticsProvider', () => {
     it('renders into document', async () => {
         getConsentCookieMock.mockReturnValue(true);
         const analyticsSpy = jest.spyOn(AnalyticsBrowser, 'load');
 
-        render(<AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM} />);
+        render(<AnalyticsProvider newsroom={DEFAULT_NEWSROOM} />);
 
         expect(getConsentCookieMock).toHaveBeenCalledTimes(1);
         await waitFor(() => expect(analyticsSpy).toHaveBeenCalledTimes(1));
@@ -40,9 +40,9 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { getByText } = render(
-            <AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM} isEnabled={false}>
+            <AnalyticsProvider newsroom={DEFAULT_NEWSROOM} isEnabled={false}>
                 <TestingComponent />
-            </AnalyticsContextProvider>,
+            </AnalyticsProvider>,
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('disabled');
@@ -52,9 +52,9 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(false);
 
         const { getByText } = render(
-            <AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM} ignoreConsent>
+            <AnalyticsProvider newsroom={DEFAULT_NEWSROOM} ignoreConsent>
                 <TestingComponent />
-            </AnalyticsContextProvider>,
+            </AnalyticsProvider>,
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('enabled');
@@ -65,7 +65,7 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { getByTestId } = render(
-            <AnalyticsContextProvider
+            <AnalyticsProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
             />,
         );
@@ -77,7 +77,7 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { getByTestId } = render(
-            <AnalyticsContextProvider
+            <AnalyticsProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
                 plausibleDomain="newsroom.prezly.test"
             />,
@@ -90,7 +90,7 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { queryByTestId } = render(
-            <AnalyticsContextProvider
+            <AnalyticsProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: false }}
             />,
         );
@@ -104,7 +104,7 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { queryByTestId } = render(
-            <AnalyticsContextProvider
+            <AnalyticsProvider
                 newsroom={{
                     ...DEFAULT_NEWSROOM,
                     tracking_policy: Newsroom.TrackingPolicy.DISABLED,
@@ -122,7 +122,7 @@ describe('AnalyticsContextProvider', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { queryByTestId } = render(
-            <AnalyticsContextProvider
+            <AnalyticsProvider
                 newsroom={{ ...DEFAULT_NEWSROOM, is_plausible_enabled: true }}
                 isEnabled={false}
             />,
@@ -138,9 +138,9 @@ describe('AnalyticsContextProvider', () => {
         const consoleSpy = jest.spyOn(console, 'warn');
 
         const { getByText } = render(
-            <AnalyticsContextProvider>
+            <AnalyticsProvider>
                 <TestingComponent />
-            </AnalyticsContextProvider>,
+            </AnalyticsProvider>,
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('enabled');
@@ -163,9 +163,9 @@ describe('AnalyticsContextProvider', () => {
         });
 
         const { getByText } = render(
-            <AnalyticsContextProvider>
+            <AnalyticsProvider>
                 <TestingComponent />
-            </AnalyticsContextProvider>,
+            </AnalyticsProvider>,
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('enabled');
@@ -187,7 +187,7 @@ describe('useAnalyticsContext', () => {
         }
 
         expect(caughtError).toEqual(
-            Error('No `AnalyticsContextProvider` found when calling `useAnalyticsContext`'),
+            Error('No `AnalyticsProvider` found when calling `useAnalyticsContext`'),
         );
     });
 
@@ -195,9 +195,9 @@ describe('useAnalyticsContext', () => {
         getConsentCookieMock.mockReturnValue(true);
 
         const { getByText } = render(
-            <AnalyticsContextProvider newsroom={DEFAULT_NEWSROOM}>
+            <AnalyticsProvider newsroom={DEFAULT_NEWSROOM}>
                 <TestingComponent />
-            </AnalyticsContextProvider>,
+            </AnalyticsProvider>,
         );
 
         expect(getByText(/analytics/i)).toHaveTextContent('enabled');

@@ -1,4 +1,4 @@
-import { useAnalyticsContext } from '../context';
+import { useAnalyticsContext } from '../AnalyticsProvider';
 
 interface State {
     // API

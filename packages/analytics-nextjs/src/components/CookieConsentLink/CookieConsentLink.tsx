@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { useAnalyticsContext } from '../../context';
+import { useAnalyticsContext } from '../../AnalyticsProvider';
 import { useCookieConsent } from '../../hooks';
 
 interface Props {

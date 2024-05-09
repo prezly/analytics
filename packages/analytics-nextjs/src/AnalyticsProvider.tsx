@@ -63,7 +63,7 @@ export const AnalyticsContext = createContext<Context | undefined>(undefined);
 export function useAnalyticsContext() {
     const analyticsContext = useContext(AnalyticsContext);
     if (!analyticsContext) {
-        throw new Error('No `AnalyticsContextProvider` found when calling `useAnalyticsContext`');
+        throw new Error('No `AnalyticsProvider` found when calling `useAnalyticsContext`');
     }
 
     return analyticsContext;
@@ -106,7 +106,7 @@ function PlausibleProviderMaybe({
     );
 }
 
-export function AnalyticsContextProvider({
+export function AnalyticsProvider({
     cdnUrl,
     children,
     cookie = {},
