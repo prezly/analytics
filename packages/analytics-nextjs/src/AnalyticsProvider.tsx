@@ -5,6 +5,7 @@
 import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
+import { usePathname } from 'next/navigation';
 import Script from 'next/script';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
@@ -272,27 +273,25 @@ export function AnalyticsProvider({
 }
 
 function OnetrustCookieIntegration(props: { script: string }) {
+    const path = usePathname();
+
+    useEffect(() => {
+        document.getElementById('onetrust-consent-sdk')?.remove();
+
+        if (window.OneTrust) {
+            window.OneTrust.Init();
+
+            setTimeout(() => {
+                window.OneTrust?.LoadBanner();
+            }, 1000);
+        }
+    }, [path]);
+
     return (
         <div
             id="onetrust-cookie-consent-integration"
             dangerouslySetInnerHTML={{
                 __html: `
-                    <script>
-                    (function () {
-                        var sdk = document.getElementById("onetrust-consent-sdk");
-                        if (sdk) {
-                            sdk.remove();
-                        }
-                
-                        if (window.OneTrust != null) {
-                            OneTrust.Init();
-                
-                            setTimeout(function() {
-                                OneTrust.LoadBanner();
-                            }, 1000);
-                        }                        
-                    })();
-                    </script>
                     ${props.script}
                     <script>
                     window.OptanonWrapper = (function () {
