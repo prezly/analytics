@@ -273,18 +273,20 @@ export function AnalyticsProvider({
 
 function OnetrustCookieIntegration(props: { script: string }) {
     return (
-        <Script
+        <div
             id="onetrust-cookie-consent-integration"
             dangerouslySetInnerHTML={{
                 __html: `
                     ${props.script}
+                    <script>
                     window.OptanonWrapper = (function () {
                       const prev = window.OptanonWrapper || function() {};
                       return function() {
                         prev();
                         document.body.dispatchEvent(new Event("${ONETRUST_INTEGRATION_EVENT}")); // allow listening to the OptanonWrapper callback from anywhere.
                       };
-                    })();`,
+                    })();
+                    </script>`,
             }}
         />
     );
