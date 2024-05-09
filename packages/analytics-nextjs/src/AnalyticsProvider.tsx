@@ -10,7 +10,12 @@ import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { getConsentCookie, isTrackingCookieAllowed, setConsentCookie } from './lib';
+import {
+    getConsentCookie,
+    getOnetrustCookieConsentStatus,
+    isTrackingCookieAllowed,
+    setConsentCookie,
+} from './lib';
 import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
@@ -57,6 +62,8 @@ interface Props {
      */
     ignoreConsent?: boolean;
 }
+
+const ONETRUST_INTEGRATION_EVENT = 'OnetrustConsentModalCallback';
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
@@ -128,7 +135,19 @@ export function AnalyticsProvider({
         uuid,
     } = newsroom || {};
 
-    const [consent, setConsent] = useState(ignoreConsent ? true : getConsentCookie());
+    const isOnetrustIntegrationEnabled = newsroom?.onetrust_cookie_consent.is_enabled ?? false;
+    const onetrustCookieCategory = newsroom?.onetrust_cookie_consent?.category ?? '';
+    const onetrustIntegrationScript = newsroom?.onetrust_cookie_consent?.script ?? '';
+
+    const [consent, setConsent] = useState<boolean | null>(() => {
+        if (ignoreConsent) {
+            return true;
+        }
+        if (isOnetrustIntegrationEnabled) {
+            return getOnetrustCookieConsentStatus(onetrustCookieCategory);
+        }
+        return getConsentCookie();
+    });
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
     useEffect(() => {
@@ -201,10 +220,27 @@ export function AnalyticsProvider({
     ]);
 
     useEffect(() => {
-        if (!ignoreConsent && typeof consent === 'boolean') {
+        if (!ignoreConsent && typeof consent === 'boolean' && !isOnetrustIntegrationEnabled) {
             setConsentCookie(consent);
         }
-    }, [consent, ignoreConsent]);
+    }, [consent, ignoreConsent, isOnetrustIntegrationEnabled]);
+
+    useEffect(() => {
+        if (!isOnetrustIntegrationEnabled || !onetrustCookieCategory) {
+            // Only execute the effect if the OneTrust integration is enabled.
+            return noop;
+        }
+
+        function handleEvent() {
+            setConsent(getOnetrustCookieConsentStatus(onetrustCookieCategory));
+        }
+
+        document.body.addEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
+
+        return () => {
+            document.body.removeEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
+        };
+    }, [isOnetrustIntegrationEnabled, onetrustCookieCategory]);
 
     return (
         <AnalyticsContext.Provider
@@ -220,11 +256,9 @@ export function AnalyticsProvider({
                 trackingPolicy,
             }}
         >
-            <OnetrustCookieIntegration
-                enabled={newsroom?.onetrust_cookie_consent?.is_enabled ?? false}
-                category={newsroom?.onetrust_cookie_consent?.category ?? ''}
-                script={newsroom?.onetrust_cookie_consent?.script ?? ''}
-            />
+            {isOnetrustIntegrationEnabled && onetrustIntegrationScript && (
+                <OnetrustCookieIntegration script={onetrustIntegrationScript} />
+            )}
             <GoogleAnalyticsIntegration analyticsId={newsroom?.google_analytics_id ?? null} />
             <PlausibleProviderMaybe
                 isEnabled={isEnabled || isPlausibleEnabled}
@@ -237,17 +271,23 @@ export function AnalyticsProvider({
     );
 }
 
-function OnetrustCookieIntegration(props: { enabled: boolean; category: string; script: string }) {
-    if (props.enabled && props.script) {
-        return (
-            <Script
-                id="onetrust-cookie-consent-integration"
-                dangerouslySetInnerHTML={{ __html: props.script }}
-            />
-        );
-    }
-
-    return null;
+function OnetrustCookieIntegration(props: { script: string }) {
+    return (
+        <Script
+            id="onetrust-cookie-consent-integration"
+            dangerouslySetInnerHTML={{
+                __html: `
+                    ${props.script}
+                    window.OptanonWrapper = (function () {
+                      const prev = window.OptanonWrapper || function() {};
+                      return function() {
+                        prev();
+                        document.body.dispatchEvent(new Event("${ONETRUST_INTEGRATION_EVENT}")); // allow listening to the OptanonWrapper callback from anywhere.
+                      };
+                    })();`,
+            }}
+        />
+    );
 }
 
 function GoogleAnalyticsIntegration(props: { analyticsId: string | null }) {
@@ -305,4 +345,8 @@ function GoogleAnalytics(props: { analyticsId: string }) {
             />
         </>
     );
+}
+
+function noop() {
+    // nothing
 }
