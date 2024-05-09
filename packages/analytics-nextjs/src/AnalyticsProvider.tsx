@@ -275,6 +275,9 @@ export function AnalyticsProvider({
 function OnetrustCookieIntegration(props: { script: string }) {
     const path = usePathname();
 
+    /*
+     * @see https://my.onetrust.com/s/article/UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046?language=en_US#UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046_section-idm46212287146848
+     */
     useEffect(() => {
         document.getElementById('onetrust-consent-sdk')?.remove();
 
