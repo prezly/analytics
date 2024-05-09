@@ -11,7 +11,7 @@ import { getRecipientInfo, getUrlParameters } from '../lib';
 
 import { UPLOADCARE_CDN_HOSTNAME } from './const';
 
-export function Analytics() {
+export function Tracking() {
     const { alias, identify, track, user } = useAnalytics();
     const aliasRef = useSyncedRef(alias);
     const identifyRef = useSyncedRef(identify);
