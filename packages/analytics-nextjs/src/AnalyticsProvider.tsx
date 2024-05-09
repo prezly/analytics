@@ -277,6 +277,22 @@ function OnetrustCookieIntegration(props: { script: string }) {
             id="onetrust-cookie-consent-integration"
             dangerouslySetInnerHTML={{
                 __html: `
+                    <script>
+                    (function () {
+                        var sdk = document.getElementById("onetrust-consent-sdk");
+                        if (sdk) {
+                            sdk.remove();
+                        }
+                
+                        if (window.OneTrust != null) {
+                            OneTrust.Init();
+                
+                            setTimeout(function() {
+                                OneTrust.LoadBanner();
+                            }, 1000);
+                        }                        
+                    })();
+                    </script>
                     ${props.script}
                     <script>
                     window.OptanonWrapper = (function () {
