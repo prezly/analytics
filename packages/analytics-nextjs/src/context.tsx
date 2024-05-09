@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
 'use client';
 
 import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
+import Script from 'next/script';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -217,6 +220,12 @@ export function AnalyticsContextProvider({
                 trackingPolicy,
             }}
         >
+            <OnetrustCookieIntegration
+                enabled={newsroom?.onetrust_cookie_consent?.is_enabled ?? false}
+                category={newsroom?.onetrust_cookie_consent?.category ?? ''}
+                script={newsroom?.onetrust_cookie_consent?.script ?? ''}
+            />
+            <GoogleAnalyticsIntegration analyticsId={newsroom?.google_analytics_id ?? null} />
             <PlausibleProviderMaybe
                 isEnabled={isEnabled || isPlausibleEnabled}
                 newsroom={newsroom}
@@ -225,5 +234,75 @@ export function AnalyticsContextProvider({
                 {children}
             </PlausibleProviderMaybe>
         </AnalyticsContext.Provider>
+    );
+}
+
+function OnetrustCookieIntegration(props: { enabled: boolean; category: string; script: string }) {
+    if (props.enabled && props.script) {
+        return (
+            <Script
+                id="onetrust-cookie-consent-integration"
+                dangerouslySetInnerHTML={{ __html: props.script }}
+            />
+        );
+    }
+
+    return null;
+}
+
+function GoogleAnalyticsIntegration(props: { analyticsId: string | null }) {
+    if (props.analyticsId?.startsWith('GTM-')) {
+        return <GoogleTagManager analyticsId={props.analyticsId as `GTM-${string}`} />;
+    }
+    if (props.analyticsId) {
+        return <GoogleAnalytics analyticsId={props.analyticsId} />;
+    }
+    return null;
+}
+
+function GoogleTagManager(props: { analyticsId: `GTM-${string}` }) {
+    return (
+        <>
+            <Script
+                id="google-tag-manager-bootstrap"
+                dangerouslySetInnerHTML={{
+                    __html: `
+                            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                            })(window,document,'script','dataLayer','${props.analyticsId}');
+                        `,
+                }}
+            />
+            <noscript>
+                {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
+                <iframe
+                    src={`https://www.googletagmanager.com/ns.html?id=${props.analyticsId}`}
+                    height="0"
+                    width="0"
+                    style={{ display: 'none', visibility: 'hidden' }}
+                />
+            </noscript>
+        </>
+    );
+}
+
+function GoogleAnalytics(props: { analyticsId: string }) {
+    return (
+        <>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${props.analyticsId}`} />
+            <Script
+                id="google-tag-manager-bootstrap"
+                dangerouslySetInnerHTML={{
+                    __html: `
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+                        gtag('config', '${props.analyticsId}');
+                        `,
+                }}
+            />
+        </>
     );
 }
