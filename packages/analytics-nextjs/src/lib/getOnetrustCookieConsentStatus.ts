@@ -5,6 +5,7 @@
  */
 export function getOnetrustCookieConsentStatus(categoryId: string): boolean | null {
     if (
+        typeof window === 'undefined' ||
         typeof window.OnetrustActiveGroups === 'undefined' ||
         window.OnetrustActiveGroups === null
     ) {

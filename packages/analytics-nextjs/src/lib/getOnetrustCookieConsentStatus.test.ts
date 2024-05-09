@@ -1,4 +1,4 @@
-import { getOnetrustCookieConsentStatus } from './onetrustCookieConsent';
+import { getOnetrustCookieConsentStatus } from './getOnetrustCookieConsentStatus';
 
 describe('getOnetrustCookieConsentStatus', () => {
     it('should return `null` if the global OnetrustActiveGroups variable is not defined. ', () => {
