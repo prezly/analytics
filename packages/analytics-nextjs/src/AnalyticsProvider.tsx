@@ -1,13 +1,22 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
 'use client';
 
 import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
+import { usePathname } from 'next/navigation';
+import Script from 'next/script';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { getConsentCookie, getUserTrackingConsent, setConsentCookie } from './lib';
+import {
+    getConsentCookie,
+    getOnetrustCookieConsentStatus,
+    isTrackingCookieAllowed,
+    setConsentCookie,
+} from './lib';
 import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
@@ -22,13 +31,13 @@ interface Context {
     gallery?: PickedGalleryProperties;
     isEnabled: boolean;
     /**
-     * - TRUE  - user clicked "Allow"
-     * - FALSE - user clicked "Disallow" or browser "Do Not Track" is enabled
-     * - NULL  - user didn't click anything yet
+     * - TRUE  - tracking allowed (i.e. user clicked "Allow")
+     * - FALSE - tracking disallowed (i.e. user clicked "Disallow" or browser "Do Not Track" mode is ON)
+     * - NULL  - unknown (i.e. user didn't click anything yet, and no browser preference set)
      */
-    isUserConsentGiven: boolean | null;
+    isTrackingCookieAllowed: boolean | null;
     newsroom?: PickedNewsroomProperties;
-    setConsent: (consent: boolean) => void;
+    setConsent(consent: boolean): void;
     story?: PickedStoryProperties;
     trackingPolicy: TrackingPolicy;
 }
@@ -55,12 +64,14 @@ interface Props {
     ignoreConsent?: boolean;
 }
 
+const ONETRUST_INTEGRATION_EVENT = 'OnetrustConsentModalCallback';
+
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
 export function useAnalyticsContext() {
     const analyticsContext = useContext(AnalyticsContext);
     if (!analyticsContext) {
-        throw new Error('No `AnalyticsContextProvider` found when calling `useAnalyticsContext`');
+        throw new Error('No `AnalyticsProvider` found when calling `useAnalyticsContext`');
     }
 
     return analyticsContext;
@@ -103,7 +114,7 @@ function PlausibleProviderMaybe({
     );
 }
 
-export function AnalyticsContextProvider({
+export function AnalyticsProvider({
     cdnUrl,
     children,
     cookie = {},
@@ -125,9 +136,19 @@ export function AnalyticsContextProvider({
         uuid,
     } = newsroom || {};
 
-    const [consent, setConsent] = useState(ignoreConsent ? true : getConsentCookie());
-    const isUserConsentGiven = getUserTrackingConsent(consent, newsroom);
+    const isOnetrustIntegrationEnabled = newsroom?.onetrust_cookie_consent.is_enabled ?? false;
+    const onetrustCookieCategory = newsroom?.onetrust_cookie_consent?.category ?? '';
+    const onetrustIntegrationScript = newsroom?.onetrust_cookie_consent?.script ?? '';
 
+    const [consent, setConsent] = useState<boolean | null>(() => {
+        if (ignoreConsent) {
+            return true;
+        }
+        if (isOnetrustIntegrationEnabled) {
+            return getOnetrustCookieConsentStatus(onetrustCookieCategory);
+        }
+        return getConsentCookie();
+    });
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
     useEffect(() => {
@@ -200,10 +221,27 @@ export function AnalyticsContextProvider({
     ]);
 
     useEffect(() => {
-        if (!ignoreConsent && typeof consent === 'boolean') {
+        if (!ignoreConsent && typeof consent === 'boolean' && !isOnetrustIntegrationEnabled) {
             setConsentCookie(consent);
         }
-    }, [consent, ignoreConsent]);
+    }, [consent, ignoreConsent, isOnetrustIntegrationEnabled]);
+
+    useEffect(() => {
+        if (!isOnetrustIntegrationEnabled || !onetrustCookieCategory) {
+            // Only execute the effect if the OneTrust integration is enabled.
+            return noop;
+        }
+
+        function handleEvent() {
+            setConsent(getOnetrustCookieConsentStatus(onetrustCookieCategory));
+        }
+
+        document.body.addEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
+
+        return () => {
+            document.body.removeEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
+        };
+    }, [isOnetrustIntegrationEnabled, onetrustCookieCategory]);
 
     return (
         <AnalyticsContext.Provider
@@ -212,13 +250,17 @@ export function AnalyticsContextProvider({
                 consent,
                 gallery,
                 isEnabled,
-                isUserConsentGiven,
+                isTrackingCookieAllowed: isTrackingCookieAllowed(consent, newsroom),
                 newsroom,
                 story,
                 setConsent,
                 trackingPolicy,
             }}
         >
+            {isOnetrustIntegrationEnabled && onetrustIntegrationScript && (
+                <OnetrustCookieIntegration script={onetrustIntegrationScript} />
+            )}
+            <GoogleAnalyticsIntegration analyticsId={newsroom?.google_analytics_id ?? null} />
             <PlausibleProviderMaybe
                 isEnabled={isEnabled || isPlausibleEnabled}
                 newsroom={newsroom}
@@ -228,4 +270,103 @@ export function AnalyticsContextProvider({
             </PlausibleProviderMaybe>
         </AnalyticsContext.Provider>
     );
+}
+
+function OnetrustCookieIntegration(props: { script: string }) {
+    const path = usePathname();
+
+    /*
+     * @see https://my.onetrust.com/s/article/UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046?language=en_US#UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046_section-idm46212287146848
+     */
+    useEffect(() => {
+        document.getElementById('onetrust-consent-sdk')?.remove();
+
+        if (window.OneTrust) {
+            window.OneTrust.Init();
+
+            setTimeout(() => {
+                window.OneTrust?.LoadBanner();
+            }, 1000);
+        }
+    }, [path]);
+
+    return (
+        <div
+            id="onetrust-cookie-consent-integration"
+            dangerouslySetInnerHTML={{
+                __html: `
+                    ${props.script}
+                    <script>
+                    window.OptanonWrapper = (function () {
+                      const prev = window.OptanonWrapper || function() {};
+                      return function() {
+                        prev();
+                        document.body.dispatchEvent(new Event("${ONETRUST_INTEGRATION_EVENT}")); // allow listening to the OptanonWrapper callback from anywhere.
+                      };
+                    })();
+                    </script>`,
+            }}
+        />
+    );
+}
+
+function GoogleAnalyticsIntegration(props: { analyticsId: string | null }) {
+    if (props.analyticsId?.startsWith('GTM-')) {
+        return <GoogleTagManager analyticsId={props.analyticsId as `GTM-${string}`} />;
+    }
+    if (props.analyticsId) {
+        return <GoogleAnalytics analyticsId={props.analyticsId} />;
+    }
+    return null;
+}
+
+function GoogleTagManager(props: { analyticsId: `GTM-${string}` }) {
+    return (
+        <>
+            <Script
+                id="google-tag-manager-bootstrap"
+                dangerouslySetInnerHTML={{
+                    __html: `
+                            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                            })(window,document,'script','dataLayer','${props.analyticsId}');
+                        `,
+                }}
+            />
+            <noscript>
+                {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
+                <iframe
+                    src={`https://www.googletagmanager.com/ns.html?id=${props.analyticsId}`}
+                    height="0"
+                    width="0"
+                    style={{ display: 'none', visibility: 'hidden' }}
+                />
+            </noscript>
+        </>
+    );
+}
+
+function GoogleAnalytics(props: { analyticsId: string }) {
+    return (
+        <>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${props.analyticsId}`} />
+            <Script
+                id="google-tag-manager-bootstrap"
+                dangerouslySetInnerHTML={{
+                    __html: `
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+                        gtag('config', '${props.analyticsId}');
+                        `,
+                }}
+            />
+        </>
+    );
+}
+
+function noop() {
+    // nothing
 }

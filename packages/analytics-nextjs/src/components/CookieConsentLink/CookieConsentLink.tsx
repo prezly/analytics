@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { useAnalyticsContext } from '../../context';
+import { useAnalyticsContext } from '../../AnalyticsProvider';
 import { useCookieConsent } from '../../hooks';
 
 interface Props {
@@ -18,17 +18,17 @@ export function CookieConsentLink({
 }: Props) {
     const { isEnabled } = useAnalyticsContext();
     const [mounted, setMounted] = useState(false);
-    const { isUserConsentGiven, supportsCookie, toggle } = useCookieConsent();
+    const { isTrackingCookieAllowed, isNavigatorSupportsCookies, toggle } = useCookieConsent();
 
     useEffect(() => setMounted(true), []);
 
-    if (!mounted || !isEnabled || !supportsCookie) {
+    if (!mounted || !isEnabled || !isNavigatorSupportsCookies) {
         return null;
     }
 
     return (
         <button type="button" className={className} onClick={toggle}>
-            {isUserConsentGiven ? stopUsingCookiesLabel : startUsingCookiesLabel}
+            {isTrackingCookieAllowed ? stopUsingCookiesLabel : startUsingCookiesLabel}
         </button>
     );
 }

@@ -142,11 +142,11 @@ export const DEFAULT_NEWSROOM: Newsroom = {
         script: '',
     },
     ga_tracking_id: null,
+    google_analytics_id: null,
     segment_analytics_id: '',
     is_subscription_form_enabled: true,
     is_white_labeled: false,
     status: Newsroom.Status.ACTIVE,
-    google_analytics_id: null,
     auto_create_contacts_from_subscribers: false,
     google_search_console_key: null,
 };

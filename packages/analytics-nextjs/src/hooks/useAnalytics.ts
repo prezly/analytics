@@ -2,7 +2,7 @@ import { useLocalStorageValue, useSyncedRef } from '@react-hookz/web';
 import { usePlausible } from 'next-plausible';
 import { useCallback, useEffect } from 'react';
 
-import { useAnalyticsContext } from '../context';
+import { useAnalyticsContext } from '../AnalyticsProvider';
 import { stringify } from '../lib';
 import type { DeferredIdentity, PrezlyMeta } from '../types';
 import { TrackingPolicy } from '../types';
@@ -10,6 +10,15 @@ import { TrackingPolicy } from '../types';
 import { useQueue } from './useQueue';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
+
+const NULL_USER = {
+    id() {
+        return null;
+    },
+    anonymousId() {
+        return null;
+    },
+};
 
 export function useAnalytics() {
     const { analytics, consent, gallery, isEnabled, newsroom, story, trackingPolicy } =
@@ -147,14 +156,7 @@ export function useAnalytics() {
         }
 
         // Return fake user API to keep code working even without analytics.js loaded
-        return {
-            id() {
-                return null;
-            },
-            anonymousId() {
-                return null;
-            },
-        };
+        return NULL_USER;
     }, [analytics]);
 
     useEffect(() => {

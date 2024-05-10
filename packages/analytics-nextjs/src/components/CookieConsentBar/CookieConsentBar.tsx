@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { useAnalyticsContext } from '../../context';
+import { useAnalyticsContext } from '../../AnalyticsProvider';
 import { useCookieConsent } from '../../hooks';
 
 interface InjectedCookieConsentProps {
@@ -17,17 +17,23 @@ interface Props {
 export function CookieConsentBar({ children }: Props) {
     const [mounted, setMounted] = useState(false);
 
-    const { isEnabled } = useAnalyticsContext();
+    const { isEnabled, newsroom } = useAnalyticsContext();
     const {
         accept: onAccept,
-        isUserConsentGiven,
         reject: onReject,
-        supportsCookie,
+        isTrackingCookieAllowed,
+        isNavigatorSupportsCookies,
     } = useCookieConsent();
 
     useEffect(() => setMounted(true), []);
 
-    if (!mounted || !isEnabled || !supportsCookie || isUserConsentGiven !== null) {
+    if (
+        !mounted ||
+        !isEnabled ||
+        !isNavigatorSupportsCookies ||
+        isTrackingCookieAllowed !== null ||
+        newsroom?.onetrust_cookie_consent.is_enabled
+    ) {
         return null;
     }
 

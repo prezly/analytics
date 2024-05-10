@@ -3,11 +3,11 @@ import { type PickedNewsroomProperties, TrackingPolicy } from '../types';
 import { isNavigatorTrackingAllowed } from './isNavigatorTrackingAllowed';
 
 /**
- * - TRUE  - user clicked "Allow"
- * - FALSE - user clicked "Disallow" or browser "Do Not Track" is enabled
- * - NULL  - user didn't click anything yet
+ * - TRUE  - tracking allowed (i.e. user clicked "Allow")
+ * - FALSE - tracking disallowed (i.e. user clicked "Disallow" or browser "Do Not Track" mode is ON)
+ * - NULL  - unknown (i.e. user didn't click anything yet, and no browser preference set)
  */
-export function getUserTrackingConsent(
+export function isTrackingCookieAllowed(
     consent: boolean | null,
     newsroom?: PickedNewsroomProperties,
 ): boolean | null {

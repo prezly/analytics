@@ -1,7 +1,7 @@
 import { TrackingPolicy } from '../types';
 import { DEFAULT_NEWSROOM } from '../__mocks__/newsroom';
 
-import { getUserTrackingConsent } from './getUserTrackingConsent';
+import { isTrackingCookieAllowed } from './isTrackingCookieAllowed';
 import * as isNavigatorTrackingAllowedModule from './isNavigatorTrackingAllowed';
 
 let trackingSpy: jest.SpyInstance<boolean | null>;
@@ -11,7 +11,7 @@ beforeEach(() => {
 
 it('should return `false` when Newsroom tracking is disabled', () => {
     expect(
-        getUserTrackingConsent(null, {
+        isTrackingCookieAllowed(null, {
             ...DEFAULT_NEWSROOM,
             tracking_policy: TrackingPolicy.DISABLED,
         }),
@@ -19,23 +19,23 @@ it('should return `false` when Newsroom tracking is disabled', () => {
 });
 
 it('should return a value when Newsroom is not provided', () => {
-    expect(getUserTrackingConsent(null)).toBe(null);
+    expect(isTrackingCookieAllowed(null)).toBe(null);
 });
 
 it("should return the consent value when it's not null", () => {
-    expect(getUserTrackingConsent(true, DEFAULT_NEWSROOM)).toBe(true);
+    expect(isTrackingCookieAllowed(true, DEFAULT_NEWSROOM)).toBe(true);
 
-    expect(getUserTrackingConsent(false, DEFAULT_NEWSROOM)).toBe(false);
+    expect(isTrackingCookieAllowed(false, DEFAULT_NEWSROOM)).toBe(false);
 });
 
 it('should return `false` when navigator tracking is not allowed', () => {
     trackingSpy.mockReturnValue(false);
 
-    expect(getUserTrackingConsent(null, DEFAULT_NEWSROOM)).toBe(false);
+    expect(isTrackingCookieAllowed(null, DEFAULT_NEWSROOM)).toBe(false);
 });
 
 it('should return `null` when navigator tracking has no preference', () => {
     trackingSpy.mockReturnValue(true);
 
-    expect(getUserTrackingConsent(null, DEFAULT_NEWSROOM)).toBe(null);
+    expect(isTrackingCookieAllowed(null, DEFAULT_NEWSROOM)).toBe(null);
 });

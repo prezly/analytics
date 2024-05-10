@@ -1,7 +1,8 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
 import { useSyncedRef } from '@react-hookz/web';
-import Script from 'next/script';
 import { useEffect } from 'react';
 
 import { ACTIONS } from '../events';
@@ -10,8 +11,8 @@ import { getRecipientInfo, getUrlParameters } from '../lib';
 
 import { UPLOADCARE_CDN_HOSTNAME } from './const';
 
-export function Analytics() {
-    const { alias, identify, newsroom, track, user } = useAnalytics();
+export function Tracking() {
+    const { alias, identify, track, user } = useAnalytics();
     const aliasRef = useSyncedRef(alias);
     const identifyRef = useSyncedRef(identify);
     const trackRef = useSyncedRef(track);
@@ -66,11 +67,10 @@ export function Analytics() {
             // Pulled from https://github.com/prezly/prezly/blob/9ac32bc15760636ed47eea6fe637d245fa752d32/apps/press/resources/javascripts/prezly.js#L425-L458
             const delay = type === 'image' || type === 'gallery-image' ? 500 : 0;
             window.setTimeout(() => {
-                let targetEl = document.getElementById(`${type}-${id}`);
-                if (!targetEl) {
+                const targetEl =
+                    document.getElementById(`${type}-${id}`) ||
                     // Fallback to data-attributes marked element
-                    targetEl = document.querySelector(`[data-type='${type}'][data-id='${id}']`);
-                }
+                    document.querySelector(`[data-type='${type}'][data-id='${id}']`);
 
                 if (targetEl) {
                     targetEl.click();
@@ -78,55 +78,6 @@ export function Analytics() {
             }, delay);
         }
     }, [trackRef]);
-
-    if (newsroom?.ga_tracking_id && newsroom?.ga_tracking_id.startsWith('GTM-')) {
-        return (
-            <>
-                <Script
-                    id="google-tag-manager-bootstrap"
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                            })(window,document,'script','dataLayer','${newsroom.ga_tracking_id}');
-                        `,
-                    }}
-                />
-                <noscript>
-                    {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
-                    <iframe
-                        src={`https://www.googletagmanager.com/ns.html?id=${newsroom.ga_tracking_id}`}
-                        height="0"
-                        width="0"
-                        style={{ display: 'none', visibility: 'hidden' }}
-                    />
-                </noscript>
-            </>
-        );
-    }
-
-    if (newsroom?.ga_tracking_id) {
-        return (
-            <>
-                <Script
-                    src={`https://www.googletagmanager.com/gtag/js?id=${newsroom.ga_tracking_id}`}
-                />
-                <Script
-                    id="google-tag-manager-bootstrap"
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                        window.dataLayer = window.dataLayer || [];
-                        function gtag(){dataLayer.push(arguments);}
-                        gtag('js', new Date());
-                        gtag('config', '${newsroom.ga_tracking_id}');
-                        `,
-                    }}
-                />
-            </>
-        );
-    }
 
     return null;
 }
