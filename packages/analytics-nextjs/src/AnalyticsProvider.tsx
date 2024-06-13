@@ -1,14 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
-'use client';
-
 import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
-import { usePathname } from 'next/navigation';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { GoogleAnalyticsIntegration } from './components/GoogleAnalyticsIntegration/GoogleAnalyticsIntegration';
+import { OneTrust } from './components/OneTrust';
 import { Plausible } from './components/Plausible';
 import { Segment } from './components/Segment';
 import {
@@ -63,8 +61,6 @@ interface Props {
     ignoreConsent?: boolean;
 }
 
-const ONETRUST_INTEGRATION_EVENT = 'OnetrustConsentModalCallback';
-
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
 export function useAnalyticsContext() {
@@ -94,7 +90,6 @@ export function AnalyticsProvider({
 }: PropsWithChildren<Props>) {
     const isOnetrustIntegrationEnabled = newsroom?.onetrust_cookie_consent.is_enabled ?? false;
     const onetrustCookieCategory = newsroom?.onetrust_cookie_consent?.category ?? '';
-    const onetrustIntegrationScript = newsroom?.onetrust_cookie_consent?.script ?? '';
 
     const [consent, setConsent] = useState<boolean | null>(() => {
         if (ignoreConsent) {
@@ -111,23 +106,6 @@ export function AnalyticsProvider({
             setConsentCookie(consent);
         }
     }, [consent, ignoreConsent, isOnetrustIntegrationEnabled]);
-
-    useEffect(() => {
-        if (!isOnetrustIntegrationEnabled || !onetrustCookieCategory) {
-            // Only execute the effect if the OneTrust integration is enabled.
-            return noop;
-        }
-
-        function handleEvent() {
-            setConsent(getOnetrustCookieConsentStatus(onetrustCookieCategory));
-        }
-
-        document.body.addEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
-
-        return () => {
-            document.body.removeEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
-        };
-    }, [isOnetrustIntegrationEnabled, onetrustCookieCategory]);
 
     const shouldUsePlausible =
         isEnabled &&
@@ -150,9 +128,7 @@ export function AnalyticsProvider({
                 // trackingPolicy,
             }}
         >
-            {isOnetrustIntegrationEnabled && onetrustIntegrationScript && (
-                <OnetrustCookieIntegration script={onetrustIntegrationScript} />
-            )}
+            <OneTrust newsroom={newsroom} />
 
             <GoogleAnalyticsIntegration analyticsId={newsroom?.google_analytics_id ?? null} />
 
@@ -175,46 +151,4 @@ export function AnalyticsProvider({
             {children}
         </AnalyticsContext.Provider>
     );
-}
-
-function OnetrustCookieIntegration(props: { script: string }) {
-    const path = usePathname();
-
-    /*
-     * @see https://my.onetrust.com/s/article/UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046?language=en_US#UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046_section-idm46212287146848
-     */
-    useEffect(() => {
-        document.getElementById('onetrust-consent-sdk')?.remove();
-
-        if (window.OneTrust) {
-            window.OneTrust.Init();
-
-            setTimeout(() => {
-                window.OneTrust?.LoadBanner();
-            }, 1000);
-        }
-    }, [path]);
-
-    return (
-        <div
-            id="onetrust-cookie-consent-integration"
-            dangerouslySetInnerHTML={{
-                __html: `
-                    ${props.script}
-                    <script>
-                    window.OptanonWrapper = (function () {
-                      const prev = window.OptanonWrapper || function() {};
-                      return function() {
-                        prev();
-                        document.body.dispatchEvent(new Event("${ONETRUST_INTEGRATION_EVENT}")); // allow listening to the OptanonWrapper callback from anywhere.
-                      };
-                    })();
-                    </script>`,
-            }}
-        />
-    );
-}
-
-function noop() {
-    // nothing
 }
