@@ -6,11 +6,11 @@ import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/anal
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
 import { usePathname } from 'next/navigation';
-import Script from 'next/script';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
+import { GoogleAnalyticsIntegration } from './components/GoogleAnalyticsIntegration/GoogleAnalyticsIntegration';
 import {
     getConsentCookie,
     getOnetrustCookieConsentStatus,
@@ -307,63 +307,6 @@ function OnetrustCookieIntegration(props: { script: string }) {
                     </script>`,
             }}
         />
-    );
-}
-
-function GoogleAnalyticsIntegration(props: { analyticsId: string | null }) {
-    if (props.analyticsId?.startsWith('GTM-')) {
-        return <GoogleTagManager analyticsId={props.analyticsId as `GTM-${string}`} />;
-    }
-    if (props.analyticsId) {
-        return <GoogleAnalytics analyticsId={props.analyticsId} />;
-    }
-    return null;
-}
-
-function GoogleTagManager(props: { analyticsId: `GTM-${string}` }) {
-    return (
-        <>
-            <Script
-                id="google-tag-manager-bootstrap"
-                dangerouslySetInnerHTML={{
-                    __html: `
-                            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                            })(window,document,'script','dataLayer','${props.analyticsId}');
-                        `,
-                }}
-            />
-            <noscript>
-                {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
-                <iframe
-                    src={`https://www.googletagmanager.com/ns.html?id=${props.analyticsId}`}
-                    height="0"
-                    width="0"
-                    style={{ display: 'none', visibility: 'hidden' }}
-                />
-            </noscript>
-        </>
-    );
-}
-
-function GoogleAnalytics(props: { analyticsId: string }) {
-    return (
-        <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${props.analyticsId}`} />
-            <Script
-                id="google-tag-manager-bootstrap"
-                dangerouslySetInnerHTML={{
-                    __html: `
-                        window.dataLayer = window.dataLayer || [];
-                        function gtag(){dataLayer.push(arguments);}
-                        gtag('js', new Date());
-                        gtag('config', '${props.analyticsId}');
-                        `,
-                }}
-            />
-        </>
     );
 }
 
