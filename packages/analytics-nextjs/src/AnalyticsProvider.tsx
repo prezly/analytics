@@ -3,7 +3,6 @@
 'use client';
 
 import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/analytics-next';
-import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
 import { usePathname } from 'next/navigation';
 import type { PropsWithChildren } from 'react';
@@ -11,13 +10,13 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { GoogleAnalyticsIntegration } from './components/GoogleAnalyticsIntegration/GoogleAnalyticsIntegration';
 import { Plausible } from './components/Plausible';
+import { Segment } from './components/Segment';
 import {
     getConsentCookie,
     getOnetrustCookieConsentStatus,
     isTrackingCookieAllowed,
     setConsentCookie,
 } from './lib';
-import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
     PickedGalleryProperties,
@@ -89,16 +88,10 @@ export function AnalyticsProvider({
     newsroom,
     plausibleDomain,
     plugins,
-    segmentWriteKey: customSegmentWriteKey,
+    segmentWriteKey,
     story,
     user,
 }: PropsWithChildren<Props>) {
-    const {
-        tracking_policy: trackingPolicy = TrackingPolicy.DEFAULT,
-        segment_analytics_id: segmentWriteKey = customSegmentWriteKey,
-        uuid,
-    } = newsroom || {};
-
     const isOnetrustIntegrationEnabled = newsroom?.onetrust_cookie_consent.is_enabled ?? false;
     const onetrustCookieCategory = newsroom?.onetrust_cookie_consent?.category ?? '';
     const onetrustIntegrationScript = newsroom?.onetrust_cookie_consent?.script ?? '';
@@ -112,76 +105,6 @@ export function AnalyticsProvider({
         }
         return getConsentCookie();
     });
-    const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
-
-    useEffect(() => {
-        async function loadAnalytics(writeKey: string) {
-            try {
-                const [response] = await AnalyticsBrowser.load(
-                    {
-                        writeKey,
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                        cdnURL: cdnUrl,
-                        // If no Segment Write Key is provided, we initialize the library settings manually
-                        ...(!writeKey && {
-                            cdnSettings: {
-                                integrations: {},
-                            },
-                        }),
-                        plugins: [
-                            ...(uuid
-                                ? [sendEventToPrezlyPlugin(uuid), normalizePrezlyMetaPlugin()]
-                                : []),
-                            ...(plugins || []),
-                        ],
-                    },
-                    {
-                        // By default, the analytics.js library plants its cookies on the top-level domain.
-                        // We need to completely isolate tracking between any Prezly newsroom hosted on a .prezly.com subdomain.
-                        cookie: {
-                            domain: document.location.host,
-                            ...cookie,
-                        },
-                        integrations,
-                        user,
-                        // Disable calls to Segment API completely if no Write Key is provided
-                        ...(!writeKey && {
-                            // eslint-disable-next-line @typescript-eslint/naming-convention
-                            integrations: { 'Segment.io': false },
-                        }),
-                    },
-                );
-
-                setAnalytics(response);
-            } catch (error) {
-                // eslint-disable-next-line no-console
-                console.error('Error while loading Analytics', error);
-            }
-        }
-
-        if (isEnabled && trackingPolicy !== TrackingPolicy.DISABLED) {
-            if (!segmentWriteKey && !uuid) {
-                // eslint-disable-next-line no-console
-                console.warn(
-                    'Warning: You have not provided neither `newsroom`, nor `segmentWriteKey`. The library will not send any events.',
-                );
-            }
-            loadAnalytics(segmentWriteKey || '');
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        cdnUrl,
-        isEnabled,
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        JSON.stringify(cookie),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        JSON.stringify(integrations),
-        plugins,
-        segmentWriteKey,
-        trackingPolicy,
-        user,
-        uuid,
-    ]);
 
     useEffect(() => {
         if (!ignoreConsent && typeof consent === 'boolean' && !isOnetrustIntegrationEnabled) {
@@ -211,11 +134,12 @@ export function AnalyticsProvider({
         isPlausibleEnabled &&
         newsroom?.is_plausible_enabled &&
         newsroom?.tracking_policy !== TrackingPolicy.DISABLED;
+    const shouldUseSegment = isEnabled && newsroom?.tracking_policy !== TrackingPolicy.DISABLED;
 
     return (
         <AnalyticsContext.Provider
             value={{
-                analytics,
+                // analytics,
                 consent,
                 gallery,
                 isEnabled,
@@ -223,7 +147,7 @@ export function AnalyticsProvider({
                 newsroom,
                 story,
                 setConsent,
-                trackingPolicy,
+                // trackingPolicy,
             }}
         >
             {isOnetrustIntegrationEnabled && onetrustIntegrationScript && (
@@ -234,6 +158,18 @@ export function AnalyticsProvider({
 
             {shouldUsePlausible && (
                 <Plausible domain={plausibleDomain ?? newsroom.plausible_site_id} />
+            )}
+
+            {shouldUseSegment && (
+                <Segment
+                    cdnUrl={cdnUrl}
+                    cookie={cookie}
+                    integrations={integrations}
+                    newsroom={newsroom}
+                    plugins={plugins}
+                    segmentWriteKey={segmentWriteKey}
+                    user={user}
+                />
             )}
 
             {children}
