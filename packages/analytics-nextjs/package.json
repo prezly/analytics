@@ -37,7 +37,7 @@
     "next-plausible": "^3.12.0"
   },
   "devDependencies": {
-    "@prezly/sdk": "21.2.0",
+    "@prezly/sdk": "21.23.0",
     "@types/js-cookie": "3.0.6",
     "@types/node": "22.10.1",
     "@types/react": "18.3.14",
