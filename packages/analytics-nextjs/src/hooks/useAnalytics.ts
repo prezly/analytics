@@ -1,4 +1,4 @@
-import { useLocalStorageValue, useSyncedRef } from '@react-hookz/web';
+import { useLocalStorageValue, useQueue, useSyncedRef } from '@react-hookz/web';
 import { usePlausible } from 'next-plausible';
 import { useCallback, useEffect } from 'react';
 
@@ -6,8 +6,6 @@ import { useAnalyticsContext } from '../AnalyticsProvider';
 import { stringify } from '../lib';
 import type { DeferredIdentity, PrezlyMeta } from '../types';
 import { TrackingPolicy } from '../types';
-
-import { useQueue } from './useQueue';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
