@@ -37,8 +37,11 @@ export function useAnalytics() {
     const analyticsRef = useSyncedRef(analytics);
     const plausibleRef = useSyncedRef(plausible);
 
-    const [deferredIdentity, setDeferredIdentity, removeDeferredIdentity] =
-        useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
+    const {
+        value: deferredIdentity,
+        set: setDeferredIdentity,
+        remove: removeDeferredIdentity,
+    } = useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
     const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
 
     // The prezly traits should be placed in the root of the event when sent to the API.
