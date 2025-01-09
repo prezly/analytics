@@ -67,11 +67,6 @@ export function useAnalytics() {
         (userId: string, traits: object = {}, callback?: () => void) => {
             const extendedTraits = injectPrezlyMeta(traits);
 
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`analytics.identify(${stringify(userId, extendedTraits)})`);
-            }
-
             if (trackingPolicy === TrackingPolicy.CONSENT_TO_IDENTIFY && !consent) {
                 setDeferredIdentity({ userId, traits: extendedTraits });
                 if (callback) {
@@ -92,11 +87,6 @@ export function useAnalytics() {
 
     const alias = useCallback(
         (userId: string, previousId: string) => {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`analytics.alias(${stringify(userId, previousId)})`);
-            }
-
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.alias) {
                     analyticsRef.current.alias(userId, previousId);
@@ -110,11 +100,6 @@ export function useAnalytics() {
         (category?: string, name?: string, properties: object = {}, callback?: () => void) => {
             const extendedProperties = injectPrezlyMeta(properties);
 
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`analytics.page(${stringify(category, name, extendedProperties)})`);
-            }
-
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.page) {
                     analyticsRef.current.page(category, name, extendedProperties, {}, callback);
@@ -127,11 +112,6 @@ export function useAnalytics() {
     const track = useCallback(
         (event: string, properties: object = {}, callback?: () => void) => {
             const extendedProperties = injectPrezlyMeta(properties);
-
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`analytics.track(${stringify(event, extendedProperties)})`);
-            }
 
             addToQueue(() => {
                 if (analyticsRef.current && analyticsRef.current.track) {

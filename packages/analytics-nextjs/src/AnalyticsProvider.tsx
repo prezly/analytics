@@ -10,7 +10,7 @@ import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { isTrackingCookieAllowed } from './lib';
-import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
+import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
     PickedGalleryProperties,
@@ -99,6 +99,7 @@ export function AnalyticsProvider({
                             ...(uuid
                                 ? [sendEventToPrezlyPlugin(uuid), normalizePrezlyMetaPlugin()]
                                 : []),
+                            ...(process.env.NODE_ENV === 'production' ? [] : [logToConsole()]),
                             ...(plugins || []),
                         ],
                     },
