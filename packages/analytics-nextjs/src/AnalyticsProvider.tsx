@@ -10,7 +10,7 @@ import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { isTrackingCookieAllowed, setConsentCookie } from './lib';
+import { isTrackingCookieAllowed } from './lib';
 import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
@@ -52,10 +52,6 @@ interface Props {
     segmentWriteKey?: string;
     plausibleDomain?: string;
     user?: UserOptions;
-    /**
-     * Skips user consent checks. Use cautiously.
-     */
-    ignoreConsent?: boolean;
 }
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
@@ -111,7 +107,6 @@ export function AnalyticsProvider({
     children,
     cookie = {},
     gallery,
-    ignoreConsent,
     integrations,
     isEnabled = true,
     isPlausibleEnabled,
@@ -199,12 +194,6 @@ export function AnalyticsProvider({
         user,
         uuid,
     ]);
-
-    useEffect(() => {
-        if (!ignoreConsent && typeof consent === 'boolean') {
-            setConsentCookie(consent);
-        }
-    }, [consent, ignoreConsent]);
 
     return (
         <AnalyticsContext.Provider
