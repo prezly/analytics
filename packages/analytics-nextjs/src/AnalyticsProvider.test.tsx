@@ -7,8 +7,11 @@ import '@testing-library/jest-dom';
 import { DEFAULT_NEWSROOM } from './__mocks__/newsroom';
 
 import { AnalyticsProvider, useAnalyticsContext } from './AnalyticsProvider';
-import { getConsentCookie } from './lib';
-import { Newsroom } from '@prezly/sdk';
+
+function getConsentCookie(): boolean {
+    // TODO:
+    throw new Error('Rewrite tests once external consent management is implemented');
+}
 
 jest.mock('./lib');
 
