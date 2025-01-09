@@ -1,5 +1,4 @@
 import { useLocalStorageValue, useQueue, useSyncedRef } from '@react-hookz/web';
-import { usePlausible } from 'next-plausible';
 import { useCallback, useEffect } from 'react';
 
 import { useAnalyticsContext } from '../AnalyticsProvider';
@@ -21,19 +20,14 @@ const NULL_USER = {
 export function useAnalytics() {
     const { analytics, consent, gallery, isEnabled, newsroom, story, trackingPolicy } =
         useAnalyticsContext();
-    const plausible = usePlausible();
 
-    const { uuid: newsroomUuid, is_plausible_enabled: isPlausibleEnabled } = newsroom || {
-        uuid: undefined,
-        is_plausible_enabled: false,
-    };
+    const { uuid: newsroomUuid } = newsroom || { uuid: undefined };
     const storyUuid = story?.uuid;
     const galleryUuid = gallery?.uuid;
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
     // which would not be possible when passing the `analytics` object directly
     const analyticsRef = useSyncedRef(analytics);
-    const plausibleRef = useSyncedRef(plausible);
 
     const {
         value: deferredIdentity,
@@ -143,12 +137,9 @@ export function useAnalytics() {
                 if (analyticsRef.current && analyticsRef.current.track) {
                     analyticsRef.current.track(event, extendedProperties, {}, callback);
                 }
-                if (isPlausibleEnabled) {
-                    plausibleRef.current(event, { props: extendedProperties });
-                }
             });
         },
-        [addToQueue, analyticsRef, injectPrezlyMeta, isPlausibleEnabled, plausibleRef],
+        [addToQueue, analyticsRef, injectPrezlyMeta],
     );
 
     const user = useCallback(() => {

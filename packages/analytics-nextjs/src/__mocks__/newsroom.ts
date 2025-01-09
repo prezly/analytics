@@ -18,12 +18,6 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     is_offline: false,
     is_multilingual: true,
     is_indexable: true,
-    is_plausible_enabled: false,
-    plausible_site_id: '',
-    plausible_stats: {
-        visits_last_7_days: null,
-        visits_last_7_days_previous: null,
-    },
     url: 'https://the-good-news-room.prezly.com/',
     links: {
         media_gallery_api: 'https://api.prezly.com/v1/rooms/12698/media',

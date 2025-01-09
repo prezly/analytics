@@ -6,7 +6,6 @@ import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/anal
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
 import Script from 'next/script';
-import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
@@ -42,15 +41,10 @@ interface Props {
     gallery?: PickedGalleryProperties;
     integrations?: Integrations;
     isEnabled?: boolean;
-    /**
-     * Enables Plausible tracking for newsrooms that have regular tracking disabled.
-     */
-    isPlausibleEnabled?: boolean;
     newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
     plugins?: Plugin[];
     segmentWriteKey?: string;
-    plausibleDomain?: string;
     user?: UserOptions;
 }
 
@@ -65,43 +59,6 @@ export function useAnalyticsContext() {
     return analyticsContext;
 }
 
-function PlausibleProviderMaybe({
-    isEnabled,
-    newsroom,
-    plausibleDomain,
-    children,
-}: PropsWithChildren<Pick<Props, 'isEnabled' | 'newsroom' | 'plausibleDomain'>>) {
-    if (
-        !isEnabled ||
-        !newsroom ||
-        !newsroom.is_plausible_enabled ||
-        newsroom.tracking_policy === TrackingPolicy.DISABLED
-    ) {
-        return <>{children}</>;
-    }
-
-    return (
-        <PlausibleProvider
-            domain={plausibleDomain ?? newsroom.plausible_site_id}
-            scriptProps={{
-                src: 'https://atlas.prezly.com/js/script.outbound-links.js',
-                // This is a documented parameter, but it's not reflected in the types
-                // See https://github.com/4lejandrito/next-plausible/blob/master/test/page/pages/scriptProps.js
-                // @ts-expect-error
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                'data-api': 'https://atlas.prezly.com/api/event',
-            }}
-        >
-            {/* 
-                This is the only way I found to test if the PlausibleProvider is rendered. 
-                It doesn't render any markup by itself, and the `usePlausible` hook looks the same whether provider is present or not 
-            */}
-            {process.env.NODE_ENV === 'test' && <div data-testid="plausible-debug-enabled" />}
-            {children}
-        </PlausibleProvider>
-    );
-}
-
 export function AnalyticsProvider({
     cdnUrl,
     children,
@@ -109,9 +66,7 @@ export function AnalyticsProvider({
     gallery,
     integrations,
     isEnabled = true,
-    isPlausibleEnabled,
     newsroom,
-    plausibleDomain,
     plugins,
     segmentWriteKey: customSegmentWriteKey,
     story,
@@ -210,13 +165,7 @@ export function AnalyticsProvider({
             }}
         >
             <GoogleAnalyticsIntegration analyticsId={newsroom?.google_analytics_id ?? null} />
-            <PlausibleProviderMaybe
-                isEnabled={isEnabled || isPlausibleEnabled}
-                newsroom={newsroom}
-                plausibleDomain={plausibleDomain}
-            >
-                {children}
-            </PlausibleProviderMaybe>
+            {children}
         </AnalyticsContext.Provider>
     );
 }
