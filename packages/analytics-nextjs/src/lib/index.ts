@@ -1,4 +1,3 @@
-export * from './cookieState';
 export * from './getApiUrl';
 export * from './getRecipientInfo';
 export * from './isTrackingCookieAllowed';
