@@ -136,11 +136,6 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     custom_privacy_policy_link: null,
     custom_data_request_link: null,
     tracking_policy: Newsroom.TrackingPolicy.DEFAULT,
-    onetrust_cookie_consent: {
-        is_enabled: false,
-        category: '',
-        script: '',
-    },
     ga_tracking_id: null,
     google_analytics_id: null,
     segment_analytics_id: '',

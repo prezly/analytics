@@ -5,18 +5,12 @@
 import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
-import { usePathname } from 'next/navigation';
 import Script from 'next/script';
 import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import {
-    getConsentCookie,
-    getOnetrustCookieConsentStatus,
-    isTrackingCookieAllowed,
-    setConsentCookie,
-} from './lib';
+import { isTrackingCookieAllowed, setConsentCookie } from './lib';
 import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
@@ -63,8 +57,6 @@ interface Props {
      */
     ignoreConsent?: boolean;
 }
-
-const ONETRUST_INTEGRATION_EVENT = 'OnetrustConsentModalCallback';
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
@@ -136,19 +128,7 @@ export function AnalyticsProvider({
         uuid,
     } = newsroom || {};
 
-    const isOnetrustIntegrationEnabled = newsroom?.onetrust_cookie_consent.is_enabled ?? false;
-    const onetrustCookieCategory = newsroom?.onetrust_cookie_consent?.category ?? '';
-    const onetrustIntegrationScript = newsroom?.onetrust_cookie_consent?.script ?? '';
-
-    const [consent, setConsent] = useState<boolean | null>(() => {
-        if (ignoreConsent) {
-            return true;
-        }
-        if (isOnetrustIntegrationEnabled) {
-            return getOnetrustCookieConsentStatus(onetrustCookieCategory);
-        }
-        return getConsentCookie();
-    });
+    const [consent, setConsent] = useState<boolean | null>(null);
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
     useEffect(() => {
@@ -221,27 +201,10 @@ export function AnalyticsProvider({
     ]);
 
     useEffect(() => {
-        if (!ignoreConsent && typeof consent === 'boolean' && !isOnetrustIntegrationEnabled) {
+        if (!ignoreConsent && typeof consent === 'boolean') {
             setConsentCookie(consent);
         }
-    }, [consent, ignoreConsent, isOnetrustIntegrationEnabled]);
-
-    useEffect(() => {
-        if (!isOnetrustIntegrationEnabled || !onetrustCookieCategory) {
-            // Only execute the effect if the OneTrust integration is enabled.
-            return noop;
-        }
-
-        function handleEvent() {
-            setConsent(getOnetrustCookieConsentStatus(onetrustCookieCategory));
-        }
-
-        document.body.addEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
-
-        return () => {
-            document.body.removeEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
-        };
-    }, [isOnetrustIntegrationEnabled, onetrustCookieCategory]);
+    }, [consent, ignoreConsent]);
 
     return (
         <AnalyticsContext.Provider
@@ -257,9 +220,6 @@ export function AnalyticsProvider({
                 trackingPolicy,
             }}
         >
-            {isOnetrustIntegrationEnabled && onetrustIntegrationScript && (
-                <OnetrustCookieIntegration script={onetrustIntegrationScript} />
-            )}
             <GoogleAnalyticsIntegration analyticsId={newsroom?.google_analytics_id ?? null} />
             <PlausibleProviderMaybe
                 isEnabled={isEnabled || isPlausibleEnabled}
@@ -269,44 +229,6 @@ export function AnalyticsProvider({
                 {children}
             </PlausibleProviderMaybe>
         </AnalyticsContext.Provider>
-    );
-}
-
-function OnetrustCookieIntegration(props: { script: string }) {
-    const path = usePathname();
-
-    /*
-     * @see https://my.onetrust.com/s/article/UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046?language=en_US#UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046_section-idm46212287146848
-     */
-    useEffect(() => {
-        document.getElementById('onetrust-consent-sdk')?.remove();
-
-        if (window.OneTrust) {
-            window.OneTrust.Init();
-
-            setTimeout(() => {
-                window.OneTrust?.LoadBanner();
-            }, 1000);
-        }
-    }, [path]);
-
-    return (
-        <div
-            id="onetrust-cookie-consent-integration"
-            dangerouslySetInnerHTML={{
-                __html: `
-                    ${props.script}
-                    <script>
-                    window.OptanonWrapper = (function () {
-                      const prev = window.OptanonWrapper || function() {};
-                      return function() {
-                        prev();
-                        document.body.dispatchEvent(new Event("${ONETRUST_INTEGRATION_EVENT}")); // allow listening to the OptanonWrapper callback from anywhere.
-                      };
-                    })();
-                    </script>`,
-            }}
-        />
     );
 }
 
@@ -365,8 +287,4 @@ function GoogleAnalytics(props: { analyticsId: string }) {
             />
         </>
     );
-}
-
-function noop() {
-    // nothing
 }
