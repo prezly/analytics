@@ -47,6 +47,6 @@ it('logs events correctly', async () => {
     await analytics.track('Test Event');
 
     expect(trackSpy).toHaveBeenCalled();
-    expect(eventCtx).not.toBe(undefined);
-    expect(eventCtx.event.event).toBe('Test Event');
+    expect(eventCtx!).not.toBe(undefined);
+    expect(eventCtx!.event.event).toBe('Test Event');
 });
