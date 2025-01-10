@@ -73,6 +73,7 @@ export function AnalyticsProvider({
     const {
         tracking_policy: trackingPolicy = TrackingPolicy.DEFAULT as TrackingPolicy,
         segment_analytics_id: segmentWriteKey = customSegmentWriteKey,
+        google_analytics_id: googleAnalyticsId,
         uuid,
     } = newsroom || {};
 
@@ -89,6 +90,14 @@ export function AnalyticsProvider({
                 trackingPolicy === TrackingPolicy.WILD_WEST,
         );
     }, [isEnabled, trackingPolicy]);
+
+    useEffect(() => {
+        if (!googleAnalyticsId) {
+            return;
+        }
+
+        window[`ga-disable-${googleAnalyticsId}`] = !isTrackingCookieAllowed;
+    }, [isTrackingCookieAllowed, googleAnalyticsId]);
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {

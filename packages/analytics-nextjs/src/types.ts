@@ -13,7 +13,9 @@ export interface RecipientInfo {
 
 // Pulled from `@prezly/sdk` to get rid of direct dependency requirement
 export enum TrackingPolicy {
+    STRICT = 'strict',
     DEFAULT = 'default',
+    WILD_WEST = 'wild-west',
     DISABLED = 'disabled',
     CONSENT_TO_IDENTIFY = 'consent-to-identify',
 }
