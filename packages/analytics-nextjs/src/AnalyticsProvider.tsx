@@ -9,7 +9,7 @@ import Script from 'next/script';
 import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-import { isTrackingCookieAllowed } from './lib';
+import { isNavigatorTrackingAllowed } from './lib';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
@@ -22,7 +22,6 @@ interface Context {
     analytics: Analytics | undefined;
     consent: boolean | null;
     gallery?: PickedGalleryProperties;
-    isEnabled: boolean;
     /**
      * - TRUE  - tracking allowed (i.e. user clicked "Allow")
      * - FALSE - tracking disallowed (i.e. user clicked "Disallow" or browser "Do Not Track" mode is ON)
@@ -30,7 +29,6 @@ interface Context {
      */
     isTrackingCookieAllowed: boolean | null;
     newsroom?: PickedNewsroomProperties;
-    setConsent(consent: boolean): void;
     story?: PickedStoryProperties;
     trackingPolicy: TrackingPolicy;
 }
@@ -73,13 +71,24 @@ export function AnalyticsProvider({
     user,
 }: PropsWithChildren<Props>) {
     const {
-        tracking_policy: trackingPolicy = TrackingPolicy.DEFAULT,
+        tracking_policy: trackingPolicy = TrackingPolicy.DEFAULT as TrackingPolicy,
         segment_analytics_id: segmentWriteKey = customSegmentWriteKey,
         uuid,
     } = newsroom || {};
 
-    const [consent, setConsent] = useState<boolean | null>(null);
+    const [isTrackingCookieAllowed, setIsTrackingCookieAllowed] = useState(
+        trackingPolicy === TrackingPolicy.WILD_WEST,
+    );
+
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
+
+    useEffect(() => {
+        setIsTrackingCookieAllowed(
+            isEnabled &&
+                (isNavigatorTrackingAllowed() ?? false) &&
+                trackingPolicy === TrackingPolicy.WILD_WEST,
+        );
+    }, [isEnabled, trackingPolicy]);
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
@@ -155,13 +164,11 @@ export function AnalyticsProvider({
         <AnalyticsContext.Provider
             value={{
                 analytics,
-                consent,
+                consent: null,
                 gallery,
-                isEnabled,
-                isTrackingCookieAllowed: isTrackingCookieAllowed(consent, newsroom),
+                isTrackingCookieAllowed,
                 newsroom,
                 story,
-                setConsent,
                 trackingPolicy,
             }}
         >
