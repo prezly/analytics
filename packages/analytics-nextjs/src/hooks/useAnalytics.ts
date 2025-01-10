@@ -2,7 +2,6 @@ import { useLocalStorageValue, useQueue, useSyncedRef } from '@react-hookz/web';
 import { useCallback, useEffect } from 'react';
 
 import { useAnalyticsContext } from '../AnalyticsProvider';
-import { stringify } from '../lib';
 import type { DeferredIdentity, PrezlyMeta } from '../types';
 import { TrackingPolicy } from '../types';
 
@@ -18,8 +17,15 @@ const NULL_USER = {
 };
 
 export function useAnalytics() {
-    const { analytics, consent, gallery, isEnabled, newsroom, story, trackingPolicy } =
-        useAnalyticsContext();
+    const {
+        analytics,
+        consent,
+        gallery,
+        isTrackingCookieAllowed,
+        newsroom,
+        story,
+        trackingPolicy,
+    } = useAnalyticsContext();
 
     const { uuid: newsroomUuid } = newsroom || { uuid: undefined };
     const storyUuid = story?.uuid;
@@ -157,7 +163,7 @@ export function useAnalytics() {
         }
     }, [consent, deferredIdentity, identify, user, removeDeferredIdentity, setDeferredIdentity]);
 
-    if (!isEnabled || trackingPolicy === TrackingPolicy.DISABLED) {
+    if (!isTrackingCookieAllowed) {
         return {
             alias: () => {},
             identify: () => {},

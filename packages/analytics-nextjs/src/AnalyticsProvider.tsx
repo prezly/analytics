@@ -13,6 +13,7 @@ import { isNavigatorTrackingAllowed } from './lib';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
+    Consent,
     PickedGalleryProperties,
     PickedNewsroomProperties,
     PickedStoryProperties,
@@ -20,7 +21,7 @@ import type {
 
 interface Context {
     analytics: Analytics | undefined;
-    consent: boolean | null;
+    consent: Consent | null;
     gallery?: PickedGalleryProperties;
     /**
      * - TRUE  - tracking allowed (i.e. user clicked "Allow")
