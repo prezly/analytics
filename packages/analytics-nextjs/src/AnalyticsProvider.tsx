@@ -7,16 +7,22 @@ import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
 import Script from 'next/script';
 import type { PropsWithChildren } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 import { isNavigatorTrackingAllowed } from './lib';
-import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
+import {
+    injectPrezlyMetaFromPropsPlugin,
+    logToConsole,
+    normalizePrezlyMetaPlugin,
+    sendEventToPrezlyPlugin,
+} from './plugins';
 import { TrackingPolicy } from './types';
 import type {
     Consent,
     PickedGalleryProperties,
     PickedNewsroomProperties,
     PickedStoryProperties,
+    PrezlyMeta,
 } from './types';
 
 interface Context {
@@ -77,6 +83,7 @@ export function AnalyticsProvider({
         google_analytics_id: googleAnalyticsId,
         uuid,
     } = newsroom || {};
+    const prezlyMetaRef = useRef<PrezlyMeta['prezly'] | null>(null);
 
     const [isTrackingCookieAllowed, setIsTrackingCookieAllowed] = useState(
         trackingPolicy === TrackingPolicy.WILD_WEST,
@@ -100,6 +107,15 @@ export function AnalyticsProvider({
         window[`ga-disable-${googleAnalyticsId}`] = !isTrackingCookieAllowed;
     }, [isTrackingCookieAllowed, googleAnalyticsId]);
 
+    if (uuid) {
+        prezlyMetaRef.current = Object.assign(prezlyMetaRef.current ?? {}, {
+            newsroom: uuid,
+            story: story?.uuid,
+            gallery: gallery?.uuid,
+            trackingPolicy,
+        });
+    }
+
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
             try {
@@ -116,7 +132,11 @@ export function AnalyticsProvider({
                         }),
                         plugins: [
                             ...(uuid
-                                ? [sendEventToPrezlyPlugin(uuid), normalizePrezlyMetaPlugin()]
+                                ? [
+                                      sendEventToPrezlyPlugin(uuid),
+                                      normalizePrezlyMetaPlugin(),
+                                      injectPrezlyMetaFromPropsPlugin(prezlyMetaRef),
+                                  ]
                                 : []),
                             ...(process.env.NODE_ENV === 'production' ? [] : [logToConsole()]),
                             ...(plugins || []),

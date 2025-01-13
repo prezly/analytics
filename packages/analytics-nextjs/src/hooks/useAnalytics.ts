@@ -2,7 +2,7 @@ import { useLocalStorageValue, useQueue, useSyncedRef } from '@react-hookz/web';
 import { useCallback, useEffect } from 'react';
 
 import { useAnalyticsContext } from '../AnalyticsProvider';
-import type { DeferredIdentity, PrezlyMeta } from '../types';
+import type { DeferredIdentity } from '../types';
 import { TrackingPolicy } from '../types';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
@@ -17,22 +17,11 @@ const NULL_USER = {
 };
 
 export function useAnalytics() {
-    const {
-        analytics,
-        consent,
-        gallery,
-        isTrackingCookieAllowed,
-        newsroom,
-        story,
-        trackingPolicy,
-    } = useAnalyticsContext();
+    const { analytics, consent, isTrackingCookieAllowed, newsroom, trackingPolicy } =
+        useAnalyticsContext();
 
-    const { uuid: newsroomUuid } = newsroom || { uuid: undefined };
-    const storyUuid = story?.uuid;
-    const galleryUuid = gallery?.uuid;
-
-    // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
-    // which would not be possible when passing the `analytics` object directly
+    // We use ref to `analytics` object, cause our tracking calls are added to the callback queue,
+    // and those need to have access to the most recent instance if `analytics`
     const analyticsRef = useSyncedRef(analytics);
 
     const {
@@ -42,39 +31,11 @@ export function useAnalytics() {
     } = useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
     const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
 
-    // The prezly traits should be placed in the root of the event when sent to the API.
-    // This is handled by the `normalizePrezlyMeta` plugin.
-    const injectPrezlyMeta = useCallback(
-        (traits: object): object | (object & PrezlyMeta) => {
-            if (!newsroomUuid) {
-                return traits;
-            }
-
-            return {
-                ...traits,
-                prezly: {
-                    newsroom: newsroomUuid,
-                    ...(storyUuid && {
-                        story: storyUuid,
-                    }),
-                    ...(galleryUuid && {
-                        gallery: galleryUuid,
-                    }),
-                    ...(trackingPolicy !== TrackingPolicy.DEFAULT && {
-                        tracking_policy: trackingPolicy,
-                    }),
-                },
-            };
-        },
-        [galleryUuid, newsroomUuid, storyUuid, trackingPolicy],
-    );
-
     const identify = useCallback(
         (userId: string, traits: object = {}, callback?: () => void) => {
-            const extendedTraits = injectPrezlyMeta(traits);
-
             if (trackingPolicy === TrackingPolicy.CONSENT_TO_IDENTIFY && !consent) {
-                setDeferredIdentity({ userId, traits: extendedTraits });
+                setDeferredIdentity({ userId, traits });
+
                 if (callback) {
                     callback();
                 }
@@ -83,12 +44,10 @@ export function useAnalytics() {
             }
 
             addToQueue(() => {
-                if (analyticsRef.current && analyticsRef.current.identify) {
-                    analyticsRef.current.identify(userId, extendedTraits, {}, callback);
-                }
+                analyticsRef.current?.identify(userId, traits, {}, callback);
             });
         },
-        [addToQueue, analyticsRef, consent, setDeferredIdentity, trackingPolicy, injectPrezlyMeta],
+        [addToQueue, analyticsRef, consent, setDeferredIdentity, trackingPolicy],
     );
 
     const alias = useCallback(
@@ -104,28 +63,20 @@ export function useAnalytics() {
 
     const page = useCallback(
         (category?: string, name?: string, properties: object = {}, callback?: () => void) => {
-            const extendedProperties = injectPrezlyMeta(properties);
-
             addToQueue(() => {
-                if (analyticsRef.current && analyticsRef.current.page) {
-                    analyticsRef.current.page(category, name, extendedProperties, {}, callback);
-                }
+                analyticsRef.current?.page(category, name, properties, {}, callback);
             });
         },
-        [addToQueue, analyticsRef, injectPrezlyMeta],
+        [addToQueue, analyticsRef],
     );
 
     const track = useCallback(
         (event: string, properties: object = {}, callback?: () => void) => {
-            const extendedProperties = injectPrezlyMeta(properties);
-
             addToQueue(() => {
-                if (analyticsRef.current && analyticsRef.current.track) {
-                    analyticsRef.current.track(event, extendedProperties, {}, callback);
-                }
+                analyticsRef.current?.track(event, properties, {}, callback);
             });
         },
-        [addToQueue, analyticsRef, injectPrezlyMeta],
+        [addToQueue, analyticsRef],
     );
 
     const user = useCallback(() => {
