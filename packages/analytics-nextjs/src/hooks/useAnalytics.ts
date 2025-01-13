@@ -53,9 +53,7 @@ export function useAnalytics() {
     const alias = useCallback(
         (userId: string, previousId: string) => {
             addToQueue(() => {
-                if (analyticsRef.current && analyticsRef.current.alias) {
-                    analyticsRef.current.alias(userId, previousId);
-                }
+                analyticsRef.current?.alias(userId, previousId);
             });
         },
         [addToQueue, analyticsRef],
