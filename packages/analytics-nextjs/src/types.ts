@@ -45,3 +45,14 @@ export enum ConsentCategory {
 }
 
 export type Consent = Record<ConsentCategory, boolean> | null;
+
+/**
+ * - TRUE  - tracking allowed (i.e. user clicked "Allow")
+ * - FALSE - tracking disallowed (i.e. user clicked "Disallow" or browser "Do Not Track" mode is ON)
+ * - NULL  - unknown (i.e. user didn't click anything yet, and no browser preference set)
+ */
+export interface TrackingGroups {
+    necessary: boolean | null;
+    firstParty: boolean | null;
+    thirdParty: boolean | null;
+}
