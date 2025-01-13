@@ -1,4 +1,4 @@
-import type { Newsroom, NewsroomGallery, Story } from '@prezly/sdk';
+import type { Newsroom, NewsroomGallery, Story, StoryRef } from '@prezly/sdk';
 
 export interface DeferredIdentity {
     userId: string;
@@ -31,8 +31,9 @@ export type PickedGalleryProperties = Pick<NewsroomGallery, 'uuid'>;
 
 export interface PrezlyMeta {
     prezly: {
-        newsroom: string;
-        story?: string;
+        newsroom: Newsroom['uuid'];
+        story?: StoryRef['uuid'];
+        gallery?: NewsroomGallery['uuid'];
         tracking_policy?: TrackingPolicy;
     };
 }
