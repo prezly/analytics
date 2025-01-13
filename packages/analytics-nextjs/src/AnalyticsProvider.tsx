@@ -7,8 +7,9 @@ import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
 import Script from 'next/script';
 import type { PropsWithChildren } from 'react';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
+import { useLatest } from './hooks';
 import { isNavigatorTrackingAllowed } from './lib';
 import {
     injectPrezlyMetaFromPropsPlugin,
@@ -83,7 +84,18 @@ export function AnalyticsProvider({
         google_analytics_id: googleAnalyticsId,
         uuid,
     } = newsroom || {};
-    const prezlyMetaRef = useRef<PrezlyMeta['prezly'] | null>(null);
+
+    const prezlyMeta: PrezlyMeta['prezly'] | null = newsroom
+        ? {
+              newsroom: newsroom?.uuid,
+              story: story?.uuid,
+              gallery: gallery?.uuid,
+              // TODO: remove directive when Newsroom type is updated
+              // @ts-expect-error
+              trackingPolicy,
+          }
+        : null;
+    const prezlyMetaRef = useLatest(prezlyMeta);
 
     const [isTrackingCookieAllowed, setIsTrackingCookieAllowed] = useState(
         trackingPolicy === TrackingPolicy.WILD_WEST,
@@ -106,15 +118,6 @@ export function AnalyticsProvider({
 
         window[`ga-disable-${googleAnalyticsId}`] = !isTrackingCookieAllowed;
     }, [isTrackingCookieAllowed, googleAnalyticsId]);
-
-    if (uuid) {
-        prezlyMetaRef.current = Object.assign(prezlyMetaRef.current ?? {}, {
-            newsroom: uuid,
-            story: story?.uuid,
-            gallery: gallery?.uuid,
-            trackingPolicy,
-        });
-    }
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
