@@ -10,7 +10,7 @@ import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useLatest } from './hooks';
-import { isNavigatorTrackingAllowed } from './lib';
+import { getTrackingGroups } from './lib';
 import {
     injectPrezlyMetaFromPropsPlugin,
     logToConsole,
@@ -24,29 +24,25 @@ import type {
     PickedNewsroomProperties,
     PickedStoryProperties,
     PrezlyMeta,
+    TrackingGroups,
 } from './types';
 
 interface Context {
     analytics: Analytics | undefined;
     consent: Consent | null;
     gallery?: PickedGalleryProperties;
-    /**
-     * - TRUE  - tracking allowed (i.e. user clicked "Allow")
-     * - FALSE - tracking disallowed (i.e. user clicked "Disallow" or browser "Do Not Track" mode is ON)
-     * - NULL  - unknown (i.e. user didn't click anything yet, and no browser preference set)
-     */
-    isTrackingCookieAllowed: boolean | null;
     newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
+    trackingGroups: TrackingGroups;
     trackingPolicy: TrackingPolicy;
 }
 
 interface Props {
     cdnUrl?: string;
+    consent: Consent | null;
     cookie?: CookieOptions;
     gallery?: PickedGalleryProperties;
     integrations?: Integrations;
-    isEnabled?: boolean;
     newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
     plugins?: Plugin[];
@@ -69,9 +65,9 @@ export function AnalyticsProvider({
     cdnUrl,
     children,
     cookie = {},
+    consent,
     gallery,
     integrations,
-    isEnabled = true,
     newsroom,
     plugins,
     segmentWriteKey: customSegmentWriteKey,
@@ -99,18 +95,17 @@ export function AnalyticsProvider({
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
-    const isTrackingCookieAllowed =
-        isEnabled &&
-        (isNavigatorTrackingAllowed() ?? false) &&
-        trackingPolicy === TrackingPolicy.WILD_WEST;
+    // TODO: remove directive when Newsroom type is updated
+    // @ts-expect-error
+    const trackingGroups = getTrackingGroups({ trackingPolicy, consent });
 
     useEffect(() => {
         if (!googleAnalyticsId) {
             return;
         }
 
-        window[`ga-disable-${googleAnalyticsId}`] = !isTrackingCookieAllowed;
-    }, [isTrackingCookieAllowed, googleAnalyticsId]);
+        window[`ga-disable-${googleAnalyticsId}`] = !trackingGroups.thirdParty;
+    }, [googleAnalyticsId, trackingGroups]);
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
@@ -162,7 +157,7 @@ export function AnalyticsProvider({
             }
         }
 
-        if (isEnabled && trackingPolicy !== TrackingPolicy.DISABLED) {
+        if (trackingGroups.firstParty) {
             if (!segmentWriteKey && !uuid) {
                 // eslint-disable-next-line no-console
                 console.warn(
@@ -170,18 +165,20 @@ export function AnalyticsProvider({
                 );
             }
             loadAnalytics(segmentWriteKey || '');
+        } else if (analytics) {
+            analytics.deregister();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         cdnUrl,
-        isEnabled,
+        prezlyMetaRef,
+        trackingGroups.firstParty,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(cookie),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(integrations),
         plugins,
         segmentWriteKey,
-        trackingPolicy,
         user,
         uuid,
     ]);
@@ -192,9 +189,9 @@ export function AnalyticsProvider({
                 analytics,
                 consent: null,
                 gallery,
-                isTrackingCookieAllowed,
                 newsroom,
                 story,
+                trackingGroups,
                 trackingPolicy,
             }}
         >
