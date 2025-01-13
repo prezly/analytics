@@ -97,19 +97,12 @@ export function AnalyticsProvider({
         : null;
     const prezlyMetaRef = useLatest(prezlyMeta);
 
-    const [isTrackingCookieAllowed, setIsTrackingCookieAllowed] = useState(
-        trackingPolicy === TrackingPolicy.WILD_WEST,
-    );
-
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
-    useEffect(() => {
-        setIsTrackingCookieAllowed(
-            isEnabled &&
-                (isNavigatorTrackingAllowed() ?? false) &&
-                trackingPolicy === TrackingPolicy.WILD_WEST,
-        );
-    }, [isEnabled, trackingPolicy]);
+    const isTrackingCookieAllowed =
+        isEnabled &&
+        (isNavigatorTrackingAllowed() ?? false) &&
+        trackingPolicy === TrackingPolicy.WILD_WEST;
 
     useEffect(() => {
         if (!googleAnalyticsId) {
