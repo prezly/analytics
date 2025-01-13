@@ -17,8 +17,7 @@ const NULL_USER = {
 };
 
 export function useAnalytics() {
-    const { analytics, consent, isTrackingCookieAllowed, newsroom, trackingPolicy } =
-        useAnalyticsContext();
+    const { analytics, consent, newsroom, trackingPolicy } = useAnalyticsContext();
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue,
     // and those need to have access to the most recent instance if `analytics`
@@ -33,7 +32,9 @@ export function useAnalytics() {
 
     const identify = useCallback(
         (userId: string, traits: object = {}, callback?: () => void) => {
-            if (trackingPolicy === TrackingPolicy.CONSENT_TO_IDENTIFY && !consent) {
+            // TODO: Check if deferred identity is needed at all, since we push identify callback to the queue anyways
+
+            if (!consent) {
                 setDeferredIdentity({ userId, traits });
 
                 if (callback) {
@@ -47,7 +48,7 @@ export function useAnalytics() {
                 analyticsRef.current?.identify(userId, traits, {}, callback);
             });
         },
-        [addToQueue, analyticsRef, consent, setDeferredIdentity, trackingPolicy],
+        [addToQueue, analyticsRef, consent, setDeferredIdentity],
     );
 
     const alias = useCallback(
