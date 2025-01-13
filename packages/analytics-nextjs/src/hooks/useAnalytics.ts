@@ -3,7 +3,6 @@ import { useCallback, useEffect } from 'react';
 
 import { useAnalyticsContext } from '../AnalyticsProvider';
 import type { DeferredIdentity } from '../types';
-import { TrackingPolicy } from '../types';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
@@ -17,7 +16,7 @@ const NULL_USER = {
 };
 
 export function useAnalytics() {
-    const { analytics, consent, newsroom, trackingPolicy } = useAnalyticsContext();
+    const { analytics, consent, newsroom } = useAnalyticsContext();
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue,
     // and those need to have access to the most recent instance if `analytics`
@@ -112,16 +111,6 @@ export function useAnalytics() {
             user().id(null); // erase user ID
         }
     }, [consent, deferredIdentity, identify, user, removeDeferredIdentity, setDeferredIdentity]);
-
-    if (!isTrackingCookieAllowed) {
-        return {
-            alias: () => {},
-            identify: () => {},
-            page: () => {},
-            track: () => {},
-            user,
-        };
-    }
 
     return {
         alias,
