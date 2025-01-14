@@ -10,13 +10,8 @@ import type { PropsWithChildren } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useLatest } from './hooks';
-import { getTrackingGroups } from './lib';
-import {
-    injectPrezlyMetaFromPropsPlugin,
-    logToConsole,
-    normalizePrezlyMetaPlugin,
-    sendEventToPrezlyPlugin,
-} from './plugins';
+import { getTrackingPermissions } from './lib';
+import { injectPrezlyMetaPlugin, logToConsole, sendEventToPrezlyPlugin } from './plugins';
 import { TrackingPolicy } from './types';
 import type {
     Consent,
@@ -24,7 +19,7 @@ import type {
     PickedNewsroomProperties,
     PickedStoryProperties,
     PrezlyMeta,
-    TrackingGroups,
+    TrackingPermissions,
 } from './types';
 
 interface Context {
@@ -33,7 +28,7 @@ interface Context {
     gallery?: PickedGalleryProperties;
     newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
-    trackingGroups: TrackingGroups;
+    trackingPermissions: TrackingPermissions;
     trackingPolicy: TrackingPolicy;
 }
 
@@ -97,7 +92,7 @@ export function AnalyticsProvider({
 
     // TODO: remove directive when Newsroom type is updated
     // @ts-expect-error
-    const trackingGroups = getTrackingGroups({ trackingPolicy, consent });
+    const trackingPermissions = getTrackingPermissions({ trackingPolicy, consent });
 
     useEffect(() => {
         if (!googleAnalyticsId) {
@@ -124,9 +119,10 @@ export function AnalyticsProvider({
                         plugins: [
                             ...(uuid
                                 ? [
-                                      sendEventToPrezlyPlugin(uuid),
-                                      normalizePrezlyMetaPlugin(),
-                                      injectPrezlyMetaFromPropsPlugin(prezlyMetaRef),
+                                      ...(trackingPermissions.canTrackToPrezly
+                                          ? [sendEventToPrezlyPlugin(uuid)]
+                                          : []),
+                                      injectPrezlyMetaPlugin(prezlyMetaRef),
                                   ]
                                 : []),
                             ...(process.env.NODE_ENV === 'production' ? [] : [logToConsole()]),
@@ -142,8 +138,8 @@ export function AnalyticsProvider({
                         },
                         integrations,
                         user,
-                        // Disable calls to Segment API completely if no Write Key is provided
-                        ...(!writeKey && {
+                        // Disable calls to Segment API completely if no Write Key is provided or user hasn't given consent
+                        ...((!writeKey || !trackingPermissions.canTrackToSegment) && {
                             // eslint-disable-next-line @typescript-eslint/naming-convention
                             integrations: { 'Segment.io': false },
                         }),
@@ -157,7 +153,7 @@ export function AnalyticsProvider({
             }
         }
 
-        if (trackingGroups.firstParty) {
+        if (trackingPermissions.canLoadSegment) {
             if (!segmentWriteKey && !uuid) {
                 // eslint-disable-next-line no-console
                 console.warn(
@@ -165,14 +161,12 @@ export function AnalyticsProvider({
                 );
             }
             loadAnalytics(segmentWriteKey || '');
-        } else if (analytics) {
-            analytics.deregister();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         cdnUrl,
         prezlyMetaRef,
-        trackingGroups.firstParty,
+        trackingPermissions,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(cookie),
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -191,7 +185,7 @@ export function AnalyticsProvider({
                 gallery,
                 newsroom,
                 story,
-                trackingGroups,
+                trackingPermissions,
                 trackingPolicy,
             }}
         >
