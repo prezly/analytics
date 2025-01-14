@@ -104,6 +104,10 @@ export function AnalyticsProvider({
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
+            if (analytics) {
+                analytics.deregister();
+            }
+
             try {
                 const [response] = await AnalyticsBrowser.load(
                     {
