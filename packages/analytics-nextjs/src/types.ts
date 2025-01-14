@@ -52,7 +52,9 @@ export enum ConsentCategory {
     THIRD_PARTY_COOKIES = 'third-party-cookies',
 }
 
-export type Consent = Record<ConsentCategory, boolean> | null;
+export type Consent = {
+    categories: ConsentCategory[];
+};
 
 export interface TrackingPermissions {
     canIdentify: boolean;
