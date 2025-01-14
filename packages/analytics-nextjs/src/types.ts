@@ -13,11 +13,19 @@ export interface RecipientInfo {
 
 // Pulled from `@prezly/sdk` to get rid of direct dependency requirement
 export enum TrackingPolicy {
-    STRICT = 'strict',
+    /**
+     * @deprecated Please use `NORMAL` instead.
+     */
     DEFAULT = 'default',
-    WILD_WEST = 'wild-west',
     DISABLED = 'disabled',
+    /**
+     * @deprecated Please use `STRICT` instead.
+     */
     CONSENT_TO_IDENTIFY = 'consent-to-identify',
+
+    STRICT = 'strict',
+    NORMAL = 'normal',
+    LENIENT = 'lenient',
 }
 
 export type PickedNewsroomProperties = Pick<
