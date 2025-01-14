@@ -1,3 +1,3 @@
 export { logToConsole } from './logToConsole';
-export { normalizePrezlyMetaPlugin } from './normalizePrezlyMeta';
+export { injectPrezlyMetaPlugin } from './injectPrezlyMeta';
 export { sendEventToPrezlyPlugin } from './sendToPrezly';
