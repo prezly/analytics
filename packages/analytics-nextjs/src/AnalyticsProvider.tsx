@@ -99,8 +99,8 @@ export function AnalyticsProvider({
             return;
         }
 
-        window[`ga-disable-${googleAnalyticsId}`] = !trackingGroups.thirdParty;
-    }, [googleAnalyticsId, trackingGroups]);
+        window[`ga-disable-${googleAnalyticsId}`] = !trackingPermissions.canTrackToGoogle;
+    }, [googleAnalyticsId, trackingPermissions]);
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
