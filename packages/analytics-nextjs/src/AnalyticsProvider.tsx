@@ -70,7 +70,7 @@ export function AnalyticsProvider({
     user,
 }: PropsWithChildren<Props>) {
     const {
-        tracking_policy: trackingPolicy = TrackingPolicy.DEFAULT as TrackingPolicy,
+        tracking_policy: trackingPolicy = TrackingPolicy.NORMAL as TrackingPolicy,
         segment_analytics_id: segmentWriteKey = customSegmentWriteKey,
         google_analytics_id: googleAnalyticsId,
         uuid,
