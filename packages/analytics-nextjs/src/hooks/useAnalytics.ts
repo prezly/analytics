@@ -16,24 +16,19 @@ const NULL_USER = {
 };
 
 export function useAnalytics() {
-    const { analytics, consent, newsroom } = useAnalyticsContext();
+    const { analytics, consent, newsroom, trackingPermissions } = useAnalyticsContext();
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue,
     // and those need to have access to the most recent instance if `analytics`
     const analyticsRef = useSyncedRef(analytics);
 
-    const {
-        value: deferredIdentity,
-        set: setDeferredIdentity,
-        remove: removeDeferredIdentity,
-    } = useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
+    const { value: deferredIdentity, set: setDeferredIdentity } =
+        useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
     const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
 
     const identify = useCallback(
         (userId: string, traits: object = {}, callback?: () => void) => {
-            // TODO: Check if deferred identity is needed at all, since we push identify callback to the queue anyways
-
-            if (!consent) {
+            if (!trackingPermissions.canIdentify) {
                 setDeferredIdentity({ userId, traits });
 
                 if (callback) {
@@ -47,7 +42,7 @@ export function useAnalytics() {
                 analyticsRef.current?.identify(userId, traits, {}, callback);
             });
         },
-        [addToQueue, analyticsRef, consent, setDeferredIdentity],
+        [addToQueue, analyticsRef, setDeferredIdentity, trackingPermissions.canIdentify],
     );
 
     const alias = useCallback(
@@ -96,21 +91,27 @@ export function useAnalytics() {
     }, [firstInQueue, analytics, removeFromQueue]);
 
     useEffect(() => {
-        if (consent) {
-            if (deferredIdentity) {
-                const { userId, traits } = deferredIdentity;
-                identify(userId, traits);
-                removeDeferredIdentity();
-            }
+        if (trackingPermissions.canIdentify && deferredIdentity) {
+            const { userId, traits } = deferredIdentity;
+            analyticsRef.current?.identify(userId, traits);
         } else {
             const id = user().id();
+
             if (id && deferredIdentity?.userId !== id) {
                 setDeferredIdentity({ userId: id });
             }
 
             user().id(null); // erase user ID
         }
-    }, [consent, deferredIdentity, identify, user, removeDeferredIdentity, setDeferredIdentity]);
+    }, [
+        consent,
+        deferredIdentity,
+        identify,
+        user,
+        setDeferredIdentity,
+        analyticsRef,
+        trackingPermissions.canIdentify,
+    ]);
 
     return {
         alias,
