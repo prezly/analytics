@@ -15,8 +15,9 @@ const ENDPOINTS_BY_TYPE: Record<SegmentEvent['type'], string | null> = {
 export function sendEventToPrezlyPlugin(newsroomUuid: string): Plugin {
     async function apply(ctx: Context) {
         const endpoint = ENDPOINTS_BY_TYPE[ctx.event.type];
+        const shouldSendToPrezly = ctx.event.integrations?.Prezly !== false;
 
-        if (endpoint) {
+        if (shouldSendToPrezly && endpoint) {
             const payload = {
                 ...ctx.event,
                 // TODO: Prezly Analytics app should be able to take the newsroom UUID from the `prezly` property
