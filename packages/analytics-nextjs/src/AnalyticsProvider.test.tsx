@@ -56,4 +56,41 @@ describe('AnalyticsProvider', () => {
             expect(consoleSpy).toHaveBeenCalledWith('Error while loading Analytics', error),
         );
     });
+
+    it('injects Prezly metadata to an event', async () => {
+        const track = jest.fn();
+
+        render(
+            <AnalyticsProvider
+                newsroom={DEFAULT_NEWSROOM}
+                story={{ uuid: 'story_uuid' }}
+                gallery={{ uuid: 'gallery_uuid' }}
+                plugins={[
+                    {
+                        name: '_',
+                        type: 'after',
+                        isLoaded: () => true,
+                        load: () => Promise.resolve(),
+                        track(ctx) {
+                            track(ctx);
+                            return ctx;
+                        },
+                    },
+                ]}
+            >
+                <TestingComponent />
+            </AnalyticsProvider>,
+        );
+
+        await waitFor(() => expect(track).toBeCalled());
+        const context = track.mock.lastCall[0];
+        expect(context).toHaveProperty('event');
+        expect(context.event).toHaveProperty('prezly');
+        expect(context.event.prezly).toEqual({
+            newsroom: DEFAULT_NEWSROOM.uuid,
+            story: 'story_uuid',
+            gallery: 'gallery_uuid',
+            tracking_policy: DEFAULT_NEWSROOM.tracking_policy,
+        });
+    });
 });
