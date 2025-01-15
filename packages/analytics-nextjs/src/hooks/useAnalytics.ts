@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { useAnalyticsContext } from '../AnalyticsProvider';
 import type { DeferredIdentity } from '../types';
@@ -20,12 +20,10 @@ const NULL_USER = {
 
 export function useAnalytics() {
     const { analytics, consent, newsroom, trackingPermissions } = useAnalyticsContext();
-
-    // We use ref to `analytics` object, cause our tracking calls are added to the callback queue,
-    // and those need to have access to the most recent instance if `analytics`
-    const analyticsRef = useRef(analytics);
+    const analyticsRef = useLatest(analytics);
 
     const integrationsRef = useLatest({
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         'Segment.io': trackingPermissions.canTrackToSegment,
         Prezly: trackingPermissions.canTrackToPrezly,
         Plausible: trackingPermissions.canTrackToPlausible,
@@ -57,7 +55,13 @@ export function useAnalytics() {
                 );
             });
         },
-        [addToQueue, integrationsRef, setDeferredIdentity, trackingPermissions.canIdentify],
+        [
+            addToQueue,
+            analyticsRef,
+            integrationsRef,
+            setDeferredIdentity,
+            trackingPermissions.canIdentify,
+        ],
     );
 
     const alias = useCallback(
@@ -68,7 +72,7 @@ export function useAnalytics() {
                 });
             });
         },
-        [addToQueue, integrationsRef],
+        [addToQueue, analyticsRef, integrationsRef],
     );
 
     const page = useCallback(
@@ -83,7 +87,7 @@ export function useAnalytics() {
                 );
             });
         },
-        [addToQueue, integrationsRef],
+        [addToQueue, analyticsRef, integrationsRef],
     );
 
     const track = useCallback(
@@ -97,7 +101,7 @@ export function useAnalytics() {
                 );
             });
         },
-        [addToQueue, integrationsRef],
+        [addToQueue, analyticsRef, integrationsRef],
     );
 
     const user = useCallback(() => {
@@ -142,6 +146,7 @@ export function useAnalytics() {
     ]);
 
     return {
+        analyticsRef,
         alias,
         identify,
         newsroom,
