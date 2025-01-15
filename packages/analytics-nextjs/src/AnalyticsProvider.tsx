@@ -34,7 +34,7 @@ interface Context {
 
 interface Props {
     cdnUrl?: string;
-    consent: Consent | null;
+    consent?: Consent;
     cookie?: CookieOptions;
     gallery?: PickedGalleryProperties;
     integrations?: Integrations;
@@ -60,7 +60,7 @@ export function AnalyticsProvider({
     cdnUrl,
     children,
     cookie = {},
-    consent,
+    consent = { categories: [] },
     gallery,
     integrations,
     newsroom,
@@ -70,7 +70,7 @@ export function AnalyticsProvider({
     user,
 }: PropsWithChildren<Props>) {
     const {
-        tracking_policy: trackingPolicy = TrackingPolicy.NORMAL as TrackingPolicy,
+        tracking_policy: trackingPolicy = TrackingPolicy.NORMAL,
         segment_analytics_id: segmentWriteKey = customSegmentWriteKey,
         google_analytics_id: googleAnalyticsId,
         uuid,
@@ -81,17 +81,13 @@ export function AnalyticsProvider({
               newsroom: newsroom?.uuid,
               story: story?.uuid,
               gallery: gallery?.uuid,
-              // TODO: remove directive when Newsroom type is updated
-              // @ts-expect-error
-              trackingPolicy,
+              tracking_policy: trackingPolicy,
           }
         : null;
     const prezlyMetaRef = useLatest(prezlyMeta);
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
-    // TODO: remove directive when Newsroom type is updated
-    // @ts-expect-error
     const trackingPermissions = getTrackingPermissions({ trackingPolicy, consent });
 
     useEffect(() => {
@@ -104,17 +100,13 @@ export function AnalyticsProvider({
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
-            if (analytics) {
-                analytics.deregister();
-            }
-
             try {
                 const [response] = await AnalyticsBrowser.load(
                     {
                         writeKey,
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         cdnURL: cdnUrl,
-                        // If no Segment Write Key is provided, we initialize the library settings manually
+                        //  If no Segment Write Key is provided, we initialize the library settings manually
                         ...(!writeKey && {
                             cdnSettings: {
                                 integrations: {},
@@ -123,9 +115,7 @@ export function AnalyticsProvider({
                         plugins: [
                             ...(uuid
                                 ? [
-                                      ...(trackingPermissions.canTrackToPrezly
-                                          ? [sendEventToPrezlyPlugin(uuid)]
-                                          : []),
+                                      sendEventToPrezlyPlugin(uuid),
                                       injectPrezlyMetaPlugin(prezlyMetaRef),
                                   ]
                                 : []),
@@ -140,13 +130,8 @@ export function AnalyticsProvider({
                             domain: document.location.host,
                             ...cookie,
                         },
-                        integrations,
                         user,
-                        // Disable calls to Segment API completely if no Write Key is provided or user hasn't given consent
-                        ...((!writeKey || !trackingPermissions.canTrackToSegment) && {
-                            // eslint-disable-next-line @typescript-eslint/naming-convention
-                            integrations: { 'Segment.io': false },
-                        }),
+                        integrations,
                     },
                 );
 
