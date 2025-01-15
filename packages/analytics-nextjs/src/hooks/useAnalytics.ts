@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useAnalyticsContext } from '../AnalyticsProvider';
 import type { DeferredIdentity } from '../types';
 
+import { useLatest } from './useLatest';
 import { useLocalStorage } from './useLocalStorage';
 import { useQueue } from './useQueue';
 
@@ -24,6 +25,12 @@ export function useAnalytics() {
     // and those need to have access to the most recent instance if `analytics`
     const analyticsRef = useRef(analytics);
 
+    const integrationsRef = useLatest({
+        'Segment.io': trackingPermissions.canTrackToSegment,
+        Prezly: trackingPermissions.canTrackToPrezly,
+        Plausible: trackingPermissions.canTrackToPlausible,
+    });
+
     const { value: deferredIdentity, set: setDeferredIdentity } = useLocalStorage<DeferredIdentity>(
         DEFERRED_IDENTITY_STORAGE_KEY,
     );
@@ -42,37 +49,55 @@ export function useAnalytics() {
             }
 
             addToQueue(() => {
-                analyticsRef.current?.identify(userId, traits, {}, callback);
+                analyticsRef.current?.identify(
+                    userId,
+                    traits,
+                    { integrations: integrationsRef.current },
+                    callback,
+                );
             });
         },
-        [addToQueue, analyticsRef, setDeferredIdentity, trackingPermissions.canIdentify],
+        [addToQueue, integrationsRef, setDeferredIdentity, trackingPermissions.canIdentify],
     );
 
     const alias = useCallback(
         (userId: string, previousId: string) => {
             addToQueue(() => {
-                analyticsRef.current?.alias(userId, previousId);
+                analyticsRef.current?.alias(userId, previousId, {
+                    integrations: integrationsRef.current,
+                });
             });
         },
-        [addToQueue, analyticsRef],
+        [addToQueue, integrationsRef],
     );
 
     const page = useCallback(
         (category?: string, name?: string, properties: object = {}, callback?: () => void) => {
             addToQueue(() => {
-                analyticsRef.current?.page(category, name, properties, {}, callback);
+                analyticsRef.current?.page(
+                    category,
+                    name,
+                    properties,
+                    { integrations: integrationsRef.current },
+                    callback,
+                );
             });
         },
-        [addToQueue, analyticsRef],
+        [addToQueue, integrationsRef],
     );
 
     const track = useCallback(
         (event: string, properties: object = {}, callback?: () => void) => {
             addToQueue(() => {
-                analyticsRef.current?.track(event, properties, {}, callback);
+                analyticsRef.current?.track(
+                    event,
+                    properties,
+                    { integrations: integrationsRef.current },
+                    callback,
+                );
             });
         },
-        [addToQueue, analyticsRef],
+        [addToQueue, integrationsRef],
     );
 
     const user = useCallback(() => {
