@@ -36,7 +36,7 @@ export function sendEventToPrezlyPlugin(newsroomUuid: string): Plugin {
 
     return {
         name: 'Send events to Prezly Analytics',
-        type: 'after',
+        type: 'destination',
         version,
 
         isLoaded: () => true,
