@@ -88,7 +88,11 @@ export function AnalyticsProvider({
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
-    const trackingPermissions = getTrackingPermissions({ trackingPolicy, consent });
+    const trackingPermissions = getTrackingPermissions({
+        segmentWriteKey: segmentWriteKey ?? undefined,
+        trackingPolicy,
+        consent,
+    });
 
     useEffect(() => {
         if (!googleAnalyticsId) {
@@ -115,8 +119,8 @@ export function AnalyticsProvider({
                         plugins: [
                             ...(uuid
                                 ? [
-                                      sendEventToPrezlyPlugin(uuid),
                                       injectPrezlyMetaPlugin(prezlyMetaRef),
+                                      sendEventToPrezlyPlugin(uuid),
                                   ]
                                 : []),
                             ...(process.env.NODE_ENV === 'production' ? [] : [logToConsole()]),
