@@ -3,12 +3,14 @@ import type { Consent, TrackingPermissions } from '../types';
 
 interface Arg {
     segmentWriteKey?: string;
+    isPlausibleEnabled: boolean;
     consent: Consent;
     trackingPolicy: TrackingPolicy;
 }
 
 export function getTrackingPermissions({
     segmentWriteKey,
+    isPlausibleEnabled,
     consent,
     trackingPolicy,
 }: Arg): TrackingPermissions {
@@ -19,7 +21,8 @@ export function getTrackingPermissions({
     const canIdentify = trackingPolicy === TrackingPolicy.LENIENT || canTrackFirstParty;
     const canTrackToPrezly = trackingPolicy !== TrackingPolicy.STRICT || canTrackFirstParty;
     const canTrackToGoogle = trackingPolicy === TrackingPolicy.LENIENT || canTrackThirdParty;
-    const canTrackToPlausible = trackingPolicy === TrackingPolicy.LENIENT || canTrackFirstParty;
+    const canTrackToPlausible =
+        isPlausibleEnabled && (trackingPolicy === TrackingPolicy.LENIENT || canTrackFirstParty);
     const canTrackToSegment =
         Boolean(segmentWriteKey) &&
         (trackingPolicy === TrackingPolicy.LENIENT || canTrackThirdParty);

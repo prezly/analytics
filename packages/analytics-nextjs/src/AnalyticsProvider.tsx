@@ -11,7 +11,12 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useLatest } from './hooks';
 import { getTrackingPermissions } from './lib';
-import { injectPrezlyMetaPlugin, logToConsole, sendEventToPrezlyPlugin } from './plugins';
+import {
+    injectPrezlyMetaPlugin,
+    logToConsole,
+    sendEventToPlausiblePlugin,
+    sendEventToPrezlyPlugin,
+} from './plugins';
 import { TrackingPolicy } from './types';
 import type {
     Consent,
@@ -43,7 +48,14 @@ interface Props {
     plugins?: Plugin[];
     segmentWriteKey?: string;
     user?: UserOptions;
+    /**
+     * Enables Plausible tracking for newsrooms that have regular tracking disabled.
+     */
+    isPlausibleEnabled?: boolean;
+    plausibleDomain?: string;
 }
+
+const DEFAULT_PLAUSIBLE_API_HOST = 'https://atlas.prezly.com/api/event';
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
@@ -68,6 +80,8 @@ export function AnalyticsProvider({
     segmentWriteKey: customSegmentWriteKey,
     story,
     user,
+    isPlausibleEnabled = true,
+    plausibleDomain = newsroom?.plausible_site_id,
 }: PropsWithChildren<Props>) {
     const {
         tracking_policy: trackingPolicy = TrackingPolicy.NORMAL,
@@ -90,6 +104,7 @@ export function AnalyticsProvider({
 
     const trackingPermissions = getTrackingPermissions({
         segmentWriteKey: segmentWriteKey ?? undefined,
+        isPlausibleEnabled: isPlausibleEnabled || Boolean(newsroom?.is_plausible_enabled),
         trackingPolicy,
         consent,
     });
@@ -117,15 +132,17 @@ export function AnalyticsProvider({
                             },
                         }),
                         plugins: [
-                            ...(uuid
-                                ? [
-                                      injectPrezlyMetaPlugin(prezlyMetaRef),
-                                      sendEventToPrezlyPlugin(uuid),
-                                  ]
-                                : []),
-                            ...(process.env.NODE_ENV === 'production' ? [] : [logToConsole()]),
+                            uuid ? injectPrezlyMetaPlugin(prezlyMetaRef) : null,
+                            uuid ? sendEventToPrezlyPlugin(uuid) : null,
+                            uuid
+                                ? sendEventToPlausiblePlugin({
+                                      apiHost: DEFAULT_PLAUSIBLE_API_HOST,
+                                      domain: plausibleDomain,
+                                  })
+                                : null,
+                            process.env.NODE_ENV === 'production' ? null : logToConsole(),
                             ...(plugins || []),
-                        ],
+                        ].filter((value) => value !== null),
                     },
                     {
                         // By default, the analytics.js library plants its cookies on the top-level domain.
