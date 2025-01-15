@@ -18,6 +18,12 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     is_offline: false,
     is_multilingual: true,
     is_indexable: true,
+    is_plausible_enabled: false,
+    plausible_site_id: '',
+    plausible_stats: {
+        visits_last_7_days: null,
+        visits_last_7_days_previous: null,
+    },
     url: 'https://the-good-news-room.prezly.com/',
     links: {
         media_gallery_api: 'https://api.prezly.com/v1/rooms/12698/media',
@@ -106,7 +112,7 @@ export const DEFAULT_NEWSROOM: Newsroom = {
         effects: [],
     },
     email_logo: null,
-    email_logo_alignment: null,
+    email_logo_alignment: Newsroom.EmailLogoAlignment.CENTER,
     icon: {
         version: 2,
         uuid: '848ea31f-c575-4b8b-a369-1bf8b0f3a1c7',
@@ -138,4 +144,9 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     status: Newsroom.Status.ACTIVE,
     auto_create_contacts_from_subscribers: false,
     google_search_console_key: null,
+    onetrust_cookie_consent: {
+        category: 'test',
+        script: 'test',
+        is_enabled: false,
+    },
 };

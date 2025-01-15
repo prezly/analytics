@@ -2,7 +2,6 @@ import { ConsentCategory, TrackingPolicy } from '../types';
 import type { Consent, TrackingPermissions } from '../types';
 
 interface Arg {
-    isEnabled: boolean;
     consent: Consent;
     trackingPolicy: TrackingPolicy;
 }

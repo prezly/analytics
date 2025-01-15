@@ -1,16 +1,18 @@
-import { useLocalStorageValue, useQueue, useSyncedRef } from '@react-hookz/web';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useAnalyticsContext } from '../AnalyticsProvider';
 import type { DeferredIdentity } from '../types';
 
+import { useLocalStorage } from './useLocalStorage';
+import { useQueue } from './useQueue';
+
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
 const NULL_USER = {
-    id() {
+    id(): null {
         return null;
     },
-    anonymousId() {
+    anonymousId(): null {
         return null;
     },
 };
@@ -20,10 +22,11 @@ export function useAnalytics() {
 
     // We use ref to `analytics` object, cause our tracking calls are added to the callback queue,
     // and those need to have access to the most recent instance if `analytics`
-    const analyticsRef = useSyncedRef(analytics);
+    const analyticsRef = useRef(analytics);
 
-    const { value: deferredIdentity, set: setDeferredIdentity } =
-        useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
+    const { value: deferredIdentity, set: setDeferredIdentity } = useLocalStorage<DeferredIdentity>(
+        DEFERRED_IDENTITY_STORAGE_KEY,
+    );
     const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
 
     const identify = useCallback(
