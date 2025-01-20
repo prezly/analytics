@@ -174,7 +174,7 @@ export function AnalyticsProvider({
             }
         }
 
-        if (trackingPermissions.canLoadSegment) {
+        if (trackingPermissions.canLoadSegment && !analytics) {
             if (!segmentWriteKey && !uuid) {
                 // eslint-disable-next-line no-console
                 console.warn(
@@ -185,6 +185,7 @@ export function AnalyticsProvider({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
+        analytics,
         cdnUrl,
         prezlyMetaRef,
         trackingPermissions.canLoadSegment,
