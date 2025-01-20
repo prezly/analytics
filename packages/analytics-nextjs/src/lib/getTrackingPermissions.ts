@@ -19,7 +19,10 @@ export function getTrackingPermissions({
         canTrackThirdParty || consent.categories.includes(ConsentCategory.FIRST_PARTY_ANALYTICS);
 
     const canIdentify = trackingPolicy === TrackingPolicy.LENIENT || canTrackFirstParty;
-    const canTrackToPrezly = trackingPolicy !== TrackingPolicy.STRICT || canTrackFirstParty;
+    const canTrackToPrezly =
+        (trackingPolicy !== TrackingPolicy.STRICT &&
+            trackingPolicy !== TrackingPolicy.CONSENT_TO_IDENTIFY) ||
+        canTrackFirstParty;
     const canTrackToGoogle = trackingPolicy === TrackingPolicy.LENIENT || canTrackThirdParty;
     const canTrackToPlausible =
         isPlausibleEnabled && (trackingPolicy === TrackingPolicy.LENIENT || canTrackFirstParty);
