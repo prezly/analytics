@@ -7,7 +7,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
 import Script from 'next/script';
 import type { PropsWithChildren } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useLatest } from './hooks';
 import { getTrackingPermissions } from './lib';
@@ -56,6 +56,7 @@ interface Props {
 }
 
 const DEFAULT_PLAUSIBLE_API_HOST = 'https://atlas.prezly.com/api/event';
+const DEFAULT_CONSENT = { categories: [] };
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
@@ -72,7 +73,7 @@ export function AnalyticsProvider({
     cdnUrl,
     children,
     cookie = {},
-    consent = { categories: [] },
+    consent = DEFAULT_CONSENT,
     gallery,
     integrations,
     newsroom,
@@ -102,12 +103,22 @@ export function AnalyticsProvider({
 
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
 
-    const trackingPermissions = getTrackingPermissions({
-        segmentWriteKey: segmentWriteKey ?? undefined,
-        isPlausibleEnabled: isPlausibleEnabled || Boolean(newsroom?.is_plausible_enabled),
-        trackingPolicy,
-        consent,
-    });
+    const trackingPermissions = useMemo(
+        () =>
+            getTrackingPermissions({
+                segmentWriteKey: segmentWriteKey ?? undefined,
+                isPlausibleEnabled: isPlausibleEnabled || Boolean(newsroom?.is_plausible_enabled),
+                trackingPolicy,
+                consent,
+            }),
+        [
+            consent,
+            isPlausibleEnabled,
+            newsroom?.is_plausible_enabled,
+            segmentWriteKey,
+            trackingPolicy,
+        ],
+    );
 
     useEffect(() => {
         if (!googleAnalyticsId) {
@@ -115,7 +126,7 @@ export function AnalyticsProvider({
         }
 
         window[`ga-disable-${googleAnalyticsId}`] = !trackingPermissions.canTrackToGoogle;
-    }, [googleAnalyticsId, trackingPermissions]);
+    }, [googleAnalyticsId, trackingPermissions.canTrackToGoogle]);
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
@@ -142,7 +153,7 @@ export function AnalyticsProvider({
                                 : null,
                             process.env.NODE_ENV === 'production' ? null : logToConsole(),
                             ...(plugins || []),
-                        ].filter((value) => value !== null),
+                        ].filter((value): value is Plugin => value !== null),
                     },
                     {
                         // By default, the analytics.js library plants its cookies on the top-level domain.
@@ -176,7 +187,7 @@ export function AnalyticsProvider({
     }, [
         cdnUrl,
         prezlyMetaRef,
-        trackingPermissions,
+        trackingPermissions.canLoadSegment,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(cookie),
         // eslint-disable-next-line react-hooks/exhaustive-deps
