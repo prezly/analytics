@@ -16,7 +16,13 @@ export function sendEventToPlausiblePlugin(options?: PlausibleOptions): Plugin {
             plausible && 'event' in ctx.event && ctx.event.integrations?.Plausible !== false;
 
         if (shouldSendToPlausible) {
-            plausible!.trackEvent(ctx.event.event!, { props: ctx.event.properties });
+            plausible!.trackEvent(ctx.event.event!, {
+                props: {
+                    ...ctx.event.properties,
+                    // `prezly` injected by `injectPrezlyMetaPlugin`
+                    prezly: (ctx.event as any).prezly,
+                },
+            });
         }
 
         return ctx;
