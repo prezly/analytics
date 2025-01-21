@@ -19,7 +19,8 @@ const NULL_USER = {
 };
 
 export function useAnalytics() {
-    const { analytics, consent, newsroom, trackingPermissions } = useAnalyticsContext();
+    const { analytics, consent, integrations, newsroom, trackingPermissions } =
+        useAnalyticsContext();
     const analyticsRef = useLatest(analytics);
 
     const integrationsRef = useLatest({
@@ -27,6 +28,7 @@ export function useAnalytics() {
         'Segment.io': trackingPermissions.canTrackToSegment,
         Prezly: trackingPermissions.canTrackToPrezly,
         Plausible: trackingPermissions.canTrackToPlausible,
+        ...integrations,
     });
 
     const { value: deferredIdentity, set: setDeferredIdentity } = useLocalStorage<DeferredIdentity>(

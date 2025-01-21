@@ -32,6 +32,7 @@ interface Context {
     consent: Consent | null;
     gallery?: PickedGalleryProperties;
     newsroom?: PickedNewsroomProperties;
+    integrations?: Integrations;
     story?: PickedStoryProperties;
     trackingPermissions: TrackingPermissions;
     trackingPolicy: TrackingPolicy;
@@ -210,6 +211,7 @@ export function AnalyticsProvider({
                 consent: null,
                 gallery,
                 newsroom,
+                integrations,
                 story,
                 trackingPermissions,
                 trackingPolicy,
