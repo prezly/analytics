@@ -29,7 +29,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: Install Node.js dependencies
-        run: npm ci
+        run: npm ci --include=optional
 
       - name: Run tests
         run: npm test
