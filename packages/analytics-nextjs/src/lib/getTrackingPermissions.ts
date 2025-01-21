@@ -3,6 +3,7 @@ import type { Consent, TrackingPermissions } from '../types';
 
 interface Arg {
     segmentWriteKey?: string;
+    isEnabled?: boolean;
     isPlausibleEnabled: boolean;
     consent: Consent;
     trackingPolicy: TrackingPolicy;
@@ -10,10 +11,22 @@ interface Arg {
 
 export function getTrackingPermissions({
     segmentWriteKey,
+    isEnabled,
     isPlausibleEnabled,
     consent,
     trackingPolicy,
 }: Arg): TrackingPermissions {
+    if (!isEnabled) {
+        return {
+            canIdentify: false,
+            canTrackToPrezly: false,
+            canTrackToSegment: false,
+            canLoadSegment: false,
+            canTrackToGoogle: false,
+            canTrackToPlausible: false,
+        };
+    }
+
     const canTrackThirdParty = consent.categories.includes(ConsentCategory.THIRD_PARTY_COOKIES);
     const canTrackFirstParty =
         canTrackThirdParty || consent.categories.includes(ConsentCategory.FIRST_PARTY_ANALYTICS);

@@ -53,6 +53,7 @@ interface Props {
      */
     isPlausibleEnabled?: boolean;
     plausibleDomain?: string;
+    isEnabled: boolean;
 }
 
 const DEFAULT_PLAUSIBLE_API_HOST = 'https://atlas.prezly.com/api/event';
@@ -81,6 +82,7 @@ export function AnalyticsProvider({
     segmentWriteKey: customSegmentWriteKey,
     story,
     user,
+    isEnabled = true,
     isPlausibleEnabled = true,
     plausibleDomain = newsroom?.plausible_site_id,
 }: PropsWithChildren<Props>) {
@@ -107,12 +109,14 @@ export function AnalyticsProvider({
         () =>
             getTrackingPermissions({
                 segmentWriteKey: segmentWriteKey ?? undefined,
+                isEnabled,
                 isPlausibleEnabled: isPlausibleEnabled || Boolean(newsroom?.is_plausible_enabled),
                 trackingPolicy,
                 consent,
             }),
         [
             consent,
+            isEnabled,
             isPlausibleEnabled,
             newsroom?.is_plausible_enabled,
             segmentWriteKey,
