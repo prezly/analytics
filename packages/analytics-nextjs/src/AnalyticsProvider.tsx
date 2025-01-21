@@ -54,7 +54,7 @@ interface Props {
      */
     isPlausibleEnabled?: boolean;
     plausibleDomain?: string;
-    isEnabled: boolean;
+    isEnabled?: boolean;
 }
 
 const DEFAULT_PLAUSIBLE_API_HOST = 'https://atlas.prezly.com/api/event';
