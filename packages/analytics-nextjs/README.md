@@ -11,7 +11,6 @@ This library is an easy plug-and-play solution to enable Prezly Analytics on you
 - 🔁 Seamless integration with Segment Analytics
 - 🤖 Automatically handles Segment and Google Analytics integrations on your Prezly Newsroom
 - 🔒 GDPR-compliant tracking
-- 🍪 Ready-made components to handle Cookie Consent
 - 🚀 Coming soon: 1st party domain tracking support
 
 # Adding the library to your Next.js application
@@ -133,6 +132,17 @@ You can find more examples of tracking calls in the [Prezly Bea Theme] repo.
 If you want to use a single solution to also track pages unrelated to Prezly, you can omit `newsroom` and `story` props on pages that don't need it.
 Instead, you would pass `segmentWriteKey` prop to `AnalyticsContextProvider`. This will disable sending events to PrezlyAnalytics and will only send events to Segment.
 Note that you need to pass either `segmentWriteKey` or `newsroom` to make the tracking library work.
+
+### Plugins
+
+In order to track to Prezly and Plausible we have created two custom Segment plugins. That means that Segment plays role of an adapter, which also injects Prezly metadata to every event. Google analytics is loaded separately though.
+
+### Cookie consent
+
+You can now pass user cookie consent as a `consent` prop to `AnalyticsProvider`. Consent may include following categories:
+
+- `first-party-analytics` - Allows Prezly and Plausible tracking
+- `third-party-cookies` - Is a superset of `first-party-analytics` and also allows Google Analytics
 
 # What's next
 
