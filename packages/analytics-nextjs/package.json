@@ -31,7 +31,6 @@
     "react-dom": "^17.x || ^18.x"
   },
   "dependencies": {
-    "@react-hookz/web": "^25.0.1",
     "@segment/analytics-next": "^1.76.0",
     "plausible-tracker": "^0.3.9"
   },
