@@ -14,6 +14,7 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     timezone: 'europe/london',
     is_active: true,
     is_archived: false,
+    is_demo: false,
     is_online: true,
     is_offline: false,
     is_multilingual: true,
@@ -23,6 +24,14 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     plausible_stats: {
         visits_last_7_days: null,
         visits_last_7_days_previous: null,
+    },
+    policies: {
+        cookie_policy: {
+            link: 'https://prezly.com',
+        },
+        privacy_policy: {
+            link: 'https://prezly.com',
+        },
     },
     url: 'https://the-good-news-room.prezly.com/',
     links: {
