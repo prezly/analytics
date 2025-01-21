@@ -2,8 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
-import { useSyncedRef } from '@react-hookz/web';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { ACTIONS } from '../events';
 import { useAnalytics } from '../hooks';
@@ -13,10 +12,10 @@ import { UPLOADCARE_CDN_HOSTNAME } from './const';
 
 export function Tracking() {
     const { alias, identify, track, user } = useAnalytics();
-    const aliasRef = useSyncedRef(alias);
-    const identifyRef = useSyncedRef(identify);
-    const trackRef = useSyncedRef(track);
-    const userRef = useSyncedRef(user);
+    const aliasRef = useRef(alias);
+    const identifyRef = useRef(identify);
+    const trackRef = useRef(track);
+    const userRef = useRef(user);
 
     useEffect(() => {
         function handleClick(event: MouseEvent) {
