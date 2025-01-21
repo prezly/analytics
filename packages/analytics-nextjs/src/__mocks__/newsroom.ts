@@ -60,6 +60,10 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             native_name: 'English (Global)',
             direction: Culture.TextDirection.LTR,
             language_code: 'en',
+            language: {
+                code: 'en',
+                name: 'English (Global)',
+            },
         },
         {
             code: 'es_ES',
@@ -68,6 +72,10 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             native_name: 'Español (España)',
             direction: Culture.TextDirection.LTR,
             language_code: 'es',
+            language: {
+                code: 'es',
+                name: 'Spanish (Spain)',
+            },
         },
         {
             code: 'fr',
@@ -76,6 +84,10 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             native_name: 'Français (Mondial)',
             direction: Culture.TextDirection.LTR,
             language_code: 'fr',
+            language: {
+                code: 'fr',
+                name: 'French (Global)',
+            },
         },
         {
             code: 'nl_BE',
@@ -84,6 +96,10 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             native_name: 'Nederlands (België)',
             direction: Culture.TextDirection.LTR,
             language_code: 'nl',
+            language: {
+                code: 'nl',
+                name: 'Dutch (Belgium)',
+            },
         },
     ],
     campaigns_number: 0,
