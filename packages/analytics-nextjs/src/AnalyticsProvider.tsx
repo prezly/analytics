@@ -56,7 +56,7 @@ interface Props {
 }
 
 const DEFAULT_PLAUSIBLE_API_HOST = 'https://atlas.prezly.com/api/event';
-const DEFAULT_CONSENT = { categories: [] };
+const DEFAULT_CONSENT: Consent = { categories: [] };
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
