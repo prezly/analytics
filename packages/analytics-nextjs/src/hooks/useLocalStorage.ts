@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { noop } from '../lib';
 
 export function useLocalStorage<T>(key: string) {
-    if (typeof window !== 'undefined') {
+    if (typeof window === 'undefined') {
         return { value: undefined, set: noop, remove: noop };
     }
 
