@@ -5,66 +5,60 @@
 import type { Analytics, Integrations, Plugin, UserOptions } from '@segment/analytics-next';
 import { AnalyticsBrowser } from '@segment/analytics-next';
 import type { CookieOptions } from '@segment/analytics-next/dist/types/core/storage';
-import { usePathname } from 'next/navigation';
 import Script from 'next/script';
-import PlausibleProvider from 'next-plausible';
 import type { PropsWithChildren } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
+import { useLatest } from './hooks';
+import { getTrackingPermissions } from './lib';
 import {
-    getConsentCookie,
-    getOnetrustCookieConsentStatus,
-    isTrackingCookieAllowed,
-    setConsentCookie,
-} from './lib';
-import { normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
+    injectPrezlyMetaPlugin,
+    logToConsole,
+    sendEventToPlausiblePlugin,
+    sendEventToPrezlyPlugin,
+} from './plugins';
 import { TrackingPolicy } from './types';
 import type {
+    Consent,
     PickedGalleryProperties,
     PickedNewsroomProperties,
     PickedStoryProperties,
+    PrezlyMeta,
+    TrackingPermissions,
 } from './types';
 
 interface Context {
     analytics: Analytics | undefined;
-    consent: boolean | null;
+    consent: Consent | null;
     gallery?: PickedGalleryProperties;
-    isEnabled: boolean;
-    /**
-     * - TRUE  - tracking allowed (i.e. user clicked "Allow")
-     * - FALSE - tracking disallowed (i.e. user clicked "Disallow" or browser "Do Not Track" mode is ON)
-     * - NULL  - unknown (i.e. user didn't click anything yet, and no browser preference set)
-     */
-    isTrackingCookieAllowed: boolean | null;
     newsroom?: PickedNewsroomProperties;
-    setConsent(consent: boolean): void;
+    integrations?: Integrations;
     story?: PickedStoryProperties;
+    trackingPermissions: TrackingPermissions;
     trackingPolicy: TrackingPolicy;
 }
 
 interface Props {
     cdnUrl?: string;
+    consent?: Consent;
     cookie?: CookieOptions;
     gallery?: PickedGalleryProperties;
     integrations?: Integrations;
-    isEnabled?: boolean;
-    /**
-     * Enables Plausible tracking for newsrooms that have regular tracking disabled.
-     */
-    isPlausibleEnabled?: boolean;
     newsroom?: PickedNewsroomProperties;
     story?: PickedStoryProperties;
     plugins?: Plugin[];
     segmentWriteKey?: string;
-    plausibleDomain?: string;
     user?: UserOptions;
     /**
-     * Skips user consent checks. Use cautiously.
+     * Enables Plausible tracking for newsrooms that have regular tracking disabled.
      */
-    ignoreConsent?: boolean;
+    isPlausibleEnabled?: boolean;
+    plausibleDomain?: string;
+    isEnabled?: boolean;
 }
 
-const ONETRUST_INTEGRATION_EVENT = 'OnetrustConsentModalCallback';
+const DEFAULT_PLAUSIBLE_API_HOST = 'https://atlas.prezly.com/api/event';
+const DEFAULT_CONSENT: Consent = { categories: [] };
 
 export const AnalyticsContext = createContext<Context | undefined>(undefined);
 
@@ -77,79 +71,67 @@ export function useAnalyticsContext() {
     return analyticsContext;
 }
 
-function PlausibleProviderMaybe({
-    isEnabled,
-    newsroom,
-    plausibleDomain,
-    children,
-}: PropsWithChildren<Pick<Props, 'isEnabled' | 'newsroom' | 'plausibleDomain'>>) {
-    if (
-        !isEnabled ||
-        !newsroom ||
-        !newsroom.is_plausible_enabled ||
-        newsroom.tracking_policy === TrackingPolicy.DISABLED
-    ) {
-        return <>{children}</>;
-    }
-
-    return (
-        <PlausibleProvider
-            domain={plausibleDomain ?? newsroom.plausible_site_id}
-            scriptProps={{
-                src: 'https://atlas.prezly.com/js/script.outbound-links.js',
-                // This is a documented parameter, but it's not reflected in the types
-                // See https://github.com/4lejandrito/next-plausible/blob/master/test/page/pages/scriptProps.js
-                // @ts-expect-error
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                'data-api': 'https://atlas.prezly.com/api/event',
-            }}
-        >
-            {/* 
-                This is the only way I found to test if the PlausibleProvider is rendered. 
-                It doesn't render any markup by itself, and the `usePlausible` hook looks the same whether provider is present or not 
-            */}
-            {process.env.NODE_ENV === 'test' && <div data-testid="plausible-debug-enabled" />}
-            {children}
-        </PlausibleProvider>
-    );
-}
-
 export function AnalyticsProvider({
     cdnUrl,
     children,
     cookie = {},
+    consent = DEFAULT_CONSENT,
     gallery,
-    ignoreConsent,
     integrations,
-    isEnabled = true,
-    isPlausibleEnabled,
     newsroom,
-    plausibleDomain,
     plugins,
     segmentWriteKey: customSegmentWriteKey,
     story,
     user,
+    isEnabled = true,
+    isPlausibleEnabled = true,
+    plausibleDomain = newsroom?.plausible_site_id,
 }: PropsWithChildren<Props>) {
     const {
-        tracking_policy: trackingPolicy = TrackingPolicy.DEFAULT,
+        tracking_policy: trackingPolicy = TrackingPolicy.NORMAL,
         segment_analytics_id: segmentWriteKey = customSegmentWriteKey,
+        google_analytics_id: googleAnalyticsId,
         uuid,
     } = newsroom || {};
 
-    const isOnetrustIntegrationEnabled = newsroom?.onetrust_cookie_consent.is_enabled ?? false;
-    const onetrustCookieCategory = newsroom?.onetrust_cookie_consent?.category ?? '';
-    const onetrustIntegrationScript = newsroom?.onetrust_cookie_consent?.script ?? '';
+    const prezlyMeta: PrezlyMeta['prezly'] | null = newsroom
+        ? {
+              newsroom: newsroom?.uuid,
+              story: story?.uuid,
+              gallery: gallery?.uuid,
+              tracking_policy: trackingPolicy,
+          }
+        : null;
+    const prezlyMetaRef = useLatest(prezlyMeta);
 
-    const [consent, setConsent] = useState<boolean | null>(() => {
-        if (ignoreConsent) {
-            return true;
-        }
-        if (isOnetrustIntegrationEnabled) {
-            return getOnetrustCookieConsentStatus(onetrustCookieCategory);
-        }
-        return getConsentCookie();
-    });
     const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined);
+
+    const trackingPermissions = useMemo(
+        () =>
+            getTrackingPermissions({
+                segmentWriteKey: segmentWriteKey ?? undefined,
+                isEnabled,
+                isPlausibleEnabled: isPlausibleEnabled || Boolean(newsroom?.is_plausible_enabled),
+                trackingPolicy,
+                consent,
+            }),
+        [
+            consent,
+            isEnabled,
+            isPlausibleEnabled,
+            newsroom?.is_plausible_enabled,
+            segmentWriteKey,
+            trackingPolicy,
+        ],
+    );
+
+    useEffect(() => {
+        if (!googleAnalyticsId) {
+            return;
+        }
+
+        window[`ga-disable-${googleAnalyticsId}`] = !trackingPermissions.canTrackToGoogle;
+    }, [googleAnalyticsId, trackingPermissions.canTrackToGoogle]);
 
     useEffect(() => {
         async function loadAnalytics(writeKey: string) {
@@ -159,18 +141,24 @@ export function AnalyticsProvider({
                         writeKey,
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         cdnURL: cdnUrl,
-                        // If no Segment Write Key is provided, we initialize the library settings manually
+                        //  If no Segment Write Key is provided, we initialize the library settings manually
                         ...(!writeKey && {
                             cdnSettings: {
                                 integrations: {},
                             },
                         }),
                         plugins: [
-                            ...(uuid
-                                ? [sendEventToPrezlyPlugin(uuid), normalizePrezlyMetaPlugin()]
-                                : []),
+                            uuid ? injectPrezlyMetaPlugin(prezlyMetaRef) : null,
+                            uuid ? sendEventToPrezlyPlugin(uuid) : null,
+                            uuid
+                                ? sendEventToPlausiblePlugin({
+                                      apiHost: DEFAULT_PLAUSIBLE_API_HOST,
+                                      domain: plausibleDomain,
+                                  })
+                                : null,
+                            process.env.NODE_ENV === 'production' ? null : logToConsole(),
                             ...(plugins || []),
-                        ],
+                        ].filter((value): value is Plugin => value !== null),
                     },
                     {
                         // By default, the analytics.js library plants its cookies on the top-level domain.
@@ -179,13 +167,8 @@ export function AnalyticsProvider({
                             domain: document.location.host,
                             ...cookie,
                         },
-                        integrations,
                         user,
-                        // Disable calls to Segment API completely if no Write Key is provided
-                        ...(!writeKey && {
-                            // eslint-disable-next-line @typescript-eslint/naming-convention
-                            integrations: { 'Segment.io': false },
-                        }),
+                        integrations,
                     },
                 );
 
@@ -196,7 +179,7 @@ export function AnalyticsProvider({
             }
         }
 
-        if (isEnabled && trackingPolicy !== TrackingPolicy.DISABLED) {
+        if (trackingPermissions.canLoadSegment && !analytics) {
             if (!segmentWriteKey && !uuid) {
                 // eslint-disable-next-line no-console
                 console.warn(
@@ -207,106 +190,36 @@ export function AnalyticsProvider({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
+        analytics,
         cdnUrl,
-        isEnabled,
+        prezlyMetaRef,
+        trackingPermissions.canLoadSegment,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(cookie),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         JSON.stringify(integrations),
         plugins,
         segmentWriteKey,
-        trackingPolicy,
         user,
         uuid,
     ]);
-
-    useEffect(() => {
-        if (!ignoreConsent && typeof consent === 'boolean' && !isOnetrustIntegrationEnabled) {
-            setConsentCookie(consent);
-        }
-    }, [consent, ignoreConsent, isOnetrustIntegrationEnabled]);
-
-    useEffect(() => {
-        if (!isOnetrustIntegrationEnabled || !onetrustCookieCategory) {
-            // Only execute the effect if the OneTrust integration is enabled.
-            return noop;
-        }
-
-        function handleEvent() {
-            setConsent(getOnetrustCookieConsentStatus(onetrustCookieCategory));
-        }
-
-        document.body.addEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
-
-        return () => {
-            document.body.removeEventListener(ONETRUST_INTEGRATION_EVENT, handleEvent);
-        };
-    }, [isOnetrustIntegrationEnabled, onetrustCookieCategory]);
 
     return (
         <AnalyticsContext.Provider
             value={{
                 analytics,
-                consent,
+                consent: null,
                 gallery,
-                isEnabled,
-                isTrackingCookieAllowed: isTrackingCookieAllowed(consent, newsroom),
                 newsroom,
+                integrations,
                 story,
-                setConsent,
+                trackingPermissions,
                 trackingPolicy,
             }}
         >
-            {isOnetrustIntegrationEnabled && onetrustIntegrationScript && (
-                <OnetrustCookieIntegration script={onetrustIntegrationScript} />
-            )}
             <GoogleAnalyticsIntegration analyticsId={newsroom?.google_analytics_id ?? null} />
-            <PlausibleProviderMaybe
-                isEnabled={isEnabled || isPlausibleEnabled}
-                newsroom={newsroom}
-                plausibleDomain={plausibleDomain}
-            >
-                {children}
-            </PlausibleProviderMaybe>
+            {children}
         </AnalyticsContext.Provider>
-    );
-}
-
-function OnetrustCookieIntegration(props: { script: string }) {
-    const path = usePathname();
-
-    /*
-     * @see https://my.onetrust.com/s/article/UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046?language=en_US#UUID-69162cb7-c4a2-ac70-39a1-ca69c9340046_section-idm46212287146848
-     */
-    useEffect(() => {
-        document.getElementById('onetrust-consent-sdk')?.remove();
-
-        if (window.OneTrust) {
-            window.OneTrust.Init();
-
-            setTimeout(() => {
-                window.OneTrust?.LoadBanner();
-            }, 1000);
-        }
-    }, [path]);
-
-    return (
-        <div
-            id="onetrust-cookie-consent-integration"
-            dangerouslySetInnerHTML={{
-                __html: `
-                    ${props.script}
-                    <script>
-                    window.OptanonWrapper = (function () {
-                      const prev = window.OptanonWrapper || function() {};
-                      return function() {
-                        prev();
-                        document.body.dispatchEvent(new Event("${ONETRUST_INTEGRATION_EVENT}")); // allow listening to the OptanonWrapper callback from anywhere.
-                      };
-                    })();
-                    </script>`,
-            }}
-        />
     );
 }
 
@@ -365,8 +278,4 @@ function GoogleAnalytics(props: { analyticsId: string }) {
             />
         </>
     );
-}
-
-function noop() {
-    // nothing
 }

@@ -1,84 +1,46 @@
-import { useLocalStorageValue, useSyncedRef } from '@react-hookz/web';
-import { usePlausible } from 'next-plausible';
 import { useCallback, useEffect } from 'react';
 
 import { useAnalyticsContext } from '../AnalyticsProvider';
-import { stringify } from '../lib';
-import type { DeferredIdentity, PrezlyMeta } from '../types';
-import { TrackingPolicy } from '../types';
+import type { DeferredIdentity } from '../types';
 
+import { useLatest } from './useLatest';
+import { useLocalStorage } from './useLocalStorage';
 import { useQueue } from './useQueue';
 
 const DEFERRED_IDENTITY_STORAGE_KEY = 'prezly_ajs_deferred_identity';
 
 const NULL_USER = {
-    id() {
+    id(): null {
         return null;
     },
-    anonymousId() {
+    anonymousId(): null {
         return null;
     },
 };
 
 export function useAnalytics() {
-    const { analytics, consent, gallery, isEnabled, newsroom, story, trackingPolicy } =
+    const { analytics, consent, integrations, newsroom, trackingPermissions } =
         useAnalyticsContext();
-    const plausible = usePlausible();
+    const analyticsRef = useLatest(analytics);
 
-    const { uuid: newsroomUuid, is_plausible_enabled: isPlausibleEnabled } = newsroom || {
-        uuid: undefined,
-        is_plausible_enabled: false,
-    };
-    const storyUuid = story?.uuid;
-    const galleryUuid = gallery?.uuid;
+    const integrationsRef = useLatest({
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        'Segment.io': trackingPermissions.canTrackToSegment,
+        Prezly: trackingPermissions.canTrackToPrezly,
+        Plausible: trackingPermissions.canTrackToPlausible,
+        ...integrations,
+    });
 
-    // We use ref to `analytics` object, cause our tracking calls are added to the callback queue, and those need to have access to the most recent instance if `analytics`,
-    // which would not be possible when passing the `analytics` object directly
-    const analyticsRef = useSyncedRef(analytics);
-    const plausibleRef = useSyncedRef(plausible);
-
-    const [deferredIdentity, setDeferredIdentity, removeDeferredIdentity] =
-        useLocalStorageValue<DeferredIdentity>(DEFERRED_IDENTITY_STORAGE_KEY);
-    const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
-
-    // The prezly traits should be placed in the root of the event when sent to the API.
-    // This is handled by the `normalizePrezlyMeta` plugin.
-    const injectPrezlyMeta = useCallback(
-        (traits: object): object | (object & PrezlyMeta) => {
-            if (!newsroomUuid) {
-                return traits;
-            }
-
-            return {
-                ...traits,
-                prezly: {
-                    newsroom: newsroomUuid,
-                    ...(storyUuid && {
-                        story: storyUuid,
-                    }),
-                    ...(galleryUuid && {
-                        gallery: galleryUuid,
-                    }),
-                    ...(trackingPolicy !== TrackingPolicy.DEFAULT && {
-                        tracking_policy: trackingPolicy,
-                    }),
-                },
-            };
-        },
-        [galleryUuid, newsroomUuid, storyUuid, trackingPolicy],
+    const { value: deferredIdentity, set: setDeferredIdentity } = useLocalStorage<DeferredIdentity>(
+        DEFERRED_IDENTITY_STORAGE_KEY,
     );
+    const { add: addToQueue, remove: removeFromQueue, first: firstInQueue } = useQueue<Function>();
 
     const identify = useCallback(
         (userId: string, traits: object = {}, callback?: () => void) => {
-            const extendedTraits = injectPrezlyMeta(traits);
+            if (!trackingPermissions.canIdentify) {
+                setDeferredIdentity({ userId, traits });
 
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`analytics.identify(${stringify(userId, extendedTraits)})`);
-            }
-
-            if (trackingPolicy === TrackingPolicy.CONSENT_TO_IDENTIFY && !consent) {
-                setDeferredIdentity({ userId, traits: extendedTraits });
                 if (callback) {
                     callback();
                 }
@@ -87,67 +49,61 @@ export function useAnalytics() {
             }
 
             addToQueue(() => {
-                if (analyticsRef.current && analyticsRef.current.identify) {
-                    analyticsRef.current.identify(userId, extendedTraits, {}, callback);
-                }
+                analyticsRef.current?.identify(
+                    userId,
+                    traits,
+                    { integrations: integrationsRef.current },
+                    callback,
+                );
             });
         },
-        [addToQueue, analyticsRef, consent, setDeferredIdentity, trackingPolicy, injectPrezlyMeta],
+        [
+            addToQueue,
+            analyticsRef,
+            integrationsRef,
+            setDeferredIdentity,
+            trackingPermissions.canIdentify,
+        ],
     );
 
     const alias = useCallback(
         (userId: string, previousId: string) => {
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`analytics.alias(${stringify(userId, previousId)})`);
-            }
-
             addToQueue(() => {
-                if (analyticsRef.current && analyticsRef.current.alias) {
-                    analyticsRef.current.alias(userId, previousId);
-                }
+                analyticsRef.current?.alias(userId, previousId, {
+                    integrations: integrationsRef.current,
+                });
             });
         },
-        [addToQueue, analyticsRef],
+        [addToQueue, analyticsRef, integrationsRef],
     );
 
     const page = useCallback(
         (category?: string, name?: string, properties: object = {}, callback?: () => void) => {
-            const extendedProperties = injectPrezlyMeta(properties);
-
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`analytics.page(${stringify(category, name, extendedProperties)})`);
-            }
-
             addToQueue(() => {
-                if (analyticsRef.current && analyticsRef.current.page) {
-                    analyticsRef.current.page(category, name, extendedProperties, {}, callback);
-                }
+                analyticsRef.current?.page(
+                    category,
+                    name,
+                    properties,
+                    { integrations: integrationsRef.current },
+                    callback,
+                );
             });
         },
-        [addToQueue, analyticsRef, injectPrezlyMeta],
+        [addToQueue, analyticsRef, integrationsRef],
     );
 
     const track = useCallback(
         (event: string, properties: object = {}, callback?: () => void) => {
-            const extendedProperties = injectPrezlyMeta(properties);
-
-            if (process.env.NODE_ENV !== 'production') {
-                // eslint-disable-next-line no-console
-                console.log(`analytics.track(${stringify(event, extendedProperties)})`);
-            }
-
             addToQueue(() => {
-                if (analyticsRef.current && analyticsRef.current.track) {
-                    analyticsRef.current.track(event, extendedProperties, {}, callback);
-                }
-                if (isPlausibleEnabled) {
-                    plausibleRef.current(event, { props: extendedProperties });
-                }
+                analyticsRef.current?.track(
+                    event,
+                    properties,
+                    { integrations: integrationsRef.current },
+                    callback,
+                );
             });
         },
-        [addToQueue, analyticsRef, injectPrezlyMeta, isPlausibleEnabled, plausibleRef],
+        [addToQueue, analyticsRef, integrationsRef],
     );
 
     const user = useCallback(() => {
@@ -169,33 +125,30 @@ export function useAnalytics() {
     }, [firstInQueue, analytics, removeFromQueue]);
 
     useEffect(() => {
-        if (consent) {
-            if (deferredIdentity) {
-                const { userId, traits } = deferredIdentity;
-                identify(userId, traits);
-                removeDeferredIdentity();
-            }
+        if (trackingPermissions.canIdentify && deferredIdentity) {
+            const { userId, traits } = deferredIdentity;
+            analyticsRef.current?.identify(userId, traits);
         } else {
             const id = user().id();
+
             if (id && deferredIdentity?.userId !== id) {
                 setDeferredIdentity({ userId: id });
             }
 
             user().id(null); // erase user ID
         }
-    }, [consent, deferredIdentity, identify, user, removeDeferredIdentity, setDeferredIdentity]);
-
-    if (!isEnabled || trackingPolicy === TrackingPolicy.DISABLED) {
-        return {
-            alias: () => {},
-            identify: () => {},
-            page: () => {},
-            track: () => {},
-            user,
-        };
-    }
+    }, [
+        consent,
+        deferredIdentity,
+        identify,
+        user,
+        setDeferredIdentity,
+        analyticsRef,
+        trackingPermissions.canIdentify,
+    ]);
 
     return {
+        analyticsRef,
         alias,
         identify,
         newsroom,

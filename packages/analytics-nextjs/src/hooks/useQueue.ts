@@ -1,6 +1,3 @@
-/**
- * TODO: Replace this with `@react-hookz/web` implementation, when it's shipped
- */
 import { useCallback, useState } from 'react';
 
 export interface QueueMethods<T> {

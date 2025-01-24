@@ -14,6 +14,7 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     timezone: 'europe/london',
     is_active: true,
     is_archived: false,
+    is_demo: false,
     is_online: true,
     is_offline: false,
     is_multilingual: true,
@@ -23,6 +24,14 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     plausible_stats: {
         visits_last_7_days: null,
         visits_last_7_days_previous: null,
+    },
+    policies: {
+        cookie_policy: {
+            link: 'https://prezly.com',
+        },
+        privacy_policy: {
+            link: 'https://prezly.com',
+        },
     },
     url: 'https://the-good-news-room.prezly.com/',
     links: {
@@ -60,6 +69,10 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             native_name: 'English (Global)',
             direction: Culture.TextDirection.LTR,
             language_code: 'en',
+            language: {
+                code: 'en',
+                name: 'English (Global)',
+            },
         },
         {
             code: 'es_ES',
@@ -68,6 +81,10 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             native_name: 'Español (España)',
             direction: Culture.TextDirection.LTR,
             language_code: 'es',
+            language: {
+                code: 'es',
+                name: 'Spanish (Spain)',
+            },
         },
         {
             code: 'fr',
@@ -76,6 +93,10 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             native_name: 'Français (Mondial)',
             direction: Culture.TextDirection.LTR,
             language_code: 'fr',
+            language: {
+                code: 'fr',
+                name: 'French (Global)',
+            },
         },
         {
             code: 'nl_BE',
@@ -84,6 +105,10 @@ export const DEFAULT_NEWSROOM: Newsroom = {
             native_name: 'Nederlands (België)',
             direction: Culture.TextDirection.LTR,
             language_code: 'nl',
+            language: {
+                code: 'nl',
+                name: 'Dutch (Belgium)',
+            },
         },
     ],
     campaigns_number: 0,
@@ -112,7 +137,7 @@ export const DEFAULT_NEWSROOM: Newsroom = {
         effects: [],
     },
     email_logo: null,
-    email_logo_alignment: null,
+    email_logo_alignment: Newsroom.EmailLogoAlignment.CENTER,
     icon: {
         version: 2,
         uuid: '848ea31f-c575-4b8b-a369-1bf8b0f3a1c7',
@@ -136,11 +161,6 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     custom_privacy_policy_link: null,
     custom_data_request_link: null,
     tracking_policy: Newsroom.TrackingPolicy.DEFAULT,
-    onetrust_cookie_consent: {
-        is_enabled: false,
-        category: '',
-        script: '',
-    },
     ga_tracking_id: null,
     google_analytics_id: null,
     segment_analytics_id: '',
@@ -149,4 +169,9 @@ export const DEFAULT_NEWSROOM: Newsroom = {
     status: Newsroom.Status.ACTIVE,
     auto_create_contacts_from_subscribers: false,
     google_search_console_key: null,
+    onetrust_cookie_consent: {
+        category: 'test',
+        script: 'test',
+        is_enabled: false,
+    },
 };

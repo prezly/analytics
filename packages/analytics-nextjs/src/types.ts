@@ -1,4 +1,4 @@
-import type { Newsroom, NewsroomGallery, Story } from '@prezly/sdk';
+import type { Newsroom, NewsroomGallery, Story, StoryRef } from '@prezly/sdk';
 
 export interface DeferredIdentity {
     userId: string;
@@ -13,9 +13,19 @@ export interface RecipientInfo {
 
 // Pulled from `@prezly/sdk` to get rid of direct dependency requirement
 export enum TrackingPolicy {
+    /**
+     * @deprecated Please use `NORMAL` instead.
+     */
     DEFAULT = 'default',
     DISABLED = 'disabled',
+    /**
+     * @deprecated Please use `STRICT` instead.
+     */
     CONSENT_TO_IDENTIFY = 'consent-to-identify',
+
+    STRICT = 'strict',
+    NORMAL = 'normal',
+    LENIENT = 'lenient',
 }
 
 export type PickedNewsroomProperties = Pick<
@@ -26,7 +36,6 @@ export type PickedNewsroomProperties = Pick<
     | 'google_analytics_id'
     | 'is_plausible_enabled'
     | 'plausible_site_id'
-    | 'onetrust_cookie_consent'
 >;
 
 export type PickedStoryProperties = Pick<Story, 'uuid'>;
@@ -35,8 +44,28 @@ export type PickedGalleryProperties = Pick<NewsroomGallery, 'uuid'>;
 
 export interface PrezlyMeta {
     prezly: {
-        newsroom: string;
-        story?: string;
+        newsroom: Newsroom['uuid'];
+        story?: StoryRef['uuid'];
+        gallery?: NewsroomGallery['uuid'];
         tracking_policy?: TrackingPolicy;
     };
+}
+
+export enum ConsentCategory {
+    NECESSARY = 'necessary',
+    FIRST_PARTY_ANALYTICS = 'first-party-analytics',
+    THIRD_PARTY_COOKIES = 'third-party-cookies',
+}
+
+export type Consent = {
+    categories: ConsentCategory[];
+};
+
+export interface TrackingPermissions {
+    canIdentify: boolean;
+    canTrackToPrezly: boolean;
+    canTrackToSegment: boolean;
+    canTrackToGoogle: boolean;
+    canLoadSegment: boolean;
+    canTrackToPlausible: boolean;
 }

@@ -69,3 +69,33 @@ it('sends the event to Prezly Analytics', async () => {
         }),
     );
 });
+
+it("doesn't send the event to Prezly Analytics when Prezly integration is disabled", async () => {
+    let eventCtx: Context;
+
+    // Mock the `sendBeacon` method (it's not even present in the JSDOM environment)
+    global.navigator.sendBeacon = jest.fn();
+    const sendBeaconSpy = jest.spyOn(global.navigator, 'sendBeacon');
+
+    const plugin = sendEventToPrezlyPlugin('abcd');
+    const trackSpy = jest.spyOn(plugin, 'track');
+
+    const [analytics] = await AnalyticsBrowser.load(
+        {
+            writeKey: '',
+            cdnSettings: {
+                integrations: {},
+            },
+            plugins: [plugin, testSpyPlugin((ctx) => (eventCtx = ctx))],
+        },
+        {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            integrations: { 'Segment.io': false, Prezly: false },
+        },
+    );
+
+    await analytics.track('Test Event');
+
+    expect(trackSpy).toHaveBeenCalled();
+    expect(sendBeaconSpy).not.toHaveBeenCalled();
+});

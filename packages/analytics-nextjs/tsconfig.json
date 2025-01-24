@@ -10,15 +10,6 @@
     "rootDir": "./src",
     "typeRoots": ["../../node_modules/@types", "./node_modules/@types", "./src/@types"]
   },
-  "exclude": [
-    "node_modules",
-    "**/*.test.*",
-    "src/__mocks__",
-    "src/plugins/testSpy.ts",
-    "src/plugins/injectPrezlyMeta.ts"
-  ],
-  "include": [
-    "./src/globals.d.ts",
-    "./src"
-  ]
+  "exclude": ["node_modules", "**/*.test.*", "src/__mocks__", "src/plugins/testSpy.ts"],
+  "include": ["./src/globals.d.ts", "./src"]
 }

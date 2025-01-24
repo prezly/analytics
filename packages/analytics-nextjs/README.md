@@ -11,8 +11,6 @@ This library is an easy plug-and-play solution to enable Prezly Analytics on you
 - 🔁 Seamless integration with Segment Analytics
 - 🤖 Automatically handles Segment and Google Analytics integrations on your Prezly Newsroom
 - 🔒 GDPR-compliant tracking
-- 🍪 Ready-made components to handle Cookie Consent
-- 🧪 Experimental: [Plausible] integration
 - 🚀 Coming soon: 1st party domain tracking support
 
 # Adding the library to your Next.js application
@@ -31,6 +29,7 @@ If you're starting from scratch, use [create-next-app] to quick-start the projec
 To keep things fresh, we require at least Next.js 12 and React 17.
 
 You can also install the dependencies manually
+
 ```Shell
 npm install --save next react react-dom
 npm install --save-dev @types/react @types/react-dom
@@ -38,7 +37,7 @@ npm install --save-dev @types/react @types/react-dom
 
 ## Install into your Next.js application
 
-### /pages/_app.tsx
+### /pages/\_app.tsx
 
 In order for the library to work, you need to install it's context provider close to the top of your component tree. Ideal place for that would be the custom `_app` component.
 
@@ -52,10 +51,7 @@ function App({ Component, pageProps }: AppProps) {
     /* Code that extracts the `newsroom` and `currentStory` props */
 
     return (
-        <AnalyticsContextProvider
-            newsroom={newsroom}
-            story={currentStory}
-        >
+        <AnalyticsContextProvider newsroom={newsroom} story={currentStory}>
             <Component {...pageProps} />
         </AnalyticsContextProvider>
     );
@@ -81,13 +77,10 @@ import type { PropsWithChildren } from 'react';
 interface Props {}
 
 function Layout({ children }: PropsWithChildren<Props>) {
-
     return (
         <>
             <Analytics />
-            <main className="customLayout">
-                {children}
-            </main>
+            <main className="customLayout">{children}</main>
         </>
     );
 }
@@ -95,6 +88,7 @@ export default Layout;
 ```
 
 Here's what this component does for you:
+
 - Automatic page visit tracking
 - Detecting Campaign recipients and firing `Campaign Click` events
 - Auto-clicking assets linked from a Campaign when used with [Prezly Content React Renderer]
@@ -135,9 +129,20 @@ You can find more examples of tracking calls in the [Prezly Bea Theme] repo.
 
 ### Using Segment tracking without Prezly Tracking
 
-If you want to use a single solution to also track pages unrelated to Prezly, you can omit `newsroom` and `story` props on pages that don't need it. 
+If you want to use a single solution to also track pages unrelated to Prezly, you can omit `newsroom` and `story` props on pages that don't need it.
 Instead, you would pass `segmentWriteKey` prop to `AnalyticsContextProvider`. This will disable sending events to PrezlyAnalytics and will only send events to Segment.
 Note that you need to pass either `segmentWriteKey` or `newsroom` to make the tracking library work.
+
+### Plugins
+
+In order to track to Prezly and Plausible we have created two custom Segment plugins. That means that Segment plays role of an adapter, which also injects Prezly metadata to every event. Google analytics is loaded separately though.
+
+### Cookie consent
+
+You can now pass user cookie consent as a `consent` prop to `AnalyticsProvider`. Consent may include following categories:
+
+- `first-party-analytics` - Allows Prezly and Plausible tracking
+- `third-party-cookies` - Is a superset of `first-party-analytics` and also allows Google Analytics
 
 # What's next
 
@@ -149,4 +154,3 @@ Please refer to [analytics-next] and [Segment docs](https://segment.com/docs/con
 [Next.js]: https://nextjs.org
 [Prezly Bea Theme]: https://github.com/prezly/theme-nextjs-bea
 [Prezly Content React Renderer]: https://www.npmjs.com/package/@prezly/content-renderer-react-js
-[Plausible]: https://plausible.io

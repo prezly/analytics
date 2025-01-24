@@ -29,7 +29,7 @@ jobs:
                   ${{ runner.os }}-
 
             - name: Install Node.js dependencies
-              run: npm ci
+              run: npm ci --include=optional
 
             - name: Run ESLint
               uses: wearerequired/lint-action@v2.3.0
