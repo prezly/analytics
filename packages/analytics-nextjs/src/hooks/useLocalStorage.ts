@@ -1,6 +1,16 @@
 import { useCallback, useState } from 'react';
 
 export function useLocalStorage<T>(key: string) {
+    if (typeof window !== 'undefined') {
+        return { value: undefined, set: () => undefined, remove: undefined };
+    }
+
+    if (!key) {
+        throw new Error('useLocalStorage key may not be falsy');
+    }
+
+    /* eslint-disable react-hooks/rules-of-hooks */
+
     const [storedData, setStoredData] = useState<T | undefined>(() => {
         const storedValue = localStorage.getItem(key);
 
@@ -26,6 +36,8 @@ export function useLocalStorage<T>(key: string) {
         localStorage.removeItem(key);
         setStoredData(undefined);
     }, [key]);
+
+    /* eslint-enable react-hooks/rules-of-hooks */
 
     return {
         value: storedData,
