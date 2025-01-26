@@ -34,7 +34,7 @@
   ],
   "devDependencies": {
     "@prezly/eslint-config": "5.4.5",
-    "@prezly/sdk": "21.2.0",
+    "@prezly/sdk": "21.23.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "^16.1.0",
