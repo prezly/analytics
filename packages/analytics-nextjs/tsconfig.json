@@ -3,7 +3,6 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "jsx": "react-jsx",
     "noEmit": false,
     "declarationDir": "./build",
     "outDir": "./build",
