@@ -66,6 +66,11 @@ export class Analytics {
                     domain: document.location.host,
                 },
                 ...options,
+                integrations: {
+                    Prezly: this.permissions.canTrackToPrezly,
+                    'Segment.io': this.permissions.canTrackToSegment,
+                    ...options?.integrations,
+                },
             },
         );
     }
@@ -77,8 +82,16 @@ export class Analytics {
     public setConsent(consent: Consent) {
         this.consent = consent;
 
-        if (this.permissions.canLoadSegment) {
+        if (!this.segment?.instance && this.permissions.canLoadSegment) {
             this.loadSegment();
+        }
+
+        if (this.segment?.instance?.options) {
+            this.segment.instance.options.integrations = {
+                ...this.segment?.instance?.options.integrations,
+                Prezly: this.permissions.canTrackToPrezly,
+                'Segment.io': this.permissions.canTrackToSegment,
+            };
         }
     }
 
