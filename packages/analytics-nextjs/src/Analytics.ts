@@ -7,6 +7,15 @@ interface Config {
     plausibleOptions?: PlausibleOptions;
 }
 
+const NULL_USER = {
+    id(): null {
+        return null;
+    },
+    anonymousId(): null {
+        return null;
+    },
+};
+
 export class Analytics {
     public segment: AnalyticsBrowser | undefined = undefined;
 
@@ -16,10 +25,9 @@ export class Analytics {
 
     constructor(config: Config) {
         this.config = config;
-        this.init();
     }
 
-    async init() {
+    public async init() {
         const [{ AnalyticsBrowser }, { default: Plausible }] = await Promise.all([
             import('@segment/analytics-next'),
             import('plausible-tracker'),
@@ -27,5 +35,22 @@ export class Analytics {
 
         this.segment = new AnalyticsBrowser();
         this.plausible = Plausible(this.config.plausibleOptions);
+    }
+
+    public alias(userId: string, previousId: string) {
+        this.segment?.alias(userId, previousId);
+    }
+
+    public page(category?: string, name?: string, properties: object = {}, callback?: () => void) {
+        this.segment?.page(category, name, properties, callback);
+    }
+
+    public track(event: string, properties: object = {}, callback?: () => void) {
+        this.segment?.track(event, properties, {}, callback);
+        this.plausible?.trackEvent(event, properties);
+    }
+
+    public user() {
+        return this.segment?.instance?.user() ?? NULL_USER;
     }
 }
