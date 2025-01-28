@@ -27,16 +27,20 @@ export class Analytics {
     public async init(config: Config) {
         this.config = config;
 
-        import('@segment/analytics-next').then(({ AnalyticsBrowser }) => {
-            this.segment = new AnalyticsBrowser();
-        });
-
-        import('plausible-tracker').then(({ default: Plausible }) => {
-            this.plausible = Plausible({
-                apiHost: DEFAULT_PLAUSIBLE_API_HOST,
-                ...config.plausibleOptions,
+        if (this.config?.segment !== false) {
+            import('@segment/analytics-next').then(({ AnalyticsBrowser }) => {
+                this.segment = new AnalyticsBrowser();
             });
-        });
+        }
+
+        if (this.config?.plausibleOptions !== false) {
+            import('plausible-tracker').then(({ default: Plausible }) => {
+                this.plausible = Plausible({
+                    apiHost: DEFAULT_PLAUSIBLE_API_HOST,
+                    ...config.plausibleOptions,
+                });
+            });
+        }
     }
 
     private loadSegment() {
