@@ -1,40 +1,85 @@
-import type { AnalyticsBrowser } from '@segment/analytics-next';
+import type { AnalyticsBrowser, Plugin } from '@segment/analytics-next';
 import type Plausible from 'plausible-tracker';
-import type { PlausibleOptions } from 'plausible-tracker';
 
-interface Config {
-    isEnabled: boolean;
-    plausibleOptions?: PlausibleOptions;
-}
-
-const NULL_USER = {
-    id(): null {
-        return null;
-    },
-    anonymousId(): null {
-        return null;
-    },
-};
+import { DEFAULT_CONSENT, DEFAULT_PLAUSIBLE_API_HOST, NULL_USER } from './constants';
+import { getTrackingPermissions } from './lib';
+import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
+import type { Config, Consent, PrezlyMeta } from './types';
 
 export class Analytics {
-    public segment: AnalyticsBrowser | undefined = undefined;
+    private meta: PrezlyMeta | undefined;
 
-    public plausible: ReturnType<typeof Plausible> | undefined = undefined;
+    public consent: Consent = DEFAULT_CONSENT;
 
-    private config: Config;
+    public segment: AnalyticsBrowser | undefined;
 
-    constructor(config: Config) {
-        this.config = config;
+    public plausible: ReturnType<typeof Plausible> | undefined;
+
+    private config: Config | undefined;
+
+    get permissions() {
+        return getTrackingPermissions({
+            consent: this.consent,
+            trackingPolicy: this.config!.trackingPolicy,
+        });
     }
 
-    public async init() {
-        const [{ AnalyticsBrowser }, { default: Plausible }] = await Promise.all([
-            import('@segment/analytics-next'),
-            import('plausible-tracker'),
-        ]);
+    public async init(config: Config) {
+        this.config = config;
 
-        this.segment = new AnalyticsBrowser();
-        this.plausible = Plausible(this.config.plausibleOptions);
+        import('@segment/analytics-next').then(({ AnalyticsBrowser }) => {
+            this.segment = new AnalyticsBrowser();
+        });
+
+        import('plausible-tracker').then(({ default: Plausible }) => {
+            this.plausible = Plausible({
+                apiHost: DEFAULT_PLAUSIBLE_API_HOST,
+                ...config.plausibleOptions,
+            });
+        });
+    }
+
+    private loadSegment() {
+        if (this.config?.segment === false) {
+            return;
+        }
+
+        const { settings, options } = this.config!.segment;
+
+        this.segment?.load(
+            {
+                ...settings,
+                ...(!settings.writeKey && {
+                    cdnSettings: {
+                        integrations: {},
+                    },
+                }),
+                plugins: [
+                    sendEventToPrezlyPlugin(),
+                    normalizePrezlyMetaPlugin(),
+                    process.env.NODE_ENV === 'production' ? null : logToConsole(),
+                    ...(settings.plugins || []),
+                ].filter((value): value is Plugin => value !== null),
+            },
+            {
+                cookie: {
+                    domain: document.location.host,
+                },
+                ...options,
+            },
+        );
+    }
+
+    public setMeta(meta: PrezlyMeta) {
+        this.meta = meta;
+    }
+
+    public setConsent(consent: Consent) {
+        this.consent = consent;
+
+        if (this.permissions.canLoadSegment) {
+            this.loadSegment();
+        }
     }
 
     public alias(userId: string, previousId: string) {
@@ -42,12 +87,19 @@ export class Analytics {
     }
 
     public page(category?: string, name?: string, properties: object = {}, callback?: () => void) {
-        this.segment?.page(category, name, properties, callback);
+        this.segment?.page(category, name, { ...properties, prezly: this.meta }, callback);
     }
 
     public track(event: string, properties: object = {}, callback?: () => void) {
-        this.segment?.track(event, properties, {}, callback);
-        this.plausible?.trackEvent(event, properties);
+        const props = this.meta ? { ...properties, prezly: this.meta } : properties;
+        this.segment?.track(event, props, {}, callback);
+        this.plausible?.trackEvent(event, {
+            props: props as Record<string, string | number | boolean>,
+        });
+    }
+
+    public identify(userId: string, traits: object = {}, callback?: () => void) {
+        this.segment?.identify(userId, { ...traits, prezly: this.meta }, callback);
     }
 
     public user() {
