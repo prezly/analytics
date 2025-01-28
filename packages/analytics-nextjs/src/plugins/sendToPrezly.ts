@@ -1,6 +1,7 @@
 import type { Context, Plugin, SegmentEvent } from '@segment/analytics-next';
 
 import { getApiUrl } from '../lib';
+import type { PrezlyMeta } from '../types';
 import { version } from '../version';
 
 const ENDPOINTS_BY_TYPE: Record<SegmentEvent['type'], string | null> = {
@@ -12,12 +13,13 @@ const ENDPOINTS_BY_TYPE: Record<SegmentEvent['type'], string | null> = {
     screen: null,
 };
 
-export function sendEventToPrezlyPlugin(newsroomUuid: string): Plugin {
+export function sendEventToPrezlyPlugin(): Plugin {
     async function apply(ctx: Context) {
         const endpoint = ENDPOINTS_BY_TYPE[ctx.event.type];
         const shouldSendToPrezly = ctx.event.integrations?.Prezly !== false;
+        const newsroomUuid = 'prezly' in ctx.event && (ctx.event.prezly as PrezlyMeta).newsroom;
 
-        if (shouldSendToPrezly && endpoint) {
+        if (shouldSendToPrezly && endpoint && newsroomUuid) {
             const payload = {
                 ...ctx.event,
                 // TODO: Prezly Analytics app should be able to take the newsroom UUID from the `prezly` property
