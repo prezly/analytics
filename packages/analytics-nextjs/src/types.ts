@@ -1,4 +1,6 @@
 import type { Newsroom, NewsroomGallery, Story, StoryRef } from '@prezly/sdk';
+import type { AnalyticsBrowserSettings, InitOptions } from '@segment/analytics-next';
+import type { PlausibleOptions } from 'plausible-tracker';
 
 export interface DeferredIdentity {
     userId: string;
@@ -43,12 +45,10 @@ export type PickedStoryProperties = Pick<Story, 'uuid'>;
 export type PickedGalleryProperties = Pick<NewsroomGallery, 'uuid'>;
 
 export interface PrezlyMeta {
-    prezly: {
-        newsroom: Newsroom['uuid'];
-        story?: StoryRef['uuid'];
-        gallery?: NewsroomGallery['uuid'];
-        tracking_policy?: TrackingPolicy;
-    };
+    newsroom: Newsroom['uuid'];
+    story?: StoryRef['uuid'];
+    gallery?: NewsroomGallery['uuid'];
+    tracking_policy?: TrackingPolicy;
 }
 
 export enum ConsentCategory {
@@ -68,4 +68,15 @@ export interface TrackingPermissions {
     canTrackToGoogle: boolean;
     canLoadSegment: boolean;
     canTrackToPlausible: boolean;
+}
+
+export interface Config {
+    trackingPolicy: TrackingPolicy;
+    plausibleOptions?: false | PlausibleOptions;
+    segment:
+        | false
+        | {
+              settings: AnalyticsBrowserSettings;
+              options?: InitOptions;
+          };
 }
