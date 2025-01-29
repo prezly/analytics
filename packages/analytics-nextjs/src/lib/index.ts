@@ -1,6 +1,6 @@
-export * from './getApiUrl';
-export * from './getTrackingPermissions';
-export * from './isNavigatorTrackingAllowed';
-export * from './loadGoogleAnalytics';
-export * from './noop';
-export * from './stringify';
+export { getApiUrl } from './getApiUrl';
+export { getTrackingPermissions } from './getTrackingPermissions';
+export { isNavigatorTrackingAllowed } from './isNavigatorTrackingAllowed';
+export { loadGoogleAnalytics } from './loadGoogleAnalytics';
+export { noop } from './noop';
+export { stringify } from './stringify';
