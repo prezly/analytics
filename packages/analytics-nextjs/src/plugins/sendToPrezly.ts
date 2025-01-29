@@ -1,6 +1,6 @@
 import type { Context, Plugin, SegmentEvent } from '@segment/analytics-next';
 
-import { getApiUrl } from '../lib';
+import { getApiUrl } from '../lib/getApiUrl';
 import type { PrezlyMeta } from '../types';
 import { version } from '../version';
 

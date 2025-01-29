@@ -1,12 +1,36 @@
-import { AnalyticsBrowser, Context } from '@segment/analytics-next';
+import { AnalyticsBrowser, Context, Plugin } from '@segment/analytics-next';
 
 import * as getApiUrlModule from '../lib/getApiUrl';
+import { version } from '../version';
+import { Analytics } from '../Analytics';
 
 import { sendEventToPrezlyPlugin } from './sendToPrezly';
-import { testSpyPlugin } from './testSpy';
+import { TrackingPolicy } from '../types';
+
+export function testSpyPlugin(callback: (ctx: Context) => void): Plugin {
+    async function apply(ctx: Context) {
+        callback(ctx);
+        return ctx;
+    }
+
+    return {
+        name: 'Spy on sent events (for testing purposes)',
+        type: 'after',
+        version,
+
+        isLoaded: () => true,
+        load: () => Promise.resolve(),
+
+        alias: apply,
+        group: apply,
+        identify: apply,
+        page: apply,
+        track: apply,
+    };
+}
 
 it('loads correctly and reports its status', async () => {
-    const plugin = sendEventToPrezlyPlugin('abcd');
+    const plugin = sendEventToPrezlyPlugin();
     const loadSpy = jest.spyOn(plugin, 'load');
 
     await AnalyticsBrowser.load(
@@ -34,19 +58,32 @@ it('sends the event to Prezly Analytics', async () => {
     global.navigator.sendBeacon = jest.fn();
     const sendBeaconSpy = jest.spyOn(global.navigator, 'sendBeacon');
 
-    const plugin = sendEventToPrezlyPlugin('abcd');
+    const plugin = sendEventToPrezlyPlugin();
     const trackSpy = jest.spyOn(plugin, 'track');
 
     const getApiUrlSpy = jest.spyOn(getApiUrlModule, 'getApiUrl');
     getApiUrlSpy.mockImplementation(() => 'https://a.prezly.test');
 
-    const [analytics] = await AnalyticsBrowser.load(
+    const analytics = new Analytics();
+
+    analytics.init({
+        segment: {
+            settings: {
+                writeKey: '',
+                plugins: [plugin, testSpyPlugin((ctx) => (eventCtx = ctx))],
+            },
+            options: {
+                integrations: { 'Segment.io': false },
+            },
+        },
+        trackingPolicy: TrackingPolicy.NORMAL,
+    });
+
+    analytics.init(
         {
-            writeKey: '',
             cdnSettings: {
                 integrations: {},
             },
-            plugins: [plugin, testSpyPlugin((ctx) => (eventCtx = ctx))],
         },
         {
             // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -77,7 +114,7 @@ it("doesn't send the event to Prezly Analytics when Prezly integration is disabl
     global.navigator.sendBeacon = jest.fn();
     const sendBeaconSpy = jest.spyOn(global.navigator, 'sendBeacon');
 
-    const plugin = sendEventToPrezlyPlugin('abcd');
+    const plugin = sendEventToPrezlyPlugin();
     const trackSpy = jest.spyOn(plugin, 'track');
 
     const [analytics] = await AnalyticsBrowser.load(
