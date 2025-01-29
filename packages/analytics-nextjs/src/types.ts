@@ -7,6 +7,12 @@ export interface Identity {
     traits?: object;
 }
 
+export interface RecipientInfo {
+    campaign_id: number;
+    id: string;
+    recipient_id: string;
+}
+
 // Pulled from `@prezly/sdk` to get rid of direct dependency requirement
 export enum TrackingPolicy {
     /**
