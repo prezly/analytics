@@ -51,6 +51,7 @@ export interface TrackingPermissions {
 }
 
 export interface Config {
+    consent?: Consent;
     trackingPolicy: TrackingPolicy;
     google?: {
         analyticsId: string;

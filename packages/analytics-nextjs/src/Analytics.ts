@@ -99,6 +99,10 @@ export class Analytics {
                 loadGoogleAnalytics(config.google.analyticsId);
             });
         }
+
+        if (config.consent) {
+            this.setConsent(config.consent);
+        }
     }
 
     private async loadSegment() {
