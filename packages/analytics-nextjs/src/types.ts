@@ -7,12 +7,6 @@ export interface DeferredIdentity {
     traits?: object;
 }
 
-export interface RecipientInfo {
-    campaign_id: number;
-    id: string;
-    recipient_id: string;
-}
-
 // Pulled from `@prezly/sdk` to get rid of direct dependency requirement
 export enum TrackingPolicy {
     /**
@@ -29,20 +23,6 @@ export enum TrackingPolicy {
     NORMAL = 'normal',
     LENIENT = 'lenient',
 }
-
-export type PickedNewsroomProperties = Pick<
-    Newsroom,
-    | 'uuid'
-    | 'tracking_policy'
-    | 'segment_analytics_id'
-    | 'google_analytics_id'
-    | 'is_plausible_enabled'
-    | 'plausible_site_id'
->;
-
-export type PickedStoryProperties = Pick<Story, 'uuid'>;
-
-export type PickedGalleryProperties = Pick<NewsroomGallery, 'uuid'>;
 
 export interface PrezlyMeta {
     newsroom: Newsroom['uuid'];
