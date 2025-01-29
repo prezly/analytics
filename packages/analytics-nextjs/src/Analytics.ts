@@ -60,15 +60,22 @@ export class Analytics {
         return Boolean(this.config);
     }
 
+    get integrations() {
+        return {
+            Prezly: this.permissions.canTrackToPrezly,
+            'Segment.io': this.permissions.canTrackToSegment,
+        };
+    }
+
     public async init(config: Config) {
         if (this.isInitialized) {
-            throw new Error('Cannot initialize analytics twice');
+            return;
         }
 
         this.config = config;
 
         if (config.segment !== false) {
-            this.promises.segmentInitializationPromise = import('@segment/analytics-next').then(
+            this.promises.segmentInit = import('@segment/analytics-next').then(
                 ({ AnalyticsBrowser }) => {
                     this.segment = new AnalyticsBrowser();
                 },
@@ -76,12 +83,14 @@ export class Analytics {
         }
 
         if (config.plausible !== false) {
-            import('plausible-tracker').then(({ default: Plausible }) => {
-                this.plausible = Plausible({
-                    apiHost: DEFAULT_PLAUSIBLE_API_HOST,
-                    ...config.plausible,
-                });
-            });
+            this.promises.plausibleInit = import('plausible-tracker').then(
+                ({ default: Plausible }) => {
+                    this.plausible = Plausible({
+                        apiHost: DEFAULT_PLAUSIBLE_API_HOST,
+                        ...config.plausible,
+                    });
+                },
+            );
         }
 
         if (config.google) {
@@ -98,8 +107,6 @@ export class Analytics {
         }
 
         const { settings, options } = this.config!.segment;
-
-        await this.promises.segmentInitializationPromise;
 
         this.segment?.load(
             {
@@ -121,11 +128,6 @@ export class Analytics {
                     domain: document.location.host,
                 },
                 ...options,
-                integrations: {
-                    Prezly: this.permissions.canTrackToPrezly,
-                    'Segment.io': this.permissions.canTrackToSegment,
-                    ...options?.integrations,
-                },
             },
         );
     }
@@ -141,42 +143,75 @@ export class Analytics {
 
         this.consent = consent;
 
-        if (!this.segment?.instance && this.permissions.canLoadSegment) {
-            this.loadSegment();
-        }
-
-        if (this.segment?.instance?.options) {
-            this.segment.instance.options.integrations = {
-                ...this.segment?.instance?.options.integrations,
-                Prezly: this.permissions.canTrackToPrezly,
-                'Segment.io': this.permissions.canTrackToSegment,
-            };
-        }
-
         const googleAnalyticsId = this.config?.google?.analyticsId;
         if (googleAnalyticsId) {
             window[`ga-disable-${googleAnalyticsId}`] = this.permissions.canTrackToGoogle;
         }
+
+        this.promises.segmentInit?.then(() => {
+            if (!this.segment?.instance && this.permissions.canLoadSegment) {
+                this.loadSegment();
+            }
+
+            if (this.identity && this.permissions.canIdentify) {
+                const { identity } = this;
+                this.segment?.identify(
+                    identity.userId,
+                    { ...identity.traits, prezly: this.meta },
+                    { integrations: this.integrations },
+                );
+            }
+        });
     }
 
-    public alias(userId: string, previousId: string) {
-        this.segment?.alias(userId, previousId);
+    public async alias(userId: string, previousId: string) {
+        await this.promises.segmentInit;
+        this.segment?.alias(userId, previousId, { integrations: this.integrations });
     }
 
-    public page(category?: string, name?: string, properties: object = {}, callback?: () => void) {
-        this.segment?.page(category, name, { ...properties, prezly: this.meta }, callback);
+    public async page(
+        category?: string,
+        name?: string,
+        properties: object = {},
+        callback?: () => void,
+    ) {
+        await this.promises.segmentInit;
+        this.segment?.page(
+            category,
+            name,
+            { ...properties, prezly: this.meta },
+            { integrations: this.integrations },
+            callback,
+        );
     }
 
     public track(event: string, properties: object = {}, callback?: () => void) {
         const props = this.meta ? { ...properties, prezly: this.meta } : properties;
-        this.segment?.track(event, props, {}, callback);
-        this.plausible?.trackEvent(event, {
-            props: props as Record<string, string | number | boolean>,
+
+        this.promises.plausibleInit?.then(() => {
+            this.plausible?.trackEvent(event, {
+                props: props as Record<string, string | number | boolean>,
+            });
+        });
+
+        this.promises.segmentInit?.then(() => {
+            this.segment?.track(event, props, { integrations: this.integrations }, callback);
         });
     }
 
-    public identify(userId: string, traits: object = {}, callback?: () => void) {
-        this.segment?.identify(userId, { ...traits, prezly: this.meta }, callback);
+    public async identify(userId: string, traits: object = {}, callback?: () => void) {
+        this.identity = { userId, traits };
+
+        await this.promises.segmentInit;
+
+        if (this.permissions.canIdentify) {
+            this.segment?.identify(
+                userId,
+                { ...traits, prezly: this.meta },
+                { integrations: this.integrations },
+                callback,
+            );
+        }
     }
 
     public user() {
