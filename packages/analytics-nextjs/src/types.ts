@@ -55,7 +55,7 @@ export interface Config {
     google?: {
         analyticsId: string;
     };
-    plausibleOptions?: false | PlausibleOptions;
+    plausible?: false | PlausibleOptions;
     segment:
         | false
         | {

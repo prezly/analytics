@@ -45,11 +45,11 @@ export class Analytics {
             );
         }
 
-        if (config.plausibleOptions !== false) {
+        if (config.plausible !== false) {
             import('plausible-tracker').then(({ default: Plausible }) => {
                 this.plausible = Plausible({
                     apiHost: DEFAULT_PLAUSIBLE_API_HOST,
-                    ...config.plausibleOptions,
+                    ...config.plausible,
                 });
             });
         }
