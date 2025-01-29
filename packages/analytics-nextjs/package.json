@@ -29,9 +29,13 @@
     "@segment/analytics-next": "^1.76.0",
     "plausible-tracker": "^0.3.9"
   },
+  "peerDependencies": {
+    "react": "^17.x || ^18.x || ^19.x"
+  },
   "devDependencies": {
     "@prezly/sdk": "23.6.0",
-    "@types/node": "22.10.10"
+    "@types/node": "22.10.10",
+    "@types/react": "18.3.18"
   },
   "publishConfig": {
     "access": "public"
