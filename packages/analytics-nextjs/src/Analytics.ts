@@ -122,6 +122,11 @@ export class Analytics {
                 'Segment.io': this.permissions.canTrackToSegment,
             };
         }
+
+        const googleAnalyticsId = this.config?.google?.analyticsId;
+        if (googleAnalyticsId) {
+            window[`ga-disable-${googleAnalyticsId}`] = this.permissions.canTrackToGoogle;
+        }
     }
 
     public alias(userId: string, previousId: string) {
