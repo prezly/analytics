@@ -94,9 +94,9 @@ export class Analytics {
         }
 
         if (config.google) {
+            const { analyticsId } = config.google;
             import('./lib/loadGoogleAnalytics').then(({ loadGoogleAnalytics }) => {
-                // @ts-ignore
-                loadGoogleAnalytics(config.google.analyticsId);
+                loadGoogleAnalytics(analyticsId);
             });
         }
 
@@ -147,9 +147,9 @@ export class Analytics {
 
         this.consent = consent;
 
-        const googleAnalyticsId = this.config?.google?.analyticsId;
-        if (googleAnalyticsId) {
-            window[`ga-disable-${googleAnalyticsId}`] = this.permissions.canTrackToGoogle;
+        if (this.config?.google) {
+            const { analyticsId } = this.config.google;
+            window[`ga-disable-${analyticsId}`] = this.permissions.canTrackToGoogle;
         }
 
         this.promises.segmentInit?.then(() => {
