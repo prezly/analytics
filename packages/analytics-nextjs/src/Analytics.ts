@@ -2,7 +2,7 @@ import type { AnalyticsBrowser, Plugin } from '@segment/analytics-next';
 import type Plausible from 'plausible-tracker';
 
 import { DEFAULT_CONSENT, DEFAULT_PLAUSIBLE_API_HOST, NULL_USER } from './constants';
-import { getTrackingPermissions } from './lib';
+import { getTrackingPermissions, loadGoogleAnalytics } from './lib';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import type { Config, Consent, PrezlyMeta } from './types';
 
@@ -25,21 +25,29 @@ export class Analytics {
     }
 
     public async init(config: Config) {
+        if (this.config) {
+            throw new Error('Cannot initialize analytics twice');
+        }
+
         this.config = config;
 
-        if (this.config?.segment !== false) {
+        if (config.segment !== false) {
             import('@segment/analytics-next').then(({ AnalyticsBrowser }) => {
                 this.segment = new AnalyticsBrowser();
             });
         }
 
-        if (this.config?.plausibleOptions !== false) {
+        if (config.plausibleOptions !== false) {
             import('plausible-tracker').then(({ default: Plausible }) => {
                 this.plausible = Plausible({
                     apiHost: DEFAULT_PLAUSIBLE_API_HOST,
                     ...config.plausibleOptions,
                 });
             });
+        }
+
+        if (config.google) {
+            loadGoogleAnalytics(config.google.analyticsId);
         }
     }
 
