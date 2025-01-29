@@ -5,7 +5,7 @@ import { version } from '../version';
 import { Analytics } from '../Analytics';
 
 import { sendEventToPrezlyPlugin } from './sendToPrezly';
-import { TrackingPolicy } from '../types';
+import { ConsentCategory, TrackingPolicy } from '../types';
 
 export function testSpyPlugin(callback: (ctx: Context) => void): Plugin {
     async function apply(ctx: Context) {
@@ -52,7 +52,7 @@ it('loads correctly and reports its status', async () => {
 });
 
 it('sends the event to Prezly Analytics', async () => {
-    let eventCtx: Context;
+    let eventCtx: Context | undefined;
 
     // Mock the `sendBeacon` method (it's not even present in the JSDOM environment)
     global.navigator.sendBeacon = jest.fn();
@@ -67,35 +67,25 @@ it('sends the event to Prezly Analytics', async () => {
     const analytics = new Analytics();
 
     analytics.init({
+        consent: {
+            categories: [ConsentCategory.NECESSARY, ConsentCategory.FIRST_PARTY_ANALYTICS],
+        },
         segment: {
             settings: {
                 writeKey: '',
-                plugins: [plugin, testSpyPlugin((ctx) => (eventCtx = ctx))],
-            },
-            options: {
-                integrations: { 'Segment.io': false },
+                plugins: [testSpyPlugin((ctx) => (eventCtx = ctx)), plugin],
             },
         },
         trackingPolicy: TrackingPolicy.NORMAL,
     });
 
-    analytics.init(
-        {
-            cdnSettings: {
-                integrations: {},
-            },
-        },
-        {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            integrations: { 'Segment.io': false },
-        },
-    );
-
-    await analytics.track('Test Event');
+    await analytics.track('Test Event', {
+        prezly: { newsroom: 'newsroom uuid' },
+    });
 
     const expectedPayload = {
-        ...eventCtx.event,
-        writeKey: 'abcd',
+        ...eventCtx!.event,
+        writeKey: '',
     };
 
     expect(trackSpy).toHaveBeenCalled();
