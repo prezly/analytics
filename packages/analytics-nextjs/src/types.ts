@@ -1,8 +1,8 @@
-import type { Newsroom, NewsroomGallery, Story, StoryRef } from '@prezly/sdk';
+import type { Newsroom, NewsroomGallery, StoryRef } from '@prezly/sdk';
 import type { AnalyticsBrowserSettings, InitOptions } from '@segment/analytics-next';
 import type { PlausibleOptions } from 'plausible-tracker';
 
-export interface DeferredIdentity {
+export interface Identity {
     userId: string;
     traits?: object;
 }

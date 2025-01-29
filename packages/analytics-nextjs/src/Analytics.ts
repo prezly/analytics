@@ -1,12 +1,21 @@
+/* eslint-disable no-underscore-dangle */
+
 import type { AnalyticsBrowser, Plugin } from '@segment/analytics-next';
 import type Plausible from 'plausible-tracker';
 
-import { DEFAULT_CONSENT, DEFAULT_PLAUSIBLE_API_HOST, NULL_USER } from './constants';
+import {
+    DEFAULT_CONSENT,
+    DEFAULT_PLAUSIBLE_API_HOST,
+    DEFERRED_USER_LOCAL_STORAGE_KEY,
+    NULL_USER,
+} from './constants';
 import { getTrackingPermissions } from './lib/getTrackingPermissions';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
-import type { Config, Consent, PrezlyMeta } from './types';
+import type { Config, Consent, Identity, PrezlyMeta } from './types';
 
 export class Analytics {
+    private _identity: Identity | undefined;
+
     private meta: PrezlyMeta | undefined;
 
     public consent: Consent = DEFAULT_CONSENT;
@@ -17,7 +26,28 @@ export class Analytics {
 
     private config: Config | undefined;
 
-    private promises: { segmentInitializationPromise?: Promise<void> } = {};
+    private promises: {
+        segmentInit?: Promise<void>;
+        plausibleInit?: Promise<void>;
+    } = {};
+
+    get identity(): Identity | undefined {
+        if (this._identity) {
+            return this._identity;
+        }
+
+        try {
+            const stringifiedIdentity = localStorage.getItem(DEFERRED_USER_LOCAL_STORAGE_KEY);
+            return stringifiedIdentity ? JSON.parse(stringifiedIdentity) : undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    set identity(identity: Identity) {
+        this._identity = identity;
+        localStorage.setItem(DEFERRED_USER_LOCAL_STORAGE_KEY, JSON.stringify(identity));
+    }
 
     get permissions() {
         return getTrackingPermissions({
