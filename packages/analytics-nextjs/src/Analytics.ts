@@ -2,7 +2,7 @@ import type { AnalyticsBrowser, Plugin } from '@segment/analytics-next';
 import type Plausible from 'plausible-tracker';
 
 import { DEFAULT_CONSENT, DEFAULT_PLAUSIBLE_API_HOST, NULL_USER } from './constants';
-import { getTrackingPermissions, loadGoogleAnalytics } from './lib';
+import { getTrackingPermissions } from './lib/getTrackingPermissions';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import type { Config, Consent, PrezlyMeta } from './types';
 
@@ -47,7 +47,10 @@ export class Analytics {
         }
 
         if (config.google) {
-            loadGoogleAnalytics(config.google.analyticsId);
+            import('./lib/loadGoogleAnalytics').then(({ loadGoogleAnalytics }) => {
+                // @ts-ignore
+                loadGoogleAnalytics(config.google.analyticsId);
+            });
         }
     }
 
