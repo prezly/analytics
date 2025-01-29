@@ -72,11 +72,9 @@ export interface TrackingPermissions {
 
 export interface Config {
     trackingPolicy: TrackingPolicy;
-    google?:
-        | false
-        | {
-              analyticsId: string;
-          };
+    google?: {
+        analyticsId: string;
+    };
     plausibleOptions?: false | PlausibleOptions;
     segment:
         | false
