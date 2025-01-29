@@ -17,6 +17,8 @@ export class Analytics {
 
     private config: Config | undefined;
 
+    private promises: { segmentInitializationPromise?: Promise<void> } = {};
+
     get permissions() {
         return getTrackingPermissions({
             consent: this.consent,
@@ -24,17 +26,23 @@ export class Analytics {
         });
     }
 
+    get isInitialized() {
+        return Boolean(this.config);
+    }
+
     public async init(config: Config) {
-        if (this.config) {
+        if (this.isInitialized) {
             throw new Error('Cannot initialize analytics twice');
         }
 
         this.config = config;
 
         if (config.segment !== false) {
-            import('@segment/analytics-next').then(({ AnalyticsBrowser }) => {
-                this.segment = new AnalyticsBrowser();
-            });
+            this.promises.segmentInitializationPromise = import('@segment/analytics-next').then(
+                ({ AnalyticsBrowser }) => {
+                    this.segment = new AnalyticsBrowser();
+                },
+            );
         }
 
         if (config.plausibleOptions !== false) {
@@ -54,12 +62,14 @@ export class Analytics {
         }
     }
 
-    private loadSegment() {
+    private async loadSegment() {
         if (this.config?.segment === false) {
             return;
         }
 
         const { settings, options } = this.config!.segment;
+
+        await this.promises.segmentInitializationPromise;
 
         this.segment?.load(
             {
@@ -95,6 +105,10 @@ export class Analytics {
     }
 
     public setConsent(consent: Consent) {
+        if (!this.isInitialized) {
+            throw new Error('Analytics uninitialized');
+        }
+
         this.consent = consent;
 
         if (!this.segment?.instance && this.permissions.canLoadSegment) {
