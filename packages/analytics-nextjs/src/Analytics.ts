@@ -103,6 +103,10 @@ export class Analytics {
         if (config.consent) {
             this.setConsent(config.consent);
         }
+
+        if (config.meta) {
+            this.meta = config.meta;
+        }
     }
 
     private async loadSegment() {

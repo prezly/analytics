@@ -58,6 +58,7 @@ export interface TrackingPermissions {
 
 export interface Config {
     consent?: Consent;
+    meta?: PrezlyMeta;
     trackingPolicy: TrackingPolicy;
     google?:
         | false
