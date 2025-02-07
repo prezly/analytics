@@ -4,14 +4,16 @@
 
 import { useEffect, useRef } from 'react';
 
-import { ACTIONS } from '../events';
-import { useAnalytics } from '../hooks';
-import { getRecipientInfo, getUrlParameters } from '../lib';
+import type { Analytics } from '../../Analytics';
+import { ACTIONS } from '../../events';
 
-import { UPLOADCARE_CDN_HOSTNAME } from './const';
+import { getRecipientInfo } from './lib/getRecipientInfo';
+import { getUrlParameters } from './lib/getUrlParameters';
 
-export function Tracking() {
-    const { alias, identify, track, user } = useAnalytics();
+export const UPLOADCARE_CDN_HOSTNAME = 'cdn.uc.assets.prezly.com';
+
+export function Tracking({ analytics }: { analytics: Analytics }) {
+    const { alias, identify, track, user } = analytics;
     const aliasRef = useRef(alias);
     const identifyRef = useRef(identify);
     const trackRef = useRef(track);

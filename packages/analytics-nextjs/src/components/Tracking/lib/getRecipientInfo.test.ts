@@ -1,6 +1,6 @@
 import fetchMock from 'jest-fetch-mock';
 
-import type { RecipientInfo } from '../types';
+import type { RecipientInfo } from '../../../types';
 import { getRecipientInfo } from './getRecipientInfo';
 
 fetchMock.enableMocks();

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import type { Context, Plugin } from '@segment/analytics-next';
 
-import { stringify } from '../lib';
+import { stringify } from '../lib/stringify';
 import { version } from '../version';
 
 export function logToConsole(): Plugin {

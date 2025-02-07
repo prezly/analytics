@@ -1,6 +1,6 @@
 import 'jest-location-mock';
 
-import { getUrlParameters } from './urlParameters';
+import { getUrlParameters } from './getUrlParameters';
 
 describe('getUrlParameters', () => {
     afterEach(() => {

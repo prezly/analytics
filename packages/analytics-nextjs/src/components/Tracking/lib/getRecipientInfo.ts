@@ -1,6 +1,5 @@
-import type { RecipientInfo } from '../types';
-
-import { getApiUrl } from './getApiUrl';
+import { getApiUrl } from '../../../lib/getApiUrl';
+import type { RecipientInfo } from '../../../types';
 
 export async function getRecipientInfo(recipientId: string): Promise<RecipientInfo> {
     const url = getApiUrl();
