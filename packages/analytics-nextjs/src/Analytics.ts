@@ -74,24 +74,22 @@ export class Analytics {
 
         this.config = config;
 
-        if (config.segment !== false) {
-            this.promises.segmentInit = import('@segment/analytics-next').then(
-                ({ AnalyticsBrowser }) => {
-                    this.segment = new AnalyticsBrowser();
-                },
-            );
-        }
+        this.promises.segmentInit =
+            config.segment === false
+                ? Promise.resolve()
+                : import('@segment/analytics-next').then(({ AnalyticsBrowser }) => {
+                      this.segment = new AnalyticsBrowser();
+                  });
 
-        if (config.plausible !== false) {
-            this.promises.plausibleInit = import('plausible-tracker').then(
-                ({ default: Plausible }) => {
-                    this.plausible = Plausible({
-                        apiHost: DEFAULT_PLAUSIBLE_API_HOST,
-                        ...config.plausible,
-                    });
-                },
-            );
-        }
+        this.promises.plausibleInit =
+            config.plausible === false
+                ? Promise.resolve()
+                : import('plausible-tracker').then(({ default: Plausible }) => {
+                      this.plausible = Plausible({
+                          apiHost: DEFAULT_PLAUSIBLE_API_HOST,
+                          ...config.plausible,
+                      });
+                  });
 
         if (config.google) {
             const { analyticsId } = config.google;
