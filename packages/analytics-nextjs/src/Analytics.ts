@@ -13,9 +13,11 @@ import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from
 import type { Config, Consent, Identity, PrezlyMeta } from './types';
 
 export class Analytics {
+    /* eslint-disable @typescript-eslint/naming-convention */
     private _identity: Identity | undefined;
 
-    private meta: PrezlyMeta | undefined;
+    private _meta: PrezlyMeta | undefined;
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     public consent: Consent | undefined = undefined;
 
@@ -102,7 +104,7 @@ export class Analytics {
         }
 
         if (config.meta) {
-            this.meta = config.meta;
+            this.setMeta(config.meta);
         }
     }
 
@@ -138,7 +140,12 @@ export class Analytics {
     }
 
     public setMeta(meta: PrezlyMeta) {
-        this.meta = meta;
+        this._meta = meta;
+    }
+
+    private get meta() {
+        console.warn('Tracking without Prezly meta being set');
+        return this._meta;
     }
 
     public setConsent(consent: Consent) {
