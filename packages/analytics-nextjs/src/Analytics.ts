@@ -8,6 +8,7 @@ import {
     DEFERRED_USER_LOCAL_STORAGE_KEY,
     NULL_USER,
 } from './constants';
+import { checkIsConsentEqual } from './lib/compareConsent';
 import { getTrackingPermissions } from './lib/getTrackingPermissions';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import type { Config, Consent, Identity, PrezlyMeta } from './types';
@@ -170,6 +171,10 @@ export class Analytics {
     public setConsent(consent: Consent) {
         if (!this.config) {
             throw new Error('Cannot set consent before analytics initialization');
+        }
+
+        if (checkIsConsentEqual(consent, this.consent)) {
+            return;
         }
 
         this.consent = consent;
