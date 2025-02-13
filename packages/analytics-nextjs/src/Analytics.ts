@@ -4,7 +4,6 @@ import type { AnalyticsBrowser, Plugin } from '@segment/analytics-next';
 import type Plausible from 'plausible-tracker';
 
 import {
-    DEFAULT_CONSENT,
     DEFAULT_PLAUSIBLE_API_HOST,
     DEFERRED_USER_LOCAL_STORAGE_KEY,
     NULL_USER,
@@ -18,7 +17,7 @@ export class Analytics {
 
     private meta: PrezlyMeta | undefined;
 
-    public consent: Consent = DEFAULT_CONSENT;
+    public consent: Consent | undefined = undefined;
 
     public segment: AnalyticsBrowser | undefined;
 
