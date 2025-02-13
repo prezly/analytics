@@ -57,10 +57,6 @@ export class Analytics {
         });
     }
 
-    get isInitialized() {
-        return Boolean(this.config);
-    }
-
     get integrations() {
         return {
             Prezly: this.permissions.canTrackToPrezly,
@@ -149,8 +145,8 @@ export class Analytics {
     }
 
     public setConsent(consent: Consent) {
-        if (!this.isInitialized) {
-            throw new Error('Analytics uninitialized');
+        if (!this.config) {
+            throw new Error('Cannot set consent before analytics initialization');
         }
 
         this.consent = consent;
