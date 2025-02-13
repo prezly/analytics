@@ -86,7 +86,7 @@ export class Analytics {
         }
     }
 
-    public async init(config: Config) {
+    public init = async (config: Config) => {
         if (this.config) {
             // Cannot re-initialize analytics
             return;
@@ -126,7 +126,7 @@ export class Analytics {
         }
 
         this.checkInitialized();
-    }
+    };
 
     private async loadSegment() {
         if (this.config?.segment === false) {
@@ -159,9 +159,9 @@ export class Analytics {
         );
     }
 
-    public setMeta(meta: PrezlyMeta) {
+    public setMeta = (meta: PrezlyMeta) => {
         this._meta = meta;
-    }
+    };
 
     private get meta() {
         if (!this._meta) {
@@ -171,7 +171,7 @@ export class Analytics {
         return this._meta;
     }
 
-    public setConsent(consent: Consent) {
+    public setConsent = (consent: Consent) => {
         if (!this.config) {
             throw new Error('Cannot set consent before analytics initialization');
         }
@@ -216,20 +216,20 @@ export class Analytics {
         });
 
         this.checkInitialized();
-    }
+    };
 
-    public async alias(userId: string, previousId: string) {
+    public alias = async (userId: string, previousId: string) => {
         await this.promises.init;
         await this.promises.segmentInit;
         await this.segment?.alias(userId, previousId, { integrations: this.integrations });
-    }
+    };
 
-    public async page(
+    public page = async (
         category?: string,
         name?: string,
         properties: object = {},
         callback?: () => void,
-    ) {
+    ) => {
         await this.promises.init;
         await this.promises.segmentInit;
         await this.segment?.page(
@@ -239,9 +239,9 @@ export class Analytics {
             { integrations: this.integrations },
             callback,
         );
-    }
+    };
 
-    public async track(event: string, properties: object = {}, callback?: () => void) {
+    public track = async (event: string, properties: object = {}, callback?: () => void) => {
         const props = this.meta ? { ...properties, prezly: this.meta } : properties;
 
         await this.promises.init;
@@ -256,9 +256,9 @@ export class Analytics {
                 this.segment?.track(event, props, { integrations: this.integrations }, callback),
             ),
         ]);
-    }
+    };
 
-    public async identify(userId: string, traits: object = {}, callback?: () => void) {
+    public identify = async (userId: string, traits: object = {}, callback?: () => void) => {
         this.identity = { userId, traits };
 
         await this.promises.init;
@@ -272,7 +272,7 @@ export class Analytics {
                 callback,
             );
         }
-    }
+    };
 
     public user() {
         return this.segment?.instance?.user() ?? NULL_USER;
