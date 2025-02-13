@@ -205,8 +205,8 @@ export class Analytics {
                 this.loadSegment();
             }
 
-            if (this.identity && this.permissions.canIdentify) {
-                const { identity } = this;
+            const { identity } = this;
+            if (identity && this.permissions.canIdentify) {
                 this.segment?.identify(
                     identity.userId,
                     { ...identity.traits, prezly: this.meta },
