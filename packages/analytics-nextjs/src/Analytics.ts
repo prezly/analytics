@@ -51,6 +51,9 @@ export class Analytics {
     }
 
     get permissions() {
+        if (typeof this.config === 'undefined' || typeof this.consent === 'undefined') {
+            throw new Error('Cannot check permissions before analytics initialization');
+        }
         return getTrackingPermissions({
             consent: this.consent,
             trackingPolicy: this.config!.trackingPolicy,
