@@ -39,6 +39,12 @@ function loadAnalytics(analyticsId: string) {
 }
 
 export function loadGoogleAnalytics(analyticsId: string) {
+    const isLoaded = Boolean(document.getElementById('google-tag-manager-bootstrap'));
+
+    if (isLoaded) {
+        return;
+    }
+
     if (analyticsId.startsWith('GTM-')) {
         loadTagManager(analyticsId as `GTM-${string}`);
     } else {
