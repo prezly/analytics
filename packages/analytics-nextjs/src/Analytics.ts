@@ -68,7 +68,8 @@ export class Analytics {
     }
 
     public async init(config: Config) {
-        if (this.isInitialized) {
+        if (this.config) {
+            // Cannot re-initialize analytics
             return;
         }
 
