@@ -201,7 +201,7 @@ export class Analytics {
 
         if (this.config?.google) {
             const { analyticsId } = this.config.google;
-            window[`ga-disable-${analyticsId}`] = this.permissions.canTrackToGoogle;
+            window[`ga-disable-${analyticsId}`] = !this.permissions.canTrackToGoogle;
         }
 
         this.promises.segmentInit?.then(() => {
