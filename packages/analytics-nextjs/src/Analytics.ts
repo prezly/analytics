@@ -164,7 +164,10 @@ export class Analytics {
     }
 
     private get meta() {
-        console.warn('Tracking without Prezly meta being set');
+        if (!this._meta) {
+            console.warn('Tracking without Prezly meta being set');
+        }
+
         return this._meta;
     }
 
