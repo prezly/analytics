@@ -113,6 +113,7 @@ export class Analytics {
 
         if (config.google) {
             const { analyticsId } = config.google;
+            window[`ga-disable-${analyticsId}`] = config.trackingPolicy !== TrackingPolicy.LENIENT;
             import('./lib/loadGoogleAnalytics').then(({ loadGoogleAnalytics }) => {
                 loadGoogleAnalytics(analyticsId);
             });
