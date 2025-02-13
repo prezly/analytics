@@ -11,7 +11,14 @@ import {
 import { checkIsConsentEqual } from './lib/compareConsent';
 import { getTrackingPermissions } from './lib/getTrackingPermissions';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
-import type { Config, Consent, Identity, PrezlyMeta } from './types';
+import {
+    type Config,
+    type Consent,
+    ConsentCategory,
+    type Identity,
+    type PrezlyMeta,
+    TrackingPolicy,
+} from './types';
 
 export class Analytics {
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -119,7 +126,15 @@ export class Analytics {
             });
         }
 
-        if (config.consent) {
+        if (config.trackingPolicy === TrackingPolicy.LENIENT) {
+            this.setConsent({
+                categories: [
+                    ConsentCategory.NECESSARY,
+                    ConsentCategory.FIRST_PARTY_ANALYTICS,
+                    ConsentCategory.THIRD_PARTY_COOKIES,
+                ],
+            });
+        } else if (config.consent) {
             this.setConsent(config.consent);
         }
 
