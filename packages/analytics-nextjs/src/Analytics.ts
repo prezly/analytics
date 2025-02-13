@@ -33,6 +33,7 @@ export class Analytics {
     private promises: {
         segmentInit?: Promise<void>;
         plausibleInit?: Promise<void>;
+        loadGoogleAnalytics?: Promise<(analyticsId: string) => void>;
         init: Promise<void>;
     } = {
         init: new Promise((resolve) => {
@@ -111,10 +112,9 @@ export class Analytics {
                   });
 
         if (config.google) {
-            const { analyticsId } = config.google;
-            import('./lib/loadGoogleAnalytics').then(({ loadGoogleAnalytics }) => {
-                loadGoogleAnalytics(analyticsId);
-            });
+            this.promises.loadGoogleAnalytics = import('./lib/loadGoogleAnalytics').then(
+                ({ loadGoogleAnalytics }) => loadGoogleAnalytics,
+            );
         }
 
         if (config.consent) {
@@ -183,6 +183,19 @@ export class Analytics {
             const { analyticsId } = this.config.google;
             window[`ga-disable-${analyticsId}`] = this.permissions.canTrackToGoogle;
         }
+
+        this.promises.loadGoogleAnalytics?.then((loadGoogleAnalytics) => {
+            if (!this.permissions.canTrackToGoogle) {
+                return;
+            }
+
+            const { analyticsId } = this.config!.google as Exclude<
+                Config['google'],
+                false | undefined
+            >;
+
+            loadGoogleAnalytics(analyticsId);
+        });
 
         this.promises.segmentInit?.then(() => {
             if (!this.segment?.instance && this.permissions.canLoadSegment) {
