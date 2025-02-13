@@ -4,21 +4,23 @@ import type { AnalyticsBrowser, Plugin } from '@segment/analytics-next';
 import type Plausible from 'plausible-tracker';
 
 import {
-    DEFAULT_CONSENT,
     DEFAULT_PLAUSIBLE_API_HOST,
     DEFERRED_USER_LOCAL_STORAGE_KEY,
     NULL_USER,
 } from './constants';
+import { checkIsConsentEqual } from './lib/compareConsent';
 import { getTrackingPermissions } from './lib/getTrackingPermissions';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
 import type { Config, Consent, Identity, PrezlyMeta } from './types';
 
 export class Analytics {
+    /* eslint-disable @typescript-eslint/naming-convention */
     private _identity: Identity | undefined;
 
-    private meta: PrezlyMeta | undefined;
+    private _meta: PrezlyMeta | undefined;
+    /* eslint-enable @typescript-eslint/naming-convention */
 
-    public consent: Consent = DEFAULT_CONSENT;
+    public consent: Consent | undefined = undefined;
 
     public segment: AnalyticsBrowser | undefined;
 
@@ -26,10 +28,18 @@ export class Analytics {
 
     private config: Config | undefined;
 
+    private setInitialized!: () => void;
+
     private promises: {
         segmentInit?: Promise<void>;
         plausibleInit?: Promise<void>;
-    } = {};
+        loadGoogleAnalytics?: Promise<(analyticsId: string) => void>;
+        init: Promise<void>;
+    } = {
+        init: new Promise((resolve) => {
+            this.setInitialized = resolve;
+        }),
+    };
 
     get identity(): Identity | undefined {
         if (this._identity) {
@@ -50,14 +60,14 @@ export class Analytics {
     }
 
     get permissions() {
+        if (typeof this.config === 'undefined' || typeof this.consent === 'undefined') {
+            throw new Error('Cannot check permissions before analytics initialization');
+        }
+
         return getTrackingPermissions({
             consent: this.consent,
-            trackingPolicy: this.config!.trackingPolicy,
+            trackingPolicy: this.config.trackingPolicy,
         });
-    }
-
-    get isInitialized() {
-        return Boolean(this.config);
     }
 
     get integrations() {
@@ -67,8 +77,18 @@ export class Analytics {
         };
     }
 
-    public async init(config: Config) {
-        if (this.isInitialized) {
+    private checkInitialized() {
+        const isConfigSet = typeof this.config !== 'undefined';
+        const isConsentSet = typeof this.consent !== 'undefined';
+
+        if (isConfigSet && isConsentSet) {
+            this.setInitialized();
+        }
+    }
+
+    public init = async (config: Config) => {
+        if (this.config) {
+            // Cannot re-initialize analytics
             return;
         }
 
@@ -92,10 +112,9 @@ export class Analytics {
                   });
 
         if (config.google) {
-            const { analyticsId } = config.google;
-            import('./lib/loadGoogleAnalytics').then(({ loadGoogleAnalytics }) => {
-                loadGoogleAnalytics(analyticsId);
-            });
+            this.promises.loadGoogleAnalytics = import('./lib/loadGoogleAnalytics').then(
+                ({ loadGoogleAnalytics }) => loadGoogleAnalytics,
+            );
         }
 
         if (config.consent) {
@@ -103,9 +122,11 @@ export class Analytics {
         }
 
         if (config.meta) {
-            this.meta = config.meta;
+            this.setMeta(config.meta);
         }
-    }
+
+        this.checkInitialized();
+    };
 
     private async loadSegment() {
         if (this.config?.segment === false) {
@@ -138,13 +159,25 @@ export class Analytics {
         );
     }
 
-    public setMeta(meta: PrezlyMeta) {
-        this.meta = meta;
+    public setMeta = (meta: PrezlyMeta) => {
+        this._meta = meta;
+    };
+
+    private get meta() {
+        if (!this._meta) {
+            console.warn('Tracking without Prezly meta being set');
+        }
+
+        return this._meta;
     }
 
-    public setConsent(consent: Consent) {
-        if (!this.isInitialized) {
-            throw new Error('Analytics uninitialized');
+    public setConsent = (consent: Consent) => {
+        if (!this.config) {
+            throw new Error('Cannot set consent before analytics initialization');
+        }
+
+        if (checkIsConsentEqual(consent, this.consent)) {
+            return;
         }
 
         this.consent = consent;
@@ -154,13 +187,26 @@ export class Analytics {
             window[`ga-disable-${analyticsId}`] = this.permissions.canTrackToGoogle;
         }
 
+        this.promises.loadGoogleAnalytics?.then((loadGoogleAnalytics) => {
+            if (!this.permissions.canTrackToGoogle) {
+                return;
+            }
+
+            const { analyticsId } = this.config!.google as Exclude<
+                Config['google'],
+                false | undefined
+            >;
+
+            loadGoogleAnalytics(analyticsId);
+        });
+
         this.promises.segmentInit?.then(() => {
             if (!this.segment?.instance && this.permissions.canLoadSegment) {
                 this.loadSegment();
             }
 
-            if (this.identity && this.permissions.canIdentify) {
-                const { identity } = this;
+            const { identity } = this;
+            if (identity && this.permissions.canIdentify) {
                 this.segment?.identify(
                     identity.userId,
                     { ...identity.traits, prezly: this.meta },
@@ -168,19 +214,23 @@ export class Analytics {
                 );
             }
         });
-    }
 
-    public async alias(userId: string, previousId: string) {
+        this.checkInitialized();
+    };
+
+    public alias = async (userId: string, previousId: string) => {
+        await this.promises.init;
         await this.promises.segmentInit;
         await this.segment?.alias(userId, previousId, { integrations: this.integrations });
-    }
+    };
 
-    public async page(
+    public page = async (
         category?: string,
         name?: string,
         properties: object = {},
         callback?: () => void,
-    ) {
+    ) => {
+        await this.promises.init;
         await this.promises.segmentInit;
         await this.segment?.page(
             category,
@@ -189,11 +239,12 @@ export class Analytics {
             { integrations: this.integrations },
             callback,
         );
-    }
+    };
 
-    public async track(event: string, properties: object = {}, callback?: () => void) {
+    public track = async (event: string, properties: object = {}, callback?: () => void) => {
         const props = this.meta ? { ...properties, prezly: this.meta } : properties;
 
+        await this.promises.init;
         await Promise.all([
             this.promises.plausibleInit?.then(() => {
                 this.plausible?.trackEvent(event, {
@@ -205,11 +256,12 @@ export class Analytics {
                 this.segment?.track(event, props, { integrations: this.integrations }, callback),
             ),
         ]);
-    }
+    };
 
-    public async identify(userId: string, traits: object = {}, callback?: () => void) {
+    public identify = async (userId: string, traits: object = {}, callback?: () => void) => {
         this.identity = { userId, traits };
 
+        await this.promises.init;
         await this.promises.segmentInit;
 
         if (this.permissions.canIdentify) {
@@ -220,7 +272,7 @@ export class Analytics {
                 callback,
             );
         }
-    }
+    };
 
     public user() {
         return this.segment?.instance?.user() ?? NULL_USER;
