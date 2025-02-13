@@ -11,7 +11,14 @@ import {
 import { checkIsConsentEqual } from './lib/compareConsent';
 import { getTrackingPermissions } from './lib/getTrackingPermissions';
 import { logToConsole, normalizePrezlyMetaPlugin, sendEventToPrezlyPlugin } from './plugins';
-import type { Config, Consent, Identity, PrezlyMeta } from './types';
+import {
+    type Config,
+    type Consent,
+    ConsentCategory,
+    type Identity,
+    type PrezlyMeta,
+    TrackingPolicy,
+} from './types';
 
 export class Analytics {
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -112,12 +119,22 @@ export class Analytics {
                   });
 
         if (config.google) {
-            this.promises.loadGoogleAnalytics = import('./lib/loadGoogleAnalytics').then(
-                ({ loadGoogleAnalytics }) => loadGoogleAnalytics,
-            );
+            const { analyticsId } = config.google;
+            window[`ga-disable-${analyticsId}`] = config.trackingPolicy !== TrackingPolicy.LENIENT;
+            import('./lib/loadGoogleAnalytics').then(({ loadGoogleAnalytics }) => {
+                loadGoogleAnalytics(analyticsId);
+            });
         }
 
-        if (config.consent) {
+        if (config.trackingPolicy === TrackingPolicy.LENIENT) {
+            this.setConsent({
+                categories: [
+                    ConsentCategory.NECESSARY,
+                    ConsentCategory.FIRST_PARTY_ANALYTICS,
+                    ConsentCategory.THIRD_PARTY_COOKIES,
+                ],
+            });
+        } else if (config.consent) {
             this.setConsent(config.consent);
         }
 
@@ -186,19 +203,6 @@ export class Analytics {
             const { analyticsId } = this.config.google;
             window[`ga-disable-${analyticsId}`] = this.permissions.canTrackToGoogle;
         }
-
-        this.promises.loadGoogleAnalytics?.then((loadGoogleAnalytics) => {
-            if (!this.permissions.canTrackToGoogle) {
-                return;
-            }
-
-            const { analyticsId } = this.config!.google as Exclude<
-                Config['google'],
-                false | undefined
-            >;
-
-            loadGoogleAnalytics(analyticsId);
-        });
 
         this.promises.segmentInit?.then(() => {
             if (!this.segment?.instance && this.permissions.canLoadSegment) {
