@@ -112,9 +112,10 @@ export class Analytics {
                   });
 
         if (config.google) {
-            this.promises.loadGoogleAnalytics = import('./lib/loadGoogleAnalytics').then(
-                ({ loadGoogleAnalytics }) => loadGoogleAnalytics,
-            );
+            const { analyticsId } = config.google;
+            import('./lib/loadGoogleAnalytics').then(({ loadGoogleAnalytics }) => {
+                loadGoogleAnalytics(analyticsId);
+            });
         }
 
         if (config.consent) {
@@ -186,19 +187,6 @@ export class Analytics {
             const { analyticsId } = this.config.google;
             window[`ga-disable-${analyticsId}`] = this.permissions.canTrackToGoogle;
         }
-
-        this.promises.loadGoogleAnalytics?.then((loadGoogleAnalytics) => {
-            if (!this.permissions.canTrackToGoogle) {
-                return;
-            }
-
-            const { analyticsId } = this.config!.google as Exclude<
-                Config['google'],
-                false | undefined
-            >;
-
-            loadGoogleAnalytics(analyticsId);
-        });
 
         this.promises.segmentInit?.then(() => {
             if (!this.segment?.instance && this.permissions.canLoadSegment) {
