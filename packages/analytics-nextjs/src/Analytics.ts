@@ -35,18 +35,11 @@ export class Analytics {
 
     private config: Config | undefined;
 
-    private setInitialized!: () => void;
-
     private promises: {
         segmentInit?: Promise<void>;
         plausibleInit?: Promise<void>;
         loadGoogleAnalytics?: Promise<(analyticsId: string) => void>;
-        init: Promise<void>;
-    } = {
-        init: new Promise((resolve) => {
-            this.setInitialized = resolve;
-        }),
-    };
+    } = {};
 
     get identity(): Identity | undefined {
         if (this._identity) {
@@ -82,15 +75,6 @@ export class Analytics {
             Prezly: this.permissions.canTrackToPrezly,
             'Segment.io': this.permissions.canTrackToSegment,
         };
-    }
-
-    private checkInitialized() {
-        const isConfigSet = typeof this.config !== 'undefined';
-        const isConsentSet = typeof this.consent !== 'undefined';
-
-        if (isConfigSet && isConsentSet) {
-            this.setInitialized();
-        }
     }
 
     public init = async (config: Config) => {
@@ -141,8 +125,6 @@ export class Analytics {
         if (config.meta) {
             this.setMeta(config.meta);
         }
-
-        this.checkInitialized();
     };
 
     private async loadSegment() {
@@ -218,12 +200,9 @@ export class Analytics {
                 );
             }
         });
-
-        this.checkInitialized();
     };
 
     public alias = async (userId: string, previousId: string) => {
-        await this.promises.init;
         await this.promises.segmentInit;
         await this.segment?.alias(userId, previousId, { integrations: this.integrations });
     };
@@ -234,7 +213,6 @@ export class Analytics {
         properties: object = {},
         callback?: () => void,
     ) => {
-        await this.promises.init;
         await this.promises.segmentInit;
         await this.segment?.page(
             category,
@@ -248,7 +226,6 @@ export class Analytics {
     public track = async (event: string, properties: object = {}, callback?: () => void) => {
         const props = this.meta ? { ...properties, prezly: this.meta } : properties;
 
-        await this.promises.init;
         await Promise.all([
             this.promises.plausibleInit?.then(() => {
                 this.plausible?.trackEvent(event, {
@@ -265,7 +242,6 @@ export class Analytics {
     public identify = async (userId: string, traits: object = {}, callback?: () => void) => {
         this.identity = { userId, traits };
 
-        await this.promises.init;
         await this.promises.segmentInit;
 
         if (this.permissions.canIdentify) {
