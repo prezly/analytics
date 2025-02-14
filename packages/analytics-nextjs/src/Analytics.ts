@@ -192,6 +192,10 @@ export class Analytics {
                 this.loadSegment();
             }
 
+            if (this.segment?.instance) {
+                this.segment!.instance!.integrations = this.integrations;
+            }
+
             const { identity } = this;
             if (identity && this.permissions.canIdentify) {
                 this.segment?.identify(
