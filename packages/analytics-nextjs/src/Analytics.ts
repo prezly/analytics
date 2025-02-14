@@ -35,18 +35,11 @@ export class Analytics {
 
     private config: Config | undefined;
 
-    private setInitialized!: () => void;
-
     private promises: {
         segmentInit?: Promise<void>;
         plausibleInit?: Promise<void>;
         loadGoogleAnalytics?: Promise<(analyticsId: string) => void>;
-        init: Promise<void>;
-    } = {
-        init: new Promise((resolve) => {
-            this.setInitialized = resolve;
-        }),
-    };
+    } = {};
 
     get identity(): Identity | undefined {
         if (this._identity) {
@@ -82,15 +75,6 @@ export class Analytics {
             Prezly: this.permissions.canTrackToPrezly,
             'Segment.io': this.permissions.canTrackToSegment,
         };
-    }
-
-    private checkInitialized() {
-        const isConfigSet = typeof this.config !== 'undefined';
-        const isConsentSet = typeof this.consent !== 'undefined';
-
-        if (isConfigSet && isConsentSet) {
-            this.setInitialized();
-        }
     }
 
     public init = async (config: Config) => {
@@ -141,8 +125,6 @@ export class Analytics {
         if (config.meta) {
             this.setMeta(config.meta);
         }
-
-        this.checkInitialized();
     };
 
     private async loadSegment() {
@@ -168,6 +150,7 @@ export class Analytics {
                 ].filter((value): value is Plugin => value !== null),
             },
             {
+                integrations: this.integrations,
                 cookie: {
                     domain: document.location.host,
                 },
@@ -209,23 +192,20 @@ export class Analytics {
                 this.loadSegment();
             }
 
+            if (this.segment?.instance) {
+                this.segment!.instance!.integrations = this.integrations;
+            }
+
             const { identity } = this;
             if (identity && this.permissions.canIdentify) {
-                this.segment?.identify(
-                    identity.userId,
-                    { ...identity.traits, prezly: this.meta },
-                    { integrations: this.integrations },
-                );
+                this.segment?.identify(identity.userId, { ...identity.traits, prezly: this.meta });
             }
         });
-
-        this.checkInitialized();
     };
 
     public alias = async (userId: string, previousId: string) => {
-        await this.promises.init;
         await this.promises.segmentInit;
-        await this.segment?.alias(userId, previousId, { integrations: this.integrations });
+        await this.segment?.alias(userId, previousId);
     };
 
     public page = async (
@@ -234,21 +214,13 @@ export class Analytics {
         properties: object = {},
         callback?: () => void,
     ) => {
-        await this.promises.init;
         await this.promises.segmentInit;
-        await this.segment?.page(
-            category,
-            name,
-            { ...properties, prezly: this.meta },
-            { integrations: this.integrations },
-            callback,
-        );
+        await this.segment?.page(category, name, { ...properties, prezly: this.meta }, callback);
     };
 
     public track = async (event: string, properties: object = {}, callback?: () => void) => {
         const props = this.meta ? { ...properties, prezly: this.meta } : properties;
 
-        await this.promises.init;
         await Promise.all([
             this.promises.plausibleInit?.then(() => {
                 this.plausible?.trackEvent(event, {
@@ -256,25 +228,17 @@ export class Analytics {
                 });
             }),
 
-            this.promises.segmentInit?.then(() =>
-                this.segment?.track(event, props, { integrations: this.integrations }, callback),
-            ),
+            this.promises.segmentInit?.then(() => this.segment?.track(event, props, callback)),
         ]);
     };
 
     public identify = async (userId: string, traits: object = {}, callback?: () => void) => {
         this.identity = { userId, traits };
 
-        await this.promises.init;
         await this.promises.segmentInit;
 
         if (this.permissions.canIdentify) {
-            await this.segment?.identify(
-                userId,
-                { ...traits, prezly: this.meta },
-                { integrations: this.integrations },
-                callback,
-            );
+            await this.segment?.identify(userId, { ...traits, prezly: this.meta }, callback);
         }
     };
 
