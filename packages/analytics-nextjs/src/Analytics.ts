@@ -228,9 +228,7 @@ export class Analytics {
                 });
             }),
 
-            this.promises.segmentInit?.then(() => {
-                this.segment?.track(event, props, callback);
-            }),
+            this.promises.segmentInit?.then(() => this.segment?.track(event, props, callback)),
         ]);
     };
 
