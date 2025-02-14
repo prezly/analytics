@@ -150,6 +150,7 @@ export class Analytics {
                 ].filter((value): value is Plugin => value !== null),
             },
             {
+                integrations: this.integrations,
                 cookie: {
                     domain: document.location.host,
                 },
