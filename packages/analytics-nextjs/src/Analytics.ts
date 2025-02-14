@@ -198,18 +198,14 @@ export class Analytics {
 
             const { identity } = this;
             if (identity && this.permissions.canIdentify) {
-                this.segment?.identify(
-                    identity.userId,
-                    { ...identity.traits, prezly: this.meta },
-                    { integrations: this.integrations },
-                );
+                this.segment?.identify(identity.userId, { ...identity.traits, prezly: this.meta });
             }
         });
     };
 
     public alias = async (userId: string, previousId: string) => {
         await this.promises.segmentInit;
-        await this.segment?.alias(userId, previousId, { integrations: this.integrations });
+        await this.segment?.alias(userId, previousId);
     };
 
     public page = async (
@@ -219,13 +215,7 @@ export class Analytics {
         callback?: () => void,
     ) => {
         await this.promises.segmentInit;
-        await this.segment?.page(
-            category,
-            name,
-            { ...properties, prezly: this.meta },
-            { integrations: this.integrations },
-            callback,
-        );
+        await this.segment?.page(category, name, { ...properties, prezly: this.meta }, callback);
     };
 
     public track = async (event: string, properties: object = {}, callback?: () => void) => {
@@ -238,9 +228,9 @@ export class Analytics {
                 });
             }),
 
-            this.promises.segmentInit?.then(() =>
-                this.segment?.track(event, props, { integrations: this.integrations }, callback),
-            ),
+            this.promises.segmentInit?.then(() => {
+                this.segment?.track(event, props, callback);
+            }),
         ]);
     };
 
@@ -250,12 +240,7 @@ export class Analytics {
         await this.promises.segmentInit;
 
         if (this.permissions.canIdentify) {
-            await this.segment?.identify(
-                userId,
-                { ...traits, prezly: this.meta },
-                { integrations: this.integrations },
-                callback,
-            );
+            await this.segment?.identify(userId, { ...traits, prezly: this.meta }, callback);
         }
     };
 
