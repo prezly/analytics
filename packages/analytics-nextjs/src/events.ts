@@ -3,6 +3,8 @@ export const ACTIONS = {
     SEARCH: 'Search',
     SUBSCRIBE_FORM_SUBMIT: 'Subscribe form submit',
     SWITCH_LANGUAGE: 'Switch language',
+    COPY_STORY_LINK: 'Newsroom - Story Page - Story link copy',
+    COPY_STORY_TEXT: 'Newsroom - Story Page - Story text copy',
 };
 
 export const DOWNLOAD = {
