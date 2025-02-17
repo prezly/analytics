@@ -10,6 +10,8 @@ export const DOWNLOAD = {
     GALLERY_IMAGE: 'Gallery image download',
     IMAGE: 'Image download',
     MEDIA_GALLERY: 'Media gallery download',
+    DOWNLOAD_STORY_PDF: 'Newsroom - Story Page - Story PDF download',
+    DOWNLAOD_STORY_ASSETS: 'Newsroom - Story Page - Story assets download',
 };
 
 export const MEDIA = {
