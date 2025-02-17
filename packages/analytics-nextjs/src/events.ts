@@ -5,6 +5,9 @@ export const ACTIONS = {
     SWITCH_LANGUAGE: 'Switch language',
     COPY_STORY_LINK: 'Newsroom - Story Page - Story link copy',
     COPY_STORY_TEXT: 'Newsroom - Story Page - Story text copy',
+    SHARE_STORY_TO_SOCIAL_NETWORK(context: 'Gallery Page' | 'Story Page') {
+        return `Newsroom - ${context} - Share story to social network`;
+    },
 };
 
 export const DOWNLOAD = {
