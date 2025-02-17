@@ -8,6 +8,7 @@ export const ACTIONS = {
     SHARE_STORY_TO_SOCIAL_NETWORK(context: 'Gallery Page' | 'Story Page') {
         return `Newsroom - ${context} - Share story to social network`;
     },
+    RELATED_STORY_OPEN: 'Newsroom - Story Page - Related story open',
 };
 
 export const DOWNLOAD = {
