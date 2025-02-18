@@ -16,8 +16,8 @@ export const DOWNLOAD = {
     GALLERY_IMAGE: 'Gallery image download',
     IMAGE: 'Image download',
     MEDIA_GALLERY: 'Media gallery download',
-    DOWNLOAD_STORY_PDF: 'Newsroom - Story Page - Download story PDF',
-    DOWNLAOD_STORY_ASSETS: 'Newsroom - Story Page - Download story assets',
+    STORY_PDF: 'Newsroom - Story Page - Download story PDF',
+    STORY_ASSETS: 'Newsroom - Story Page - Download story assets',
 };
 
 export const MEDIA = {
