@@ -5,8 +5,8 @@ export const ACTIONS = {
     SWITCH_LANGUAGE: 'Switch language',
     COPY_STORY_LINK: 'Newsroom - Story Page - Copy story link',
     COPY_STORY_TEXT: 'Newsroom - Story Page - Copy story text',
-    SHARE_STORY_TO_SOCIAL_NETWORK(context: 'Gallery Page' | 'Story Page') {
-        return `Newsroom - ${context} - Share story to social network`;
+    SHARE_TO_SOCIAL_NETWORK(context: 'Gallery Page' | 'Story Page') {
+        return `Newsroom - ${context} - Share to social network`;
     },
     RELATED_STORY_OPEN: 'Newsroom - Story Page - Open related story',
 };
