@@ -71,9 +71,13 @@ export class Analytics {
     }
 
     get integrations() {
+        const hasSegmentWriteKey = Boolean(
+            this.config?.segment && this.config.segment.settings.writeKey,
+        );
+
         return {
             Prezly: this.permissions.canTrackToPrezly,
-            'Segment.io': this.permissions.canTrackToSegment,
+            'Segment.io': hasSegmentWriteKey && this.permissions.canTrackToSegment,
         };
     }
 
