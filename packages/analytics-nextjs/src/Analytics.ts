@@ -218,8 +218,19 @@ export class Analytics {
         properties: object = {},
         callback?: () => void,
     ) => {
-        await this.promises.segmentInit;
-        await this.segment?.page(category, name, { ...properties, prezly: this.meta }, callback);
+        const props = this.meta ? { ...properties, prezly: this.meta } : properties;
+
+        await Promise.all([
+            this.promises.plausibleInit?.then(() => {
+                this.plausible?.trackPageview(undefined, {
+                    props: props as Record<string, string | number | boolean>,
+                });
+            }),
+
+            this.promises.segmentInit?.then(() =>
+                this.segment?.page(category, name, props, callback),
+            ),
+        ]);
     };
 
     public track = async (event: string, properties: object = {}, callback?: () => void) => {
