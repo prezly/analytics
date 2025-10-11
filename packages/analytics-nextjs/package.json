@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@prezly/sdk": "23.20.0",
-    "@types/node": "22.18.9",
+    "@types/node": "22.18.10",
     "@types/react": "18.3.26"
   },
   "publishConfig": {
