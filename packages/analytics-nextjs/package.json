@@ -35,7 +35,7 @@
   "devDependencies": {
     "@prezly/sdk": "23.20.0",
     "@types/node": "22.19.1",
-    "@types/react": "18.3.26"
+    "@types/react": "18.3.27"
   },
   "publishConfig": {
     "access": "public"
